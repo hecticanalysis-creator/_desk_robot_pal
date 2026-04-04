@@ -45,7 +45,7 @@ async function connect() {
 async function sendCmd(cmd) {
   if (!tx) { log('Not connected'); return }
   try {
-    await tx.writeValueWithoutResponse(new TextEncoder().encode(cmd))
+    await tx.writeValueWithoutResponse(new TextEncoder().encode(cmd + '\n'))
     log('Sent: ' + cmd)
   } catch(e) {
     log('Send error: ' + e.message)
