@@ -27,38 +27,24 @@ async function connect() {
   try {
     log('Scanning...')
     const dev = await navigator.bluetooth.requestDevice({
-      acceptAllDevices: true,
+      filters: [{ namePrefix: 'BBC micro:bit' }],
       optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
     })
     log('Found: ' + dev.name)
     const server = await dev.gatt.connect()
     log('GATT connected')
-    
-    const services = await server.getPrimaryServices()
-    log('Services found: ' + services.length)
-    
-    for (const service of services) {
-      log('SERVICE: ' + service.uuid)
-      const chars = await service.getCharacteristics()
-      for (const c of chars) {
-        log('  CHAR: ' + c.uuid + ' | props: ' + JSON.stringify({
-          read: c.properties.read,
-          write: c.properties.write,
-          writeWithoutResponse: c.properties.writeWithoutResponse,
-          notify: c.properties.notify,
-          indicate: c.properties.indicate
-        }))
-      }
-    }
+    const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e')
+    log('Service found')
+    tx = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e')
+    log('Ready — tx characteristic found')
   } catch(e) {
     log('ERROR: ' + e.message)
   }
 }
 
 async function sendCmd(cmd) {
-  if (!tx) { log('Not connected'); return }
+  if (!tx) { log('Not connected — press Connect first'); return }
   try {
-    // send the letter + comma as delimiter
     await tx.writeValue(new TextEncoder().encode(cmd + ','))
     log('Sent: ' + cmd)
   } catch(e) {
