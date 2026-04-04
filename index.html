@@ -17,12 +17,7 @@
     justify-content: space-around;
     padding: 24px;
   }
-  #status {
-    font-size: 13px;
-    color: #555;
-    text-align: center;
-    letter-spacing: 0.04em;
-  }
+  #status { font-size: 13px; color: #555; text-align: center; }
   #status.on { color: #4ade80; }
   #connect {
     background: #5b21b6;
@@ -73,34 +68,36 @@
   <div class="x"></div>
   <div class="btn" id="F">▲</div>
   <div class="x"></div>
+
   <div class="btn" id="L">◀</div>
   <div class="btn stop" id="S">STOP</div>
   <div class="btn" id="R">▶</div>
+
   <div class="x"></div>
   <div class="btn" id="B">▼</div>
   <div class="x"></div>
 </div>
 
 <script>
-let tx = null, timer = null
+let tx = null
+let timer = null
 
 async function connect() {
   try {
-    document.getElementById('status').textContent = 'Looking for robot...'
+    const s = document.getElementById('status')
+    s.textContent = 'Scanning...'
     const dev = await navigator.bluetooth.requestDevice({
       filters: [{ namePrefix: 'BBC micro:bit' }],
       optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
     })
-    const srv = await dev.gatt.connect()
-    const svc = await srv.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e')
-    tx = await svc.getCharacteristic('6e400002-b5a3-f393-e0a9-e50e24dcca9e')
-    const s = document.getElementById('status')
+    const server = await dev.gatt.connect()
+    const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e')
+    tx = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e')
     s.textContent = '● Connected: ' + dev.name
     s.classList.add('on')
-    document.getElementById('connect').textContent = 'Reconnect'
     dev.addEventListener('gattserverdisconnected', () => {
       tx = null
-      s.textContent = 'Disconnected — tap reconnect'
+      s.textContent = 'Disconnected'
       s.classList.remove('on')
     })
   } catch(e) {
@@ -110,13 +107,13 @@ async function connect() {
 
 function send(cmd) {
   if (!tx) return
-  tx.writeValueWithoutResponse(new TextEncoder().encode(cmd + '\n')).catch(() => {})
+  tx.writeValue(new TextEncoder().encode(cmd + ',')).catch(() => {})
 }
 
 function hold(cmd) {
   send(cmd)
   clearInterval(timer)
-  timer = setInterval(() => send(cmd), 120)
+  timer = setInterval(() => send(cmd), 200)
 }
 
 function release() {
