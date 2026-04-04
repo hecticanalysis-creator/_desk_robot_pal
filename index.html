@@ -58,7 +58,8 @@ async function connect() {
 async function sendCmd(cmd) {
   if (!tx) { log('Not connected'); return }
   try {
-    await tx.writeValue(new TextEncoder().encode(cmd))
+    // send the letter + comma as delimiter
+    await tx.writeValue(new TextEncoder().encode(cmd + ','))
     log('Sent: ' + cmd)
   } catch(e) {
     log('Send error: ' + e.message)
