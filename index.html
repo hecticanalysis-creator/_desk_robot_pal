@@ -110,7 +110,7 @@ async function connect() {
 
 function send(cmd) {
   if (!tx) return
-  tx.writeValueWithoutResponse(new TextEncoder().encode(cmd + '\n')).catch(() => {})
+  tx.writeValueWithoutResponse(new TextEncoder().encode(cmd)).catch(() => {})
 }
 
 function hold(cmd) {
