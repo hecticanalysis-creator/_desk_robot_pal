@@ -27,17 +27,29 @@ async function connect() {
   try {
     log('Scanning...')
     const dev = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: 'BBC micro:bit' }],
+      acceptAllDevices: true,
       optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
     })
     log('Found: ' + dev.name)
     const server = await dev.gatt.connect()
     log('GATT connected')
-    const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e')
-    log('Service found')
-    // 6e400003 is the RX char (what phone writes to)
-    tx = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e')
-    log('TX characteristic found — READY')
+    
+    const services = await server.getPrimaryServices()
+    log('Services found: ' + services.length)
+    
+    for (const service of services) {
+      log('SERVICE: ' + service.uuid)
+      const chars = await service.getCharacteristics()
+      for (const c of chars) {
+        log('  CHAR: ' + c.uuid + ' | props: ' + JSON.stringify({
+          read: c.properties.read,
+          write: c.properties.write,
+          writeWithoutResponse: c.properties.writeWithoutResponse,
+          notify: c.properties.notify,
+          indicate: c.properties.indicate
+        }))
+      }
+    }
   } catch(e) {
     log('ERROR: ' + e.message)
   }
