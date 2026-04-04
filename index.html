@@ -1,61 +1,137 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BLE Test</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>Robot</title>
 <style>
-  body { background:#111; color:#fff; font-family:sans-serif; padding:40px; }
-  button { padding:16px 32px; font-size:18px; margin:8px; border:none; border-radius:12px; cursor:pointer; }
-  #log { margin-top:24px; font-size:13px; color:#aaa; line-height:2; }
+  * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
+  body {
+    background: #0f0f13;
+    color: #fff;
+    font-family: sans-serif;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-around;
+    padding: 24px;
+  }
+  #status { font-size: 13px; color: #555; text-align: center; }
+  #status.on { color: #4ade80; }
+  #connect {
+    background: #5b21b6;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    padding: 14px 36px;
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .pad {
+    display: grid;
+    grid-template-columns: repeat(3, 90px);
+    grid-template-rows: repeat(3, 90px);
+    gap: 10px;
+  }
+  .btn {
+    background: #1c1c28;
+    border: 2px solid #2e2e40;
+    border-radius: 16px;
+    color: #fff;
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .btn:active { background: #5b21b6; border-color: #a78bfa; }
+  .stop {
+    background: #2a0a0a;
+    border-color: #5b1a1a;
+    font-size: 13px;
+    font-weight: bold;
+    color: #fca5a5;
+    letter-spacing: 0.05em;
+  }
+  .stop:active { background: #7f1d1d; }
+  .x { visibility: hidden; }
 </style>
 </head>
 <body>
-  <button onclick="connect()" style="background:#6d28d9">Connect</button>
-  <br><br>
-  <button onclick="sendCmd('F')" style="background:#1a4a1a">▲ Forward</button>
-  <br>
-  <button onclick="sendCmd('L')" style="background:#1a1a4a">◀ Left</button>
-  <button onclick="sendCmd('S')" style="background:#4a1a1a">STOP</button>
-  <button onclick="sendCmd('R')" style="background:#1a1a4a">Right ▶</button>
-  <br>
-  <button onclick="sendCmd('B')" style="background:#1a4a1a">▼ Back</button>
-  <div id="log">Not connected</div>
+
+<div id="status">Not connected</div>
+<button id="connect" onclick="connect()">Connect to Robot</button>
+
+<div class="pad">
+  <div class="x"></div>
+  <div class="btn" id="F">▲</div>
+  <div class="x"></div>
+
+  <div class="btn" id="L">◀</div>
+  <div class="btn stop" id="S">STOP</div>
+  <div class="btn" id="R">▶</div>
+
+  <div class="x"></div>
+  <div class="btn" id="B">▼</div>
+  <div class="x"></div>
+</div>
 
 <script>
 let tx = null
-
-function log(msg) {
-  document.getElementById('log').innerHTML = msg + '<br>' + document.getElementById('log').innerHTML
-}
+let timer = null
 
 async function connect() {
   try {
-    log('Scanning...')
+    const s = document.getElementById('status')
+    s.textContent = 'Scanning...'
     const dev = await navigator.bluetooth.requestDevice({
       filters: [{ namePrefix: 'BBC micro:bit' }],
       optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
     })
-    log('Found: ' + dev.name)
     const server = await dev.gatt.connect()
-    log('GATT connected')
     const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e')
     tx = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e')
-    log('✅ Ready')
+    s.textContent = '● Connected: ' + dev.name
+    s.classList.add('on')
+    dev.addEventListener('gattserverdisconnected', () => {
+      tx = null
+      s.textContent = 'Disconnected'
+      s.classList.remove('on')
+    })
   } catch(e) {
-    log('ERROR: ' + e.message)
+    document.getElementById('status').textContent = 'Error: ' + e.message
   }
 }
 
-async function sendCmd(cmd) {
-  if (!tx) { log('Not connected'); return }
-  try {
-    await tx.writeValue(new TextEncoder().encode(cmd + ','))
-    log('Sent: ' + cmd)
-  } catch(e) {
-    log('Send error: ' + e.message)
-  }
+function send(cmd) {
+  if (!tx) return
+  tx.writeValue(new TextEncoder().encode(cmd + '#')).catch(() => {})
 }
+
+function hold(cmd) {
+  send(cmd)
+  clearInterval(timer)
+  timer = setInterval(() => send(cmd), 200)
+}
+
+function release() {
+  clearInterval(timer)
+  send('S')
+}
+
+document.querySelectorAll('.btn').forEach(btn => {
+  const cmd = btn.id
+  if (cmd === 'S') {
+    btn.addEventListener('pointerdown', () => send('S'))
+  } else {
+    btn.addEventListener('pointerdown', () => hold(cmd))
+    btn.addEventListener('pointerup', release)
+    btn.addEventListener('pointerleave', release)
+    btn.addEventListener('pointercancel', release)
+  }
+})
 </script>
 </body>
 </html>
