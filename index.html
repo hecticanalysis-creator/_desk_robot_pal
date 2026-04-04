@@ -65,16 +65,6 @@ async function sendCmd(cmd) {
     log('Send error: ' + e.message)
   }
 }
-
-async function sendCmd(cmd) {
-  if (!tx) { log('Not connected'); return }
-  try {
-    await tx.writeValue(new TextEncoder().encode(cmd))
-    log('Sent: ' + cmd)
-  } catch(e) {
-    log('Send error: ' + e.message)
-  }
-}
 </script>
 </body>
 </html>
