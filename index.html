@@ -5,26 +5,83 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
 <title>Robot</title>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; }
+  /* ============================================================
+     THEME — change these variables to restyle everything at once
+     ============================================================ */
+  :root {
+    --bg:       #0f0f13;
+    --surface:  #1c1c28;
+    --border:   #2e2e40;
+    --accent:   #5b21b6;   /* ← main purple — change for a different colour theme */
+    --accent-h: #a78bfa;   /* ← accent hover/active highlight */
+    --ok:       #4ade80;
+    --warn:     #fbbf24;
+    --bad:      #ef4444;
+    --muted:    #555;
+    --text:     #fff;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+
   body {
-    background: #0f0f13;
-    color: #fff;
+    background: var(--bg);
+    color: var(--text);
     font-family: sans-serif;
-    height: 100dvh;
+    min-height: 100dvh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: space-around;
-    padding: 20px;
-    gap: 12px;
+    justify-content: flex-start;
+    padding: 16px 16px 28px;
+    gap: 14px;
   }
-  #status { font-size: 13px; color: #555; text-align: center; }
-  #status.on { color: #4ade80; }
+
+  /* ── Status & connect ──────────────────────────────────── */
+  #status { font-size: 13px; color: var(--muted); text-align: center; }
+  #status.on { color: var(--ok); }
+
   #connect {
-    background: #5b21b6; color: #fff; border: none;
+    background: var(--accent); color: var(--text); border: none;
     border-radius: 14px; padding: 12px 32px;
-    font-size: 15px; cursor: pointer;
+    font-size: 15px; cursor: pointer; width: 100%; max-width: 320px;
   }
+  #connect:active { opacity: 0.8; }
+
+  /* ── Sensor strip ──────────────────────────────────────── */
+  /* Add more .sensor cells here if you add readings in the .ts */
+  .sensors {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+    max-width: 320px;
+  }
+  .sensor {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+  .s-label { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
+  .s-value { font-size: 20px; font-weight: bold; line-height: 1.2; }
+  .s-unit  { font-size: 9px; color: var(--muted); }
+  .ok   { color: var(--ok); }
+  .warn { color: var(--warn); }
+  .bad  { color: var(--bad); }
+
+  /* Obstacle alert — visible only when too close */
+  #obstacle-alert {
+    width: 100%; max-width: 320px;
+    background: var(--bad); border-radius: 10px;
+    padding: 8px; text-align: center;
+    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
+    display: none;
+  }
+  #obstacle-alert.show { display: block; animation: pulse 0.5s infinite alternate; }
+  @keyframes pulse { from { opacity:1 } to { opacity:0.5 } }
+
+  /* ── D-pad ─────────────────────────────────────────────── */
   .pad {
     display: grid;
     grid-template-columns: repeat(3, 80px);
@@ -32,41 +89,112 @@
     gap: 8px;
   }
   .btn {
-    background: #1c1c28; border: 2px solid #2e2e40;
-    border-radius: 16px; color: #fff; font-size: 28px;
+    background: var(--surface); border: 2px solid var(--border);
+    border-radius: 16px; color: var(--text); font-size: 28px;
     display: flex; align-items: center; justify-content: center;
-    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    cursor: pointer; user-select: none;
   }
-  .btn:active { background: #5b21b6; border-color: #a78bfa; }
+  .btn:active, .btn.held { background: var(--accent); border-color: var(--accent-h); }
+
+  /* Forward button turns red when obstacle is blocking */
+  .btn.blocked { background: #2a0a0a; border-color: var(--bad); color: var(--bad); }
+
   .stop {
     background: #2a0a0a; border-color: #5b1a1a;
     font-size: 12px; font-weight: bold;
     color: #fca5a5; letter-spacing: 0.05em;
   }
   .stop:active { background: #7f1d1d; }
-  .horn {
-    background: #1a2a0a; border-color: #3a5a1a;
-    font-size: 22px; color: #86efac;
-  }
+
+  .horn { background: #1a2a0a; border-color: #3a5a1a; font-size: 22px; color: #86efac; }
   .horn:active { background: #166534; }
+
   .x { visibility: hidden; }
-  .speeds {
-    display: flex; gap: 10px;
-  }
+
+  /* ── Speed buttons ─────────────────────────────────────── */
+  .speeds { display: flex; gap: 10px; }
   .spd {
-    background: #1c1c28; border: 2px solid #2e2e40;
-    border-radius: 12px; color: #888;
-    padding: 8px 18px; font-size: 13px;
-    cursor: pointer; -webkit-tap-highlight-color: transparent;
+    background: var(--surface); border: 2px solid var(--border);
+    border-radius: 12px; color: var(--muted);
+    padding: 8px 18px; font-size: 13px; cursor: pointer;
   }
-  .spd.active { background: #5b21b6; border-color: #a78bfa; color: #fff; }
+  .spd.active { background: var(--accent); border-color: var(--accent-h); color: var(--text); }
+
+  /* ── Tabs ──────────────────────────────────────────────── */
+  /* Add more .tab + .tab-panel pairs below to add features */
+  .tabs { display: flex; gap: 6px; width: 100%; max-width: 320px; }
+  .tab {
+    flex: 1; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 8px 4px; font-size: 11px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted); cursor: pointer; text-align: center;
+    font-family: inherit;
+  }
+  .tab.active { background: var(--accent); border-color: var(--accent); color: var(--text); }
+
+  .tab-panel { display: none; width: 100%; max-width: 320px; }
+  .tab-panel.active { display: block; }
+
+  /* ── Script buttons ────────────────────────────────────── */
+  /* Add more .script-btn divs below to expose new scripts */
+  .script-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .script-btn {
+    background: var(--surface); border: 2px solid var(--border);
+    border-radius: 10px; color: var(--text);
+    padding: 14px 8px; font-size: 12px; letter-spacing: 0.06em;
+    cursor: pointer; text-align: center; font-family: inherit;
+  }
+  .script-btn:active { background: var(--accent); border-color: var(--accent-h); }
+  .script-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+
+  /* ── Record panel ──────────────────────────────────────── */
+  .rec-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .rec-btn {
+    flex: 1; padding: 12px 6px; border-radius: 10px;
+    border: 2px solid var(--border); background: var(--surface);
+    color: var(--text); font-family: inherit; font-size: 12px;
+    letter-spacing: 0.06em; cursor: pointer; text-align: center;
+  }
+  .rec-btn:disabled { opacity: 0.35; cursor: default; }
+  .rec-btn.recording { background: var(--bad); border-color: var(--bad); animation: pulse 0.8s infinite alternate; }
+  .rec-btn.ready     { background: #14532d; border-color: var(--ok); color: var(--ok); }
+  .rec-log {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 10px; font-size: 11px;
+    color: var(--muted); min-height: 54px; word-break: break-all; line-height: 1.6;
+  }
 </style>
 </head>
 <body>
 
+<!-- ── Status ─────────────────────────────────────────────── -->
 <div id="status">Not connected</div>
-<button id="connect" onclick="connect()">Connect to Robot</button>
+<button id="connect" onclick="connectBLE()">Connect to Robot</button>
 
+<!-- ── Sensor display ─────────────────────────────────────── -->
+<!-- Add a .sensor block here for each new sensor you add in the .ts -->
+<div class="sensors">
+  <div class="sensor">
+    <div class="s-label">Distance</div>
+    <div class="s-value ok" id="s-dist">--</div>
+    <div class="s-unit">cm</div>
+  </div>
+  <div class="sensor">
+    <div class="s-label">Battery</div>
+    <div class="s-value ok" id="s-batt">--</div>
+    <div class="s-unit">%</div>
+  </div>
+  <div class="sensor">
+    <div class="s-label">Signal</div>
+    <div class="s-value ok" id="s-rssi">--</div>
+    <div class="s-unit">BLE</div>
+  </div>
+</div>
+
+<!-- Obstacle warning bar — auto shown/hidden -->
+<div id="obstacle-alert">⚠ Obstacle — Forward Blocked</div>
+
+<!-- ── D-pad ──────────────────────────────────────────────── -->
 <div class="pad">
   <div class="x"></div>
   <div class="btn" id="F">▲</div>
@@ -81,78 +209,341 @@
   <div class="x"></div>
 </div>
 
-<div class="pad" style="grid-template-columns: repeat(3, 80px); grid-template-rows: 80px; gap: 8px;">
-  <div class="btn horn" id="H">📯</div>
-  <div class="x"></div>
-  <div class="x"></div>
+<!-- Horn row — same structure as Phase 1 -->
+<div style="display:flex; gap:8px;">
+  <div class="btn horn" id="H" style="width:80px;height:80px;border-radius:16px;">📯</div>
 </div>
 
+<!-- Speed buttons — unchanged from Phase 1 -->
 <div class="speeds">
   <div class="spd" id="spd1" onclick="setSpeed('1')">SLOW</div>
   <div class="spd active" id="spd2" onclick="setSpeed('2')">MED</div>
   <div class="spd" id="spd3" onclick="setSpeed('3')">FAST</div>
 </div>
 
-<script>
-let tx = null
-let timer = null
+<!-- ── Tabs ───────────────────────────────────────────────── -->
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('scripts')">Scripts</button>
+  <button class="tab"        onclick="switchTab('record')">Record</button>
+  <!-- ↓ Add more tabs here: <button class="tab" onclick="switchTab('myfeature')">My Feature</button> -->
+</div>
 
-async function connect() {
+<!-- ── Scripts tab ────────────────────────────────────────── -->
+<div class="tab-panel active" id="tab-scripts">
+  <div class="script-grid">
+
+    <!-- Each button calls sendScript('NAME') — name must match runScript() in .ts -->
+    <button class="script-btn" onclick="sendScript('SQUARE')">
+      <span class="script-icon">⬛</span>Square
+    </button>
+    <button class="script-btn" onclick="sendScript('SPIN')">
+      <span class="script-icon">🌀</span>Spin 360
+    </button>
+    <button class="script-btn" onclick="sendScript('WIGGLE')">
+      <span class="script-icon">👋</span>Wiggle
+    </button>
+
+    <!-- ↓ Add new scripts here — uncomment and add matching block in .ts
+    <button class="script-btn" onclick="sendScript('ZIGZAG')">
+      <span class="script-icon">⚡</span>Zigzag
+    </button>
+    -->
+
+  </div>
+</div>
+
+<!-- ── Record tab ─────────────────────────────────────────── -->
+<div class="tab-panel" id="tab-record">
+  <div class="rec-row">
+    <button class="rec-btn" id="rec-start" onclick="startRecording()">⏺ Record</button>
+    <button class="rec-btn" id="rec-stop"  onclick="stopRecording()"  disabled>⏹ Stop</button>
+    <button class="rec-btn" id="rec-play"  onclick="playRecording()"  disabled>▶ Play</button>
+  </div>
+  <div class="rec-log" id="rec-log">
+    Press ⏺ Record then drive with the D-pad above.
+  </div>
+</div>
+
+<!-- ↓ Add a new tab panel here for future features:
+<div class="tab-panel" id="tab-myfeature">
+  ...your content...
+</div>
+-->
+
+<script>
+// ============================================================
+//  BLE — identical UUIDs and connection logic to Phase 1
+//  The only change: we also subscribe to notifications (RX)
+//  to receive sensor data back from the micro:bit.
+// ============================================================
+
+const UART_SVC = '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
+const UART_TX  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'  // phone writes here
+const UART_RX  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'  // phone reads here
+
+let tx        = null   // write characteristic (same as Phase 1)
+let rx        = null   // notify characteristic (new — receives sensor data)
+let bleDevice = null
+
+async function connectBLE() {
   try {
-    const s = document.getElementById('status')
-    s.textContent = 'Scanning...'
-    const dev = await navigator.bluetooth.requestDevice({
+    setStatus('Scanning...')
+    bleDevice = await navigator.bluetooth.requestDevice({
       filters: [{ namePrefix: 'BBC micro:bit' }],
-      optionalServices: ['6e400001-b5a3-f393-e0a9-e50e24dcca9e']
+      optionalServices: [UART_SVC]
     })
-    const server = await dev.gatt.connect()
-    const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e')
-    tx = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e')
-    s.textContent = '● ' + dev.name
-    s.classList.add('on')
-    dev.addEventListener('gattserverdisconnected', () => {
-      tx = null
-      s.textContent = 'Disconnected'
-      s.classList.remove('on')
-    })
+    bleDevice.addEventListener('gattserverdisconnected', onDisconnect)
+
+    const server  = await bleDevice.gatt.connect()
+    const service = await server.getPrimaryService(UART_SVC)
+
+    tx = await service.getCharacteristic(UART_TX)
+
+    // Subscribe to incoming data (sensor broadcasts from micro:bit)
+    rx = await service.getCharacteristic(UART_RX)
+    await rx.startNotifications()
+    rx.addEventListener('characteristicvaluechanged', onSensorData)
+
+    setStatus('● ' + bleDevice.name, true)
+    document.getElementById('connect').style.display = 'none'
+    document.getElementById('s-rssi').textContent = '🟢'
+
   } catch(e) {
-    document.getElementById('status').textContent = 'Error: ' + e.message
+    setStatus('Error: ' + e.message)
   }
 }
 
+function onDisconnect() {
+  tx = null; rx = null
+  setStatus('Disconnected')
+  document.getElementById('connect').style.display = ''
+  document.getElementById('s-rssi').textContent = '--'
+  document.getElementById('s-dist').textContent = '--'
+  document.getElementById('s-batt').textContent = '--'
+  showObstacle(false)
+}
+
+// ── Send command — identical to Phase 1, delimiter is # ─────
 function send(cmd) {
   if (!tx) return
   tx.writeValue(new TextEncoder().encode(cmd + '#')).catch(() => {})
 }
 
-function hold(cmd) {
-  send(cmd)
-  clearInterval(timer)
-  timer = setInterval(() => send(cmd), 150)
+// ============================================================
+//  SENSOR DATA — parses "SENSOR|dist|batt#" from micro:bit
+//  ↓ Extend the split index if you add more "|value" segments in .ts
+// ============================================================
+
+function onSensorData(e) {
+  const raw   = new TextDecoder().decode(e.target.value).replace('#', '')
+  const parts = raw.split('|')
+  if (parts[0] !== 'SENSOR') return
+
+  const dist = parseInt(parts[1]) || 0
+  const batt = parseInt(parts[2]) || 0
+  // ↓ Add: const light = parseInt(parts[3]) || 0  if you add light sensor
+
+  updateDist(dist)
+  updateBatt(batt)
 }
 
-function release() {
-  clearInterval(timer)
+function updateDist(d) {
+  const el = document.getElementById('s-dist')
+  el.textContent = d > 0 ? d : '--'
+
+  // ↓ Change these thresholds to adjust colour warnings
+  if      (d <= 0)  { colourEl(el, 'ok');   showObstacle(false) }
+  else if (d <= 5)  { colourEl(el, 'bad');  showObstacle(true)  }
+  else if (d <= 15) { colourEl(el, 'warn'); showObstacle(false) }
+  else              { colourEl(el, 'ok');   showObstacle(false) }
+
+  // Grey out the forward button when blocked
+  document.getElementById('F').classList.toggle('blocked', d > 0 && d <= 5)
+}
+
+function updateBatt(b) {
+  const el = document.getElementById('s-batt')
+  el.textContent = b
+  // ↓ Change these thresholds to adjust battery colour warnings
+  if      (b <= 20) colourEl(el, 'bad')
+  else if (b <= 40) colourEl(el, 'warn')
+  else              colourEl(el, 'ok')
+}
+
+function colourEl(el, cls) {
+  el.className = 's-value ' + cls
+}
+function showObstacle(show) {
+  document.getElementById('obstacle-alert').classList.toggle('show', show)
+}
+
+// ============================================================
+//  D-PAD — identical hold/release logic to Phase 1
+//  Uses pointerdown/up/leave/cancel for reliable mobile input
+// ============================================================
+
+let holdTimer = null
+
+// Direction buttons: hold sends repeatedly, release sends STOP
+;['F','B','L','R'].forEach(cmd => {
+  const el = document.getElementById(cmd)
+
+  function startHold() {
+    if (cmd === 'F' && el.classList.contains('blocked')) return
+    el.classList.add('held')
+    send(cmd)
+    if (isRecording) recordStep(cmd)
+    holdTimer = setInterval(() => {
+      if (cmd === 'F' && el.classList.contains('blocked')) { stopHold(); return }
+      send(cmd)
+    }, 150)   // ← Change this interval to tune hold-repeat rate
+  }
+
+  function stopHold() {
+    el.classList.remove('held')
+    clearInterval(holdTimer)
+    send('S')
+    if (isRecording) recordStep('S')
+  }
+
+  el.addEventListener('pointerdown',  e => { e.preventDefault(); startHold() })
+  el.addEventListener('pointerup',    e => { e.preventDefault(); stopHold()  })
+  el.addEventListener('pointerleave', e => { e.preventDefault(); stopHold()  })
+  el.addEventListener('pointercancel',e => { e.preventDefault(); stopHold()  })
+})
+
+// STOP and Horn — single tap only (same as Phase 1)
+document.getElementById('S').addEventListener('pointerdown', () => {
   send('S')
-}
+  if (isRecording) recordStep('S')
+})
+document.getElementById('H').addEventListener('pointerdown', () => send('H'))
 
+// Speed buttons — same as Phase 1
 function setSpeed(n) {
   send(n)
   document.querySelectorAll('.spd').forEach(el => el.classList.remove('active'))
   document.getElementById('spd' + n).classList.add('active')
 }
 
-document.querySelectorAll('.btn').forEach(btn => {
-  const cmd = btn.id
-  if (cmd === 'S') {
-    btn.addEventListener('pointerdown', () => send('S'))
-  } else if (cmd === 'H') {
-    btn.addEventListener('pointerdown', () => send('H'))
-  } else {
-    btn.addEventListener('pointerdown', () => hold(cmd))
-    btn.addEventListener('pointerup', release)
-    btn.addEventListener('pointerleave', release)
-    btn.addEventListener('pointercancel', release)
+// ============================================================
+//  SCRIPTED MOVES
+//  Sends "SCRIPT:NAME#" — name must match runScript() in the .ts
+// ============================================================
+
+function sendScript(name) {
+  send('SCRIPT:' + name)
+}
+
+// ============================================================
+//  RECORD & REPLAY
+//  Records timestamped button presses while isRecording is true.
+//  On stop, converts to "F600,R500,..." step string.
+//  On play, sends "RUN:<steps>#" to micro:bit.
+// ============================================================
+
+let isRecording = false
+let recLog      = []    // [{dir, time}, ...]
+let recStart    = 0
+
+function startRecording() {
+  isRecording = true
+  recLog      = []
+  recStart    = Date.now()
+
+  document.getElementById('rec-start').classList.add('recording')
+  document.getElementById('rec-start').disabled = true
+  document.getElementById('rec-stop').disabled  = false
+  document.getElementById('rec-play').disabled  = true
+  document.getElementById('rec-play').classList.remove('ready')
+  document.getElementById('rec-log').textContent = 'Recording... drive with the D-pad ↑'
+}
+
+function stopRecording() {
+  isRecording = false
+  document.getElementById('rec-start').classList.remove('recording')
+  document.getElementById('rec-start').disabled = false
+  document.getElementById('rec-stop').disabled  = true
+
+  if (recLog.length < 2) {
+    document.getElementById('rec-log').textContent = 'Nothing captured — try again.'
+    return
+  }
+
+  const steps   = buildSteps(recLog)
+  const encoded = steps.join(',')
+
+  document.getElementById('rec-log').innerHTML =
+    '<span style="color:#a78bfa">Steps:</span> ' + encoded
+
+  if (steps.length > 0) {
+    const btn = document.getElementById('rec-play')
+    btn.disabled       = false
+    btn.classList.add('ready')
+    btn.dataset.steps  = encoded
+  }
+}
+
+function recordStep(dir) {
+  recLog.push({ dir, time: Date.now() - recStart })
+}
+
+// Convert timestamped log to ["F600","R500",...] step array
+// ↓ Change MIN_STEP_MS to filter out shorter/longer accidental presses
+const MIN_STEP_MS = 80
+
+function buildSteps(log) {
+  const steps = []
+  for (let i = 0; i < log.length - 1; i++) {
+    const dur = log[i+1].time - log[i].time
+    if (dur >= MIN_STEP_MS) steps.push(log[i].dir + dur)
+  }
+  return steps
+}
+
+function playRecording() {
+  const encoded = document.getElementById('rec-play').dataset.steps
+  if (encoded) send('RUN:' + encoded)
+}
+
+// ============================================================
+//  TAB SWITCHER
+// ============================================================
+
+function switchTab(name) {
+  document.querySelectorAll('.tab').forEach(t =>
+    t.classList.toggle('active', t.textContent.toLowerCase().trim().startsWith(name.substring(0,3)))
+  )
+  document.querySelectorAll('.tab-panel').forEach(p =>
+    p.classList.toggle('active', p.id === 'tab-' + name)
+  )
+}
+
+// ── Status helper ─────────────────────────────────────────────
+function setStatus(text, on = false) {
+  const el = document.getElementById('status')
+  el.textContent = text
+  el.className   = on ? 'on' : ''
+}
+
+// ── Keyboard support for desktop testing ─────────────────────
+// ↓ Add entries to keyMap for extra keyboard shortcuts
+const keyMap  = { ArrowUp:'F', ArrowDown:'B', ArrowLeft:'L', ArrowRight:'R', ' ':'S', h:'H' }
+const heldSet = new Set()
+
+document.addEventListener('keydown', e => {
+  const cmd = keyMap[e.key]
+  if (cmd && !heldSet.has(e.key)) {
+    heldSet.add(e.key)
+    send(cmd)
+    if (isRecording) recordStep(cmd)
+  }
+})
+document.addEventListener('keyup', e => {
+  const cmd = keyMap[e.key]
+  if (cmd) {
+    heldSet.delete(e.key)
+    if (cmd !== 'S' && cmd !== 'H') { send('S'); if (isRecording) recordStep('S') }
   }
 })
 </script>
