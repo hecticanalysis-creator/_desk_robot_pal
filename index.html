@@ -3,291 +3,704 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
-<title>Robot</title>
+<title>UNIT-01 // CONTROL</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
-  /* ============================================================
-     THEME — change these variables to restyle everything at once
-     ============================================================ */
-  :root {
-    --bg:       #0f0f13;
-    --surface:  #1c1c28;
-    --border:   #2e2e40;
-    --accent:   #5b21b6;   /* ← main purple — change for a different colour theme */
-    --accent-h: #a78bfa;   /* ← accent hover/active highlight */
-    --ok:       #4ade80;
-    --warn:     #fbbf24;
-    --bad:      #ef4444;
-    --muted:    #555;
-    --text:     #fff;
-  }
+/* ============================================================
+   THEME — change variables here to restyle everything
+   ============================================================ */
+:root {
+  --bg:        #080a08;
+  --bg2:       #0d110d;
+  --panel:     #101410;
+  --border:    #1a2a1a;
+  --amber:     #f59e0b;   /* ← primary accent — change for different colour theme */
+  --cyan:      #06d6a0;   /* ← secondary accent */
+  --red:       #ef4444;
+  --dim:       #3a4a3a;
+  --text:      #c8d8c0;
+  --muted:     #4a5a4a;
+  --font-hud:  'Orbitron', monospace;
+  --font-mono: 'Share Tech Mono', monospace;
+}
 
-  * { box-sizing: border-box; margin: 0; padding: 0; touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+* { box-sizing: border-box; margin: 0; padding: 0;
+    touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: sans-serif;
-    min-height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 16px 16px 28px;
-    gap: 14px;
-  }
+html, body { height: 100%; overflow: hidden; }
 
-  /* ── Status & connect ──────────────────────────────────── */
-  #status { font-size: 13px; color: var(--muted); text-align: center; }
-  #status.on { color: var(--ok); }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  display: flex;
+  flex-direction: column;
+  height: 100dvh;
+  position: relative;
+  overflow: hidden;
+}
 
-  #connect {
-    background: var(--accent); color: var(--text); border: none;
-    border-radius: 14px; padding: 12px 32px;
-    font-size: 15px; cursor: pointer; width: 100%; max-width: 320px;
-  }
-  #connect:active { opacity: 0.8; }
+/* ── Scanline overlay ──────────────────────────────────────── */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0,0,0,0.15) 2px,
+    rgba(0,0,0,0.15) 4px
+  );
+  pointer-events: none;
+  z-index: 100;
+}
 
-  /* ── Sensor strip ──────────────────────────────────────── */
-  /* Add more .sensor cells here if you add readings in the .ts */
-  .sensors {
-    display: flex;
-    gap: 8px;
-    width: 100%;
-    max-width: 320px;
-  }
-  .sensor {
-    flex: 1;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 8px 6px;
-    text-align: center;
-  }
-  .s-label { font-size: 9px; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; }
-  .s-value { font-size: 20px; font-weight: bold; line-height: 1.2; }
-  .s-unit  { font-size: 9px; color: var(--muted); }
-  .ok   { color: var(--ok); }
-  .warn { color: var(--warn); }
-  .bad  { color: var(--bad); }
+/* ── Corner bracket decoration ────────────────────────────── */
+body::after {
+  content: '';
+  position: fixed; inset: 8px;
+  border: 1px solid var(--border);
+  pointer-events: none;
+  z-index: 99;
+  clip-path: polygon(
+    0 16px, 16px 0,
+    calc(100% - 16px) 0, 100% 16px,
+    100% calc(100% - 16px), calc(100% - 16px) 100%,
+    16px 100%, 0 calc(100% - 16px)
+  );
+}
 
-  /* Obstacle alert — visible only when too close */
-  #obstacle-alert {
-    width: 100%; max-width: 320px;
-    background: var(--bad); border-radius: 10px;
-    padding: 8px; text-align: center;
-    font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase;
-    display: none;
-  }
-  #obstacle-alert.show { display: block; animation: pulse 0.5s infinite alternate; }
-  @keyframes pulse { from { opacity:1 } to { opacity:0.5 } }
+/* ── Top bar ───────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px 10px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
 
-  /* ── D-pad ─────────────────────────────────────────────── */
-  .pad {
-    display: grid;
-    grid-template-columns: repeat(3, 80px);
-    grid-template-rows: repeat(3, 80px);
-    gap: 8px;
-  }
-  .btn {
-    background: var(--surface); border: 2px solid var(--border);
-    border-radius: 16px; color: var(--text); font-size: 28px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; user-select: none;
-  }
-  .btn:active, .btn.held { background: var(--accent); border-color: var(--accent-h); }
+.unit-id {
+  font-family: var(--font-hud);
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+  color: var(--amber);
+  text-shadow: 0 0 12px rgba(245,158,11,0.5);
+}
 
-  /* Forward button turns red when obstacle is blocking */
-  .btn.blocked { background: #2a0a0a; border-color: var(--bad); color: var(--bad); }
+.conn-group { display: flex; align-items: center; gap: 10px; }
 
-  .stop {
-    background: #2a0a0a; border-color: #5b1a1a;
-    font-size: 12px; font-weight: bold;
-    color: #fca5a5; letter-spacing: 0.05em;
-  }
-  .stop:active { background: #7f1d1d; }
+#status-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--muted);
+  transition: all 0.3s;
+  box-shadow: none;
+}
+#status-dot.live {
+  background: var(--cyan);
+  box-shadow: 0 0 8px var(--cyan);
+  animation: blink-dot 2s infinite;
+}
+@keyframes blink-dot {
+  0%,100% { opacity: 1; } 50% { opacity: 0.4; }
+}
 
-  .horn { background: #1a2a0a; border-color: #3a5a1a; font-size: 22px; color: #86efac; }
-  .horn:active { background: #166534; }
+#status-text {
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  text-transform: uppercase;
+}
+#status-text.live { color: var(--cyan); }
 
-  .x { visibility: hidden; }
+#btn-connect {
+  font-family: var(--font-hud);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  background: transparent;
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  padding: 6px 14px;
+  cursor: pointer;
+  clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
+  transition: all 0.2s;
+}
+#btn-connect:active { background: var(--amber); color: var(--bg); }
+#btn-connect.hide { display: none; }
 
-  /* ── Speed buttons ─────────────────────────────────────── */
-  .speeds { display: flex; gap: 10px; }
-  .spd {
-    background: var(--surface); border: 2px solid var(--border);
-    border-radius: 12px; color: var(--muted);
-    padding: 8px 18px; font-size: 13px; cursor: pointer;
-  }
-  .spd.active { background: var(--accent); border-color: var(--accent-h); color: var(--text); }
+/* ── Sensor strip ──────────────────────────────────────────── */
+.sensors {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--border);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+/* ↓ Add more .sensor-cell blocks here for new sensors */
+.sensor-cell {
+  background: var(--panel);
+  padding: 8px 10px;
+  text-align: center;
+}
+.sc-label {
+  font-size: 8px;
+  letter-spacing: 0.15em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+.sc-val {
+  font-family: var(--font-hud);
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1;
+  transition: color 0.3s;
+}
+.sc-unit { font-size: 8px; color: var(--muted); }
+.v-ok   { color: var(--cyan); text-shadow: 0 0 8px rgba(6,214,160,0.4); }
+.v-warn { color: var(--amber); text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+.v-bad  { color: var(--red);   text-shadow: 0 0 8px rgba(239,68,68,0.4); }
 
-  /* ── Tabs ──────────────────────────────────────────────── */
-  /* Add more .tab + .tab-panel pairs below to add features */
-  .tabs { display: flex; gap: 6px; width: 100%; max-width: 320px; }
-  .tab {
-    flex: 1; background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 8px 4px; font-size: 11px;
-    letter-spacing: 0.08em; text-transform: uppercase;
-    color: var(--muted); cursor: pointer; text-align: center;
-    font-family: inherit;
-  }
-  .tab.active { background: var(--accent); border-color: var(--accent); color: var(--text); }
+/* ── Obstacle alert ────────────────────────────────────────── */
+#obstacle-alert {
+  background: rgba(239,68,68,0.15);
+  border-bottom: 1px solid var(--red);
+  padding: 6px;
+  text-align: center;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  color: var(--red);
+  text-transform: uppercase;
+  display: none;
+  flex-shrink: 0;
+}
+#obstacle-alert.show {
+  display: block;
+  animation: alert-pulse 0.6s infinite alternate;
+}
+@keyframes alert-pulse { from { opacity:1 } to { opacity:0.4 } }
 
-  .tab-panel { display: none; width: 100%; max-width: 320px; }
-  .tab-panel.active { display: block; }
+/* ── Mode toggle ───────────────────────────────────────────── */
+.mode-bar {
+  display: flex;
+  gap: 1px;
+  background: var(--border);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.mode-btn {
+  flex: 1;
+  padding: 9px 4px;
+  font-family: var(--font-hud);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  background: var(--panel);
+  color: var(--muted);
+  border: none;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.mode-btn.active {
+  background: rgba(245,158,11,0.12);
+  color: var(--amber);
+}
 
-  /* ── Script buttons ────────────────────────────────────── */
-  /* Add more .script-btn divs below to expose new scripts */
-  .script-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .script-btn {
-    background: var(--surface); border: 2px solid var(--border);
-    border-radius: 10px; color: var(--text);
-    padding: 14px 8px; font-size: 12px; letter-spacing: 0.06em;
-    cursor: pointer; text-align: center; font-family: inherit;
-  }
-  .script-btn:active { background: var(--accent); border-color: var(--accent-h); }
-  .script-icon { font-size: 22px; display: block; margin-bottom: 4px; }
+/* ── Main content area ─────────────────────────────────────── */
+.main {
+  flex: 1;
+  overflow: hidden;
+  position: relative;
+}
+.view { display: none; height: 100%; }
+.view.active { display: flex; flex-direction: column; }
 
-  /* ── Record panel ──────────────────────────────────────── */
-  .rec-row { display: flex; gap: 8px; margin-bottom: 10px; }
-  .rec-btn {
-    flex: 1; padding: 12px 6px; border-radius: 10px;
-    border: 2px solid var(--border); background: var(--surface);
-    color: var(--text); font-family: inherit; font-size: 12px;
-    letter-spacing: 0.06em; cursor: pointer; text-align: center;
-  }
-  .rec-btn:disabled { opacity: 0.35; cursor: default; }
-  .rec-btn.recording { background: var(--bad); border-color: var(--bad); animation: pulse 0.8s infinite alternate; }
-  .rec-btn.ready     { background: #14532d; border-color: var(--ok); color: var(--ok); }
-  .rec-log {
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: 8px; padding: 10px; font-size: 11px;
-    color: var(--muted); min-height: 54px; word-break: break-all; line-height: 1.6;
-  }
+/* ── DRIVE VIEW ────────────────────────────────────────────── */
+#view-drive {
+  flex-direction: row;
+  align-items: stretch;
+}
+
+/* Left panel: tilt zone */
+.tilt-panel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  border-right: 1px solid var(--border);
+  position: relative;
+}
+
+.tilt-label {
+  font-size: 8px;
+  letter-spacing: 0.2em;
+  color: var(--muted);
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+
+/* Tilt reticle container */
+.reticle-wrap {
+  position: relative;
+  width: 140px;
+  height: 140px;
+}
+
+/* Outer ring */
+.reticle-ring {
+  position: absolute; inset: 0;
+  border: 1px solid var(--dim);
+  border-radius: 50%;
+}
+/* Inner ring */
+.reticle-ring-inner {
+  position: absolute;
+  inset: 30px;
+  border: 1px solid var(--dim);
+  border-radius: 50%;
+}
+/* Crosshair lines */
+.reticle-cross {
+  position: absolute; inset: 0;
+}
+.reticle-cross::before, .reticle-cross::after {
+  content: '';
+  position: absolute;
+  background: var(--dim);
+}
+.reticle-cross::before { left: 50%; top: 0; width: 1px; height: 100%; transform: translateX(-50%); }
+.reticle-cross::after  { top: 50%; left: 0; height: 1px; width: 100%; transform: translateY(-50%); }
+
+/* Corner ticks */
+.reticle-ticks::before, .reticle-ticks::after {
+  content: '';
+  position: absolute;
+  background: var(--amber);
+}
+
+/* The moving dot — tracks tilt */
+#tilt-dot {
+  position: absolute;
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: var(--amber);
+  box-shadow: 0 0 12px var(--amber), 0 0 24px rgba(245,158,11,0.4);
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  transition: top 0.08s, left 0.08s;
+  z-index: 2;
+}
+
+/* Direction label under reticle */
+#tilt-dir-label {
+  margin-top: 12px;
+  font-family: var(--font-hud);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--amber);
+  min-height: 18px;
+  text-align: center;
+}
+
+/* Tilt enable toggle */
+#tilt-toggle {
+  margin-top: 10px;
+  font-family: var(--font-hud);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  background: transparent;
+  border: 1px solid var(--dim);
+  color: var(--muted);
+  padding: 5px 12px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+#tilt-toggle.armed {
+  border-color: var(--cyan);
+  color: var(--cyan);
+  box-shadow: 0 0 8px rgba(6,214,160,0.3);
+}
+
+/* Right panel: d-pad */
+.dpad-panel {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  gap: 10px;
+}
+
+.pad {
+  display: grid;
+  grid-template-columns: repeat(3, 72px);
+  grid-template-rows: repeat(3, 72px);
+  gap: 6px;
+}
+
+.btn {
+  background: var(--panel);
+  border: 1px solid var(--dim);
+  color: var(--text);
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.1s;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+.btn:active, .btn.held {
+  background: rgba(245,158,11,0.2);
+  border-color: var(--amber);
+  color: var(--amber);
+  box-shadow: inset 0 0 12px rgba(245,158,11,0.15);
+}
+.btn.blocked {
+  background: rgba(239,68,68,0.1);
+  border-color: var(--red);
+  color: var(--red);
+}
+.btn-stop {
+  background: rgba(239,68,68,0.08);
+  border-color: #5b1a1a;
+  color: #fca5a5;
+  font-family: var(--font-hud);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  clip-path: none;
+  border-radius: 2px;
+}
+.btn-stop:active { background: rgba(239,68,68,0.3); }
+.btn-horn {
+  background: rgba(6,214,160,0.06);
+  border-color: #0a3a2a;
+  font-size: 20px;
+  clip-path: none;
+  border-radius: 2px;
+}
+.btn-horn:active { background: rgba(6,214,160,0.2); border-color: var(--cyan); }
+.x { visibility: hidden; }
+
+/* Speed row */
+.speed-row {
+  display: flex;
+  gap: 6px;
+}
+.spd {
+  background: var(--panel);
+  border: 1px solid var(--dim);
+  color: var(--muted);
+  font-family: var(--font-hud);
+  font-size: 8px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  padding: 6px 12px;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s;
+  clip-path: polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%);
+}
+.spd.active {
+  background: rgba(245,158,11,0.15);
+  border-color: var(--amber);
+  color: var(--amber);
+}
+
+/* ── SCRIPTS VIEW ──────────────────────────────────────────── */
+#view-scripts {
+  padding: 14px;
+  gap: 10px;
+  overflow-y: auto;
+}
+
+.section-label {
+  font-size: 8px;
+  letter-spacing: 0.25em;
+  color: var(--muted);
+  text-transform: uppercase;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.script-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.script-btn {
+  background: var(--panel);
+  border: 1px solid var(--dim);
+  color: var(--text);
+  padding: 16px 10px;
+  cursor: pointer;
+  text-align: center;
+  font-family: var(--font-mono);
+  transition: all 0.15s;
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+.script-btn:active {
+  background: rgba(6,214,160,0.12);
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+.script-icon { font-size: 26px; display: block; margin-bottom: 6px; }
+.script-name { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
+
+/* ── RECORD VIEW ───────────────────────────────────────────── */
+#view-record {
+  padding: 14px;
+  gap: 10px;
+}
+
+.rec-row { display: flex; gap: 8px; }
+.rec-btn {
+  flex: 1;
+  padding: 12px 6px;
+  font-family: var(--font-hud);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  background: var(--panel);
+  border: 1px solid var(--dim);
+  color: var(--muted);
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.2s;
+}
+.rec-btn:disabled { opacity: 0.3; cursor: default; }
+.rec-btn.recording {
+  background: rgba(239,68,68,0.15);
+  border-color: var(--red);
+  color: var(--red);
+  animation: alert-pulse 0.6s infinite alternate;
+}
+.rec-btn.ready {
+  background: rgba(6,214,160,0.1);
+  border-color: var(--cyan);
+  color: var(--cyan);
+}
+
+.rec-log {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  padding: 12px;
+  font-size: 11px;
+  color: var(--muted);
+  min-height: 70px;
+  word-break: break-all;
+  line-height: 1.7;
+  flex: 1;
+}
+
+.rec-note {
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  color: var(--muted);
+  line-height: 1.6;
+  padding: 8px;
+  border: 1px solid var(--border);
+  background: var(--panel);
+}
+
+/* ── Bottom ticker ─────────────────────────────────────────── */
+.ticker {
+  border-top: 1px solid var(--border);
+  padding: 5px 16px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  overflow: hidden;
+  white-space: nowrap;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.ticker-item { display: flex; align-items: center; gap: 6px; }
+.ticker-item::before { content: '//'; color: var(--dim); }
+#tick-time { color: var(--dim); font-size: 9px; }
 </style>
 </head>
 <body>
 
-<!-- ── Status ─────────────────────────────────────────────── -->
-<div id="status">Not connected</div>
-<button id="connect" onclick="connectBLE()">Connect to Robot</button>
+<!-- ── Top bar ──────────────────────────────────────────────── -->
+<div class="topbar">
+  <div class="unit-id">UNIT-01</div>
+  <div class="conn-group">
+    <div id="status-dot"></div>
+    <div id="status-text">OFFLINE</div>
+    <button id="btn-connect" onclick="connectBLE()">CONNECT</button>
+  </div>
+</div>
 
-<!-- ── Sensor display ─────────────────────────────────────── -->
-<!-- Add a .sensor block here for each new sensor you add in the .ts -->
+<!-- ── Sensor strip ─────────────────────────────────────────── -->
+<!-- ↓ Add more .sensor-cell blocks here for new sensors -->
 <div class="sensors">
-  <div class="sensor">
-    <div class="s-label">Distance</div>
-    <div class="s-value ok" id="s-dist">--</div>
-    <div class="s-unit">cm</div>
+  <div class="sensor-cell">
+    <div class="sc-label">Range</div>
+    <div class="sc-val v-ok" id="s-dist">--</div>
+    <div class="sc-unit">CM</div>
   </div>
-  <div class="sensor">
-    <div class="s-label">Battery</div>
-    <div class="s-value ok" id="s-batt">--</div>
-    <div class="s-unit">%</div>
+  <div class="sensor-cell">
+    <div class="sc-label">Power</div>
+    <div class="sc-val v-ok" id="s-batt">--</div>
+    <div class="sc-unit">%</div>
   </div>
-  <div class="sensor">
-    <div class="s-label">Signal</div>
-    <div class="s-value ok" id="s-rssi">--</div>
-    <div class="s-unit">BLE</div>
-  </div>
-</div>
-
-<!-- Obstacle warning bar — auto shown/hidden -->
-<div id="obstacle-alert">⚠ Obstacle — Forward Blocked</div>
-
-<!-- ── D-pad ──────────────────────────────────────────────── -->
-<div class="pad">
-  <div class="x"></div>
-  <div class="btn" id="F">▲</div>
-  <div class="x"></div>
-
-  <div class="btn" id="L">◀</div>
-  <div class="btn stop" id="S">STOP</div>
-  <div class="btn" id="R">▶</div>
-
-  <div class="x"></div>
-  <div class="btn" id="B">▼</div>
-  <div class="x"></div>
-</div>
-
-<!-- Horn row — same structure as Phase 1 -->
-<div style="display:flex; gap:8px;">
-  <div class="btn horn" id="H" style="width:80px;height:80px;border-radius:16px;">📯</div>
-</div>
-
-<!-- Speed buttons — unchanged from Phase 1 -->
-<div class="speeds">
-  <div class="spd" id="spd1" onclick="setSpeed('1')">SLOW</div>
-  <div class="spd active" id="spd2" onclick="setSpeed('2')">MED</div>
-  <div class="spd" id="spd3" onclick="setSpeed('3')">FAST</div>
-</div>
-
-<!-- ── Tabs ───────────────────────────────────────────────── -->
-<div class="tabs">
-  <button class="tab active" onclick="switchTab('scripts')">Scripts</button>
-  <button class="tab"        onclick="switchTab('record')">Record</button>
-  <!-- ↓ Add more tabs here: <button class="tab" onclick="switchTab('myfeature')">My Feature</button> -->
-</div>
-
-<!-- ── Scripts tab ────────────────────────────────────────── -->
-<div class="tab-panel active" id="tab-scripts">
-  <div class="script-grid">
-
-    <!-- Each button calls sendScript('NAME') — name must match runScript() in .ts -->
-    <button class="script-btn" onclick="sendScript('SQUARE')">
-      <span class="script-icon">⬛</span>Square
-    </button>
-    <button class="script-btn" onclick="sendScript('SPIN')">
-      <span class="script-icon">🌀</span>Spin 360
-    </button>
-    <button class="script-btn" onclick="sendScript('WIGGLE')">
-      <span class="script-icon">👋</span>Wiggle
-    </button>
-
-    <!-- ↓ Add new scripts here — uncomment and add matching block in .ts
-    <button class="script-btn" onclick="sendScript('ZIGZAG')">
-      <span class="script-icon">⚡</span>Zigzag
-    </button>
-    -->
-
+  <div class="sensor-cell">
+    <div class="sc-label">Link</div>
+    <div class="sc-val v-ok" id="s-rssi">--</div>
+    <div class="sc-unit">BLE</div>
   </div>
 </div>
 
-<!-- ── Record tab ─────────────────────────────────────────── -->
-<div class="tab-panel" id="tab-record">
-  <div class="rec-row">
-    <button class="rec-btn" id="rec-start" onclick="startRecording()">⏺ Record</button>
-    <button class="rec-btn" id="rec-stop"  onclick="stopRecording()"  disabled>⏹ Stop</button>
-    <button class="rec-btn" id="rec-play"  onclick="playRecording()"  disabled>▶ Play</button>
-  </div>
-  <div class="rec-log" id="rec-log">
-    Press ⏺ Record then drive with the D-pad above.
-  </div>
+<!-- ── Obstacle alert ───────────────────────────────────────── -->
+<div id="obstacle-alert">⚠ PROXIMITY ALERT — FORWARD VECTOR BLOCKED</div>
+
+<!-- ── Mode buttons ─────────────────────────────────────────── -->
+<div class="mode-bar">
+  <button class="mode-btn active" onclick="switchView('drive')">DRIVE</button>
+  <button class="mode-btn"        onclick="switchView('scripts')">SCRIPTS</button>
+  <button class="mode-btn"        onclick="switchView('record')">RECORD</button>
 </div>
 
-<!-- ↓ Add a new tab panel here for future features:
-<div class="tab-panel" id="tab-myfeature">
-  ...your content...
+<!-- ── Main area ─────────────────────────────────────────────── -->
+<div class="main">
+
+  <!-- ── DRIVE VIEW ──────────────────────────────────────────── -->
+  <div class="view active" id="view-drive">
+
+    <!-- Left: tilt zone -->
+    <div class="tilt-panel">
+      <div class="tilt-label">// TILT VECTOR</div>
+      <div class="reticle-wrap">
+        <div class="reticle-ring"></div>
+        <div class="reticle-ring-inner"></div>
+        <div class="reticle-cross"></div>
+        <div id="tilt-dot"></div>
+      </div>
+      <div id="tilt-dir-label">STANDBY</div>
+      <button id="tilt-toggle" onclick="toggleTilt()">TILT OFF</button>
+    </div>
+
+    <!-- Right: d-pad + controls -->
+    <div class="dpad-panel">
+
+      <div class="pad">
+        <div class="x"></div>
+        <div class="btn" id="F">▲</div>
+        <div class="x"></div>
+
+        <div class="btn" id="L">◀</div>
+        <div class="btn btn-stop" id="S">STOP</div>
+        <div class="btn" id="R">▶</div>
+
+        <div class="x"></div>
+        <div class="btn" id="B">▼</div>
+        <div class="x"></div>
+      </div>
+
+      <!-- Horn row -->
+      <div style="display:flex; gap:6px; width:226px;">
+        <div class="btn btn-horn" id="H"
+             style="width:72px;height:40px;border-radius:2px;font-size:18px;">📯</div>
+        <div class="btn btn-horn" id="btn-wiggle"
+             style="flex:1;height:40px;border-radius:2px;font-size:10px;
+                    font-family:var(--font-hud);letter-spacing:0.1em;font-weight:700;color:var(--cyan);"
+             onclick="sendScript('WIGGLE')">WIGGLE</div>
+      </div>
+
+      <!-- Speed -->
+      <div class="speed-row">
+        <div class="spd" id="spd1" onclick="setSpeed('1')">SLOW</div>
+        <div class="spd active" id="spd2" onclick="setSpeed('2')">MED</div>
+        <div class="spd" id="spd3" onclick="setSpeed('3')">FAST</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ── SCRIPTS VIEW ───────────────────────────────────────── -->
+  <div class="view" id="view-scripts">
+    <div class="section-label">// MANOEUVRE LIBRARY</div>
+    <div class="script-grid">
+
+      <!-- ↓ Add more .script-btn blocks here — match name to runScript() in .ts -->
+      <button class="script-btn" onclick="sendScript('SQUARE')">
+        <span class="script-icon">⬛</span>
+        <span class="script-name">Square</span>
+      </button>
+      <button class="script-btn" onclick="sendScript('SPIN')">
+        <span class="script-icon">🌀</span>
+        <span class="script-name">Spin 360</span>
+      </button>
+      <button class="script-btn" onclick="sendScript('WIGGLE')">
+        <span class="script-icon">👋</span>
+        <span class="script-name">Wiggle</span>
+      </button>
+      <!-- Placeholder for your next script:
+      <button class="script-btn" onclick="sendScript('ZIGZAG')">
+        <span class="script-icon">⚡</span>
+        <span class="script-name">Zigzag</span>
+      </button>
+      -->
+    </div>
+  </div>
+
+  <!-- ── RECORD VIEW ────────────────────────────────────────── -->
+  <div class="view" id="view-record">
+    <div class="section-label">// SEQUENCE RECORDER</div>
+    <div class="rec-row">
+      <button class="rec-btn" id="rec-start" onclick="startRecording()">⏺ REC</button>
+      <button class="rec-btn" id="rec-stop"  onclick="stopRecording()"  disabled>⏹ STOP</button>
+      <button class="rec-btn" id="rec-play"  onclick="playRecording()"  disabled>▶ EXEC</button>
+    </div>
+    <div class="rec-log" id="rec-log">AWAITING INPUT — SWITCH TO DRIVE, ARM RECORD, THEN MANOEUVRE.</div>
+    <div class="rec-note">
+      WHILE RECORDING: USE D-PAD OR TILT TO DRIVE. ALL INPUTS CAPTURED.<br>
+      PRESS STOP WHEN DONE. EXEC REPLAYS THE SEQUENCE ON THE UNIT.
+    </div>
+  </div>
+
 </div>
--->
+
+<!-- ── Bottom ticker ────────────────────────────────────────── -->
+<div class="ticker">
+  <span class="ticker-item">TURTLE V3</span>
+  <span class="ticker-item">BLE UART</span>
+  <span class="ticker-item" id="tick-mode">MODE: DRIVE</span>
+  <span style="flex:1"></span>
+  <span id="tick-time">--:--:--</span>
+</div>
 
 <script>
 // ============================================================
-//  BLE — identical UUIDs and connection logic to Phase 1
-//  The only change: we also subscribe to notifications (RX)
-//  to receive sensor data back from the micro:bit.
+//  BLE — same UUIDs and # delimiter as Phase 2 micro:bit code
 // ============================================================
-
 const UART_SVC = '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
 const UART_TX  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'  // phone writes here
 const UART_RX  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'  // phone reads here
 
-let tx        = null   // write characteristic (same as Phase 1)
-let rx        = null   // notify characteristic (new — receives sensor data)
+let tx        = null
+let rx        = null
 let bleDevice = null
 
 async function connectBLE() {
   try {
-    setStatus('Scanning...')
+    setStatus('SCANNING', false)
     bleDevice = await navigator.bluetooth.requestDevice({
       filters: [{ namePrefix: 'BBC micro:bit' }],
       optionalServices: [UART_SVC]
@@ -298,32 +711,36 @@ async function connectBLE() {
     const service = await server.getPrimaryService(UART_SVC)
 
     tx = await service.getCharacteristic(UART_TX)
-
-    // Subscribe to incoming data (sensor broadcasts from micro:bit)
     rx = await service.getCharacteristic(UART_RX)
     await rx.startNotifications()
     rx.addEventListener('characteristicvaluechanged', onSensorData)
 
-    setStatus('● ' + bleDevice.name, true)
-    document.getElementById('connect').style.display = 'none'
-    document.getElementById('s-rssi').textContent = '🟢'
+    setStatus(bleDevice.name, true)
+    document.getElementById('btn-connect').classList.add('hide')
+    document.getElementById('s-rssi').textContent = '●'
+    setClass('s-rssi', 'v-ok')
 
   } catch(e) {
-    setStatus('Error: ' + e.message)
+    setStatus('ERR: ' + e.message.substring(0, 20), false)
   }
 }
 
 function onDisconnect() {
   tx = null; rx = null
-  setStatus('Disconnected')
-  document.getElementById('connect').style.display = ''
+  setStatus('OFFLINE', false)
+  document.getElementById('btn-connect').classList.remove('hide')
   document.getElementById('s-rssi').textContent = '--'
-  document.getElementById('s-dist').textContent = '--'
-  document.getElementById('s-batt').textContent = '--'
+  setClass('s-rssi', 'v-ok')
+  ;['s-dist','s-batt'].forEach(id => {
+    document.getElementById(id).textContent = '--'
+    setClass(id, 'v-ok')
+  })
   showObstacle(false)
+  isBlocked = false
+  document.getElementById('F').classList.remove('blocked')
 }
 
-// ── Send command — identical to Phase 1, delimiter is # ─────
+// Send command with # delimiter — unchanged from Phase 2
 function send(cmd) {
   if (!tx) return
   tx.writeValue(new TextEncoder().encode(cmd + '#')).catch(() => {})
@@ -331,72 +748,144 @@ function send(cmd) {
 
 // ============================================================
 //  SENSOR DATA — parses "SENSOR|dist|batt#" from micro:bit
-//  ↓ Extend the split index if you add more "|value" segments in .ts
+//  ↓ Add more parseInt(parts[n]) entries if you add sensors in .ts
 // ============================================================
+let isBlocked = false
 
 function onSensorData(e) {
-  const raw   = new TextDecoder().decode(e.target.value).replace('#', '')
+  const raw   = new TextDecoder().decode(e.target.value).replace('#','')
   const parts = raw.split('|')
   if (parts[0] !== 'SENSOR') return
 
-  const dist = parseInt(parts[1]) || 0
-  const batt = parseInt(parts[2]) || 0
-  // ↓ Add: const light = parseInt(parts[3]) || 0  if you add light sensor
+  const d = parseInt(parts[1]) || 0
+  const b = parseInt(parts[2]) || 0
 
-  updateDist(dist)
-  updateBatt(batt)
+  updateDist(d)
+  updateBatt(b)
 }
 
 function updateDist(d) {
   const el = document.getElementById('s-dist')
   el.textContent = d > 0 ? d : '--'
-
-  // ↓ Change these thresholds to adjust colour warnings
-  if      (d <= 0)  { colourEl(el, 'ok');   showObstacle(false) }
-  else if (d <= 5)  { colourEl(el, 'bad');  showObstacle(true)  }
-  else if (d <= 15) { colourEl(el, 'warn'); showObstacle(false) }
-  else              { colourEl(el, 'ok');   showObstacle(false) }
-
-  // Grey out the forward button when blocked
-  document.getElementById('F').classList.toggle('blocked', d > 0 && d <= 5)
+  // ↓ Change these thresholds to adjust warning colours
+  if      (d <= 0)  { setClass('s-dist', 'v-ok');   showObstacle(false); isBlocked = false }
+  else if (d <= 5)  { setClass('s-dist', 'v-bad');  showObstacle(true);  isBlocked = true  }
+  else if (d <= 15) { setClass('s-dist', 'v-warn'); showObstacle(false); isBlocked = false }
+  else              { setClass('s-dist', 'v-ok');   showObstacle(false); isBlocked = false }
+  document.getElementById('F').classList.toggle('blocked', isBlocked)
 }
 
 function updateBatt(b) {
-  const el = document.getElementById('s-batt')
-  el.textContent = b
-  // ↓ Change these thresholds to adjust battery colour warnings
-  if      (b <= 20) colourEl(el, 'bad')
-  else if (b <= 40) colourEl(el, 'warn')
-  else              colourEl(el, 'ok')
+  document.getElementById('s-batt').textContent = b || '--'
+  // ↓ Change thresholds for battery colour warnings
+  if      (b > 0 && b <= 20) setClass('s-batt', 'v-bad')
+  else if (b > 0 && b <= 40) setClass('s-batt', 'v-warn')
+  else                        setClass('s-batt', 'v-ok')
 }
 
-function colourEl(el, cls) {
-  el.className = 's-value ' + cls
-}
 function showObstacle(show) {
   document.getElementById('obstacle-alert').classList.toggle('show', show)
 }
 
 // ============================================================
-//  D-PAD — identical hold/release logic to Phase 1
-//  Uses pointerdown/up/leave/cancel for reliable mobile input
+//  TILT STEERING
+//  Uses DeviceOrientation API — works in Chrome on Android.
+//  Tilt phone forward/back/left/right to drive.
+//  The dot on the reticle tracks your physical tilt.
 // ============================================================
 
+let tiltArmed    = false
+let tiltLastCmd  = ''
+let tiltTimer    = null
+
+// ↓ Change these to adjust how much tilt is needed to trigger movement
+const TILT_THRESHOLD = 12    // degrees before a direction fires
+const TILT_REPEAT_MS = 150   // how often tilt command resends while held
+
+function toggleTilt() {
+  tiltArmed = !tiltArmed
+  const btn = document.getElementById('tilt-toggle')
+  btn.textContent = tiltArmed ? 'TILT ON' : 'TILT OFF'
+  btn.classList.toggle('armed', tiltArmed)
+  if (!tiltArmed) {
+    send('S')
+    document.getElementById('tilt-dir-label').textContent = 'STANDBY'
+    moveDot(0, 0)
+    tiltLastCmd = ''
+    if (tiltTimer) clearInterval(tiltTimer)
+  }
+}
+
+// Request permission on iOS (Android doesn't need this)
+function requestTiltPermission() {
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission().catch(() => {})
+  }
+}
+
+window.addEventListener('deviceorientation', (e) => {
+  if (!tiltArmed) return
+
+  // gamma = left/right tilt (-90 to 90), beta = forward/back tilt (-180 to 180)
+  const lr = e.gamma || 0   // negative = left, positive = right
+  const fb = e.beta  || 0   // negative = forward lean, positive = back lean
+
+  // Clamp for dot display — max visual range is half the reticle radius
+  const maxPx = 48   // ← Change to adjust dot travel range on screen
+  const dotX = Math.max(-maxPx, Math.min(maxPx, (lr / 45) * maxPx))
+  const dotY = Math.max(-maxPx, Math.min(maxPx, ((fb - 45) / 45) * maxPx))
+  moveDot(dotX, dotY)
+
+  // Determine which direction to send
+  // fb offset by 45 because phones sit naturally at ~45° beta when held upright
+  const adjFB = fb - 45
+
+  let cmd = 'S'
+  if      (adjFB < -TILT_THRESHOLD && Math.abs(adjFB) > Math.abs(lr)) cmd = 'F'
+  else if (adjFB >  TILT_THRESHOLD && Math.abs(adjFB) > Math.abs(lr)) cmd = 'B'
+  else if (lr    < -TILT_THRESHOLD) cmd = 'L'
+  else if (lr    >  TILT_THRESHOLD) cmd = 'R'
+
+  // Direction label on reticle
+  const labels = { F:'▲ FWD', B:'▼ REV', L:'◀ LEFT', R:'▶ RIGHT', S:'◆ HOLD' }
+  document.getElementById('tilt-dir-label').textContent = labels[cmd] || ''
+
+  // Only send if command changed, to avoid BLE spam
+  if (cmd !== tiltLastCmd) {
+    tiltLastCmd = cmd
+    if (cmd === 'F' && isBlocked) {
+      send('S')
+    } else {
+      send(cmd)
+      if (isRecording) recordStep(cmd)
+    }
+  }
+})
+
+function moveDot(x, y) {
+  const dot = document.getElementById('tilt-dot')
+  dot.style.left = (50 + (x / 140 * 100)) + '%'
+  dot.style.top  = (50 + (y / 140 * 100)) + '%'
+}
+
+// ============================================================
+//  D-PAD — hold to move, release to stop (same as Phase 2)
+// ============================================================
 let holdTimer = null
 
-// Direction buttons: hold sends repeatedly, release sends STOP
 ;['F','B','L','R'].forEach(cmd => {
   const el = document.getElementById(cmd)
 
   function startHold() {
-    if (cmd === 'F' && el.classList.contains('blocked')) return
+    if (cmd === 'F' && isBlocked) return
     el.classList.add('held')
     send(cmd)
     if (isRecording) recordStep(cmd)
     holdTimer = setInterval(() => {
-      if (cmd === 'F' && el.classList.contains('blocked')) { stopHold(); return }
+      if (cmd === 'F' && isBlocked) { stopHold(); return }
       send(cmd)
-    }, 150)   // ← Change this interval to tune hold-repeat rate
+    }, 150)   // ← Change repeat rate here
   }
 
   function stopHold() {
@@ -412,14 +901,12 @@ let holdTimer = null
   el.addEventListener('pointercancel',e => { e.preventDefault(); stopHold()  })
 })
 
-// STOP and Horn — single tap only (same as Phase 1)
 document.getElementById('S').addEventListener('pointerdown', () => {
   send('S')
   if (isRecording) recordStep('S')
 })
 document.getElementById('H').addEventListener('pointerdown', () => send('H'))
 
-// Speed buttons — same as Phase 1
 function setSpeed(n) {
   send(n)
   document.querySelectorAll('.spd').forEach(el => el.classList.remove('active'))
@@ -427,36 +914,30 @@ function setSpeed(n) {
 }
 
 // ============================================================
-//  SCRIPTED MOVES
-//  Sends "SCRIPT:NAME#" — name must match runScript() in the .ts
+//  SCRIPTS — sends "SCRIPT:NAME#" to micro:bit
+//  ↓ Add sendScript('NEWNAME') calls matching runScript() in .ts
 // ============================================================
-
 function sendScript(name) {
   send('SCRIPT:' + name)
 }
 
 // ============================================================
-//  RECORD & REPLAY
-//  Records timestamped button presses while isRecording is true.
-//  On stop, converts to "F600,R500,..." step string.
-//  On play, sends "RUN:<steps>#" to micro:bit.
+//  RECORD & REPLAY — unchanged logic from Phase 2
 // ============================================================
-
 let isRecording = false
-let recLog      = []    // [{dir, time}, ...]
+let recLog      = []
 let recStart    = 0
 
 function startRecording() {
   isRecording = true
   recLog      = []
   recStart    = Date.now()
-
   document.getElementById('rec-start').classList.add('recording')
   document.getElementById('rec-start').disabled = true
   document.getElementById('rec-stop').disabled  = false
   document.getElementById('rec-play').disabled  = true
   document.getElementById('rec-play').classList.remove('ready')
-  document.getElementById('rec-log').textContent = 'Recording... drive with the D-pad ↑'
+  document.getElementById('rec-log').textContent = 'REC ARMED — DRIVE NOW...'
 }
 
 function stopRecording() {
@@ -466,21 +947,20 @@ function stopRecording() {
   document.getElementById('rec-stop').disabled  = true
 
   if (recLog.length < 2) {
-    document.getElementById('rec-log').textContent = 'Nothing captured — try again.'
+    document.getElementById('rec-log').textContent = 'NO DATA CAPTURED.'
     return
   }
 
   const steps   = buildSteps(recLog)
   const encoded = steps.join(',')
-
   document.getElementById('rec-log').innerHTML =
-    '<span style="color:#a78bfa">Steps:</span> ' + encoded
+    '<span style="color:var(--cyan)">SEQ:</span> ' + encoded
 
   if (steps.length > 0) {
     const btn = document.getElementById('rec-play')
-    btn.disabled       = false
+    btn.disabled      = false
     btn.classList.add('ready')
-    btn.dataset.steps  = encoded
+    btn.dataset.steps = encoded
   }
 }
 
@@ -488,10 +968,7 @@ function recordStep(dir) {
   recLog.push({ dir, time: Date.now() - recStart })
 }
 
-// Convert timestamped log to ["F600","R500",...] step array
-// ↓ Change MIN_STEP_MS to filter out shorter/longer accidental presses
-const MIN_STEP_MS = 80
-
+const MIN_STEP_MS = 80   // ← Minimum ms to count as a step
 function buildSteps(log) {
   const steps = []
   for (let i = 0; i < log.length - 1; i++) {
@@ -507,34 +984,50 @@ function playRecording() {
 }
 
 // ============================================================
-//  TAB SWITCHER
+//  UI HELPERS
 // ============================================================
 
-function switchTab(name) {
-  document.querySelectorAll('.tab').forEach(t =>
-    t.classList.toggle('active', t.textContent.toLowerCase().trim().startsWith(name.substring(0,3)))
-  )
-  document.querySelectorAll('.tab-panel').forEach(p =>
-    p.classList.toggle('active', p.id === 'tab-' + name)
-  )
+function setStatus(text, online) {
+  document.getElementById('status-text').textContent = text
+  document.getElementById('status-text').className   = online ? 'live' : ''
+  document.getElementById('status-dot').className    = online ? 'live' : ''
 }
 
-// ── Status helper ─────────────────────────────────────────────
-function setStatus(text, on = false) {
-  const el = document.getElementById('status')
-  el.textContent = text
-  el.className   = on ? 'on' : ''
+function setClass(id, cls) {
+  const el = document.getElementById(id)
+  el.className = 'sc-val ' + cls
 }
 
-// ── Keyboard support for desktop testing ─────────────────────
-// ↓ Add entries to keyMap for extra keyboard shortcuts
-const keyMap  = { ArrowUp:'F', ArrowDown:'B', ArrowLeft:'L', ArrowRight:'R', ' ':'S', h:'H' }
-const heldSet = new Set()
+function switchView(name) {
+  document.querySelectorAll('.view').forEach(v =>
+    v.classList.toggle('active', v.id === 'view-' + name))
+  document.querySelectorAll('.mode-btn').forEach((b, i) => {
+    const names = ['drive','scripts','record']
+    b.classList.toggle('active', names[i] === name)
+  })
+  document.getElementById('tick-mode').textContent = 'MODE: ' + name.toUpperCase()
+}
 
+// Live clock in ticker
+setInterval(() => {
+  const n = new Date()
+  document.getElementById('tick-time').textContent =
+    String(n.getHours()).padStart(2,'0') + ':' +
+    String(n.getMinutes()).padStart(2,'0') + ':' +
+    String(n.getSeconds()).padStart(2,'0')
+}, 1000)
+
+// Request tilt permission on load (iOS needs this)
+requestTiltPermission()
+
+// Keyboard shortcuts for desktop testing
+// ↓ Add entries to keyMap for more shortcuts
+const keyMap = { ArrowUp:'F', ArrowDown:'B', ArrowLeft:'L', ArrowRight:'R', ' ':'S', h:'H' }
+const heldKeys = new Set()
 document.addEventListener('keydown', e => {
   const cmd = keyMap[e.key]
-  if (cmd && !heldSet.has(e.key)) {
-    heldSet.add(e.key)
+  if (cmd && !heldKeys.has(e.key)) {
+    heldKeys.add(e.key)
     send(cmd)
     if (isRecording) recordStep(cmd)
   }
@@ -542,7 +1035,7 @@ document.addEventListener('keydown', e => {
 document.addEventListener('keyup', e => {
   const cmd = keyMap[e.key]
   if (cmd) {
-    heldSet.delete(e.key)
+    heldKeys.delete(e.key)
     if (cmd !== 'S' && cmd !== 'H') { send('S'); if (isRecording) recordStep('S') }
   }
 })
