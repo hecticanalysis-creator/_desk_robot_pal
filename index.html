@@ -15,48 +15,51 @@
     flex-direction: column;
     align-items: center;
     justify-content: space-around;
-    padding: 24px;
+    padding: 20px;
+    gap: 12px;
   }
   #status { font-size: 13px; color: #555; text-align: center; }
   #status.on { color: #4ade80; }
   #connect {
-    background: #5b21b6;
-    color: #fff;
-    border: none;
-    border-radius: 14px;
-    padding: 14px 36px;
-    font-size: 16px;
-    cursor: pointer;
+    background: #5b21b6; color: #fff; border: none;
+    border-radius: 14px; padding: 12px 32px;
+    font-size: 15px; cursor: pointer;
   }
   .pad {
     display: grid;
-    grid-template-columns: repeat(3, 90px);
-    grid-template-rows: repeat(3, 90px);
-    gap: 10px;
+    grid-template-columns: repeat(3, 80px);
+    grid-template-rows: repeat(3, 80px);
+    gap: 8px;
   }
   .btn {
-    background: #1c1c28;
-    border: 2px solid #2e2e40;
-    border-radius: 16px;
-    color: #fff;
-    font-size: 32px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    -webkit-tap-highlight-color: transparent;
+    background: #1c1c28; border: 2px solid #2e2e40;
+    border-radius: 16px; color: #fff; font-size: 28px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
   .btn:active { background: #5b21b6; border-color: #a78bfa; }
   .stop {
-    background: #2a0a0a;
-    border-color: #5b1a1a;
-    font-size: 13px;
-    font-weight: bold;
-    color: #fca5a5;
-    letter-spacing: 0.05em;
+    background: #2a0a0a; border-color: #5b1a1a;
+    font-size: 12px; font-weight: bold;
+    color: #fca5a5; letter-spacing: 0.05em;
   }
   .stop:active { background: #7f1d1d; }
+  .horn {
+    background: #1a2a0a; border-color: #3a5a1a;
+    font-size: 22px; color: #86efac;
+  }
+  .horn:active { background: #166534; }
   .x { visibility: hidden; }
+  .speeds {
+    display: flex; gap: 10px;
+  }
+  .spd {
+    background: #1c1c28; border: 2px solid #2e2e40;
+    border-radius: 12px; color: #888;
+    padding: 8px 18px; font-size: 13px;
+    cursor: pointer; -webkit-tap-highlight-color: transparent;
+  }
+  .spd.active { background: #5b21b6; border-color: #a78bfa; color: #fff; }
 </style>
 </head>
 <body>
@@ -78,6 +81,18 @@
   <div class="x"></div>
 </div>
 
+<div class="pad" style="grid-template-columns: repeat(3, 80px); grid-template-rows: 80px; gap: 8px;">
+  <div class="btn horn" id="H">📯</div>
+  <div class="x"></div>
+  <div class="x"></div>
+</div>
+
+<div class="speeds">
+  <div class="spd" id="spd1" onclick="setSpeed('1')">SLOW</div>
+  <div class="spd active" id="spd2" onclick="setSpeed('2')">MED</div>
+  <div class="spd" id="spd3" onclick="setSpeed('3')">FAST</div>
+</div>
+
 <script>
 let tx = null
 let timer = null
@@ -93,7 +108,7 @@ async function connect() {
     const server = await dev.gatt.connect()
     const service = await server.getPrimaryService('6e400001-b5a3-f393-e0a9-e50e24dcca9e')
     tx = await service.getCharacteristic('6e400003-b5a3-f393-e0a9-e50e24dcca9e')
-    s.textContent = '● Connected: ' + dev.name
+    s.textContent = '● ' + dev.name
     s.classList.add('on')
     dev.addEventListener('gattserverdisconnected', () => {
       tx = null
@@ -113,7 +128,7 @@ function send(cmd) {
 function hold(cmd) {
   send(cmd)
   clearInterval(timer)
-  timer = setInterval(() => send(cmd), 200)
+  timer = setInterval(() => send(cmd), 150)
 }
 
 function release() {
@@ -121,10 +136,18 @@ function release() {
   send('S')
 }
 
+function setSpeed(n) {
+  send(n)
+  document.querySelectorAll('.spd').forEach(el => el.classList.remove('active'))
+  document.getElementById('spd' + n).classList.add('active')
+}
+
 document.querySelectorAll('.btn').forEach(btn => {
   const cmd = btn.id
   if (cmd === 'S') {
     btn.addEventListener('pointerdown', () => send('S'))
+  } else if (cmd === 'H') {
+    btn.addEventListener('pointerdown', () => send('H'))
   } else {
     btn.addEventListener('pointerdown', () => hold(cmd))
     btn.addEventListener('pointerup', release)
