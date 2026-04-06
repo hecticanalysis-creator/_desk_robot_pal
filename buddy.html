@@ -17,89 +17,125 @@ html, body { width:100%; height:100%; overflow:hidden; }
 body {
   background: #FFD166;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   transition: background 0.4s ease;
   position: relative;
   height: 100dvh;
+  gap: 0;
 }
 
 #back-link {
-  position: fixed;
-  top: 18px; left: 20px;
+  position: fixed; top: 18px; left: 20px;
   font-family: 'Courier New', monospace;
-  font-size: 11px; font-weight: 700;
-  letter-spacing: 0.15em;
-  color: rgba(0,0,0,0.2);
-  text-decoration: none;
-  text-transform: uppercase;
-  z-index: 10;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.15em;
+  color: rgba(0,0,0,0.2); text-decoration: none; text-transform: uppercase; z-index: 10;
 }
 #back-link:active { color: rgba(0,0,0,0.5); }
 
-#mood-name {
-  position: fixed;
-  bottom: 20px; left: 50%;
-  transform: translateX(-50%);
-  font-family: 'Courier New', monospace;
-  font-size: 11px; letter-spacing: 0.25em;
-  text-transform: uppercase;
-  color: rgba(0,0,0,0.18);
-  z-index: 10;
-  pointer-events: none;
-  white-space: nowrap;
-}
-
-/* Long-press hint — fades in briefly on face swap */
 #swap-hint {
-  position: fixed;
-  top: 18px; right: 20px;
+  position: fixed; top: 18px; right: 20px;
   font-family: 'Courier New', monospace;
-  font-size: 10px; letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(0,0,0,0.18);
-  z-index: 10;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.4s;
+  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(0,0,0,0.18); z-index: 10; pointer-events: none;
+  opacity: 0; transition: opacity 0.4s;
 }
 #swap-hint.show { opacity: 1; }
 
-#face-wrap {
-  width: min(82vw, 82vh);
-  height: min(82vw, 82vh);
-  position: relative;
-  cursor: pointer;
-  user-select: none;
-  -webkit-user-select: none;
+#mood-name {
+  position: fixed; bottom: 72px; left: 50%; transform: translateX(-50%);
+  font-family: 'Courier New', monospace;
+  font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
+  color: rgba(0,0,0,0.18); z-index: 10; pointer-events: none; white-space: nowrap;
 }
 
-/* Both SVGs sit in the same slot — only one visible at a time */
-.face-svg {
+/* ── SPEECH BUBBLE ── */
+#speech-bubble {
+  position: fixed;
+  top: 10%;
+  left: 50%; transform: translateX(-50%);
+  background: rgba(255,255,255,0.92);
+  border-radius: 20px;
+  padding: 10px 18px;
+  font-family: 'Courier New', monospace;
+  font-size: 14px; font-weight: 700;
+  color: #333;
+  white-space: nowrap;
+  z-index: 20;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+  max-width: 80vw;
+  text-align: center;
+}
+#speech-bubble::after {
+  content: '';
   position: absolute;
-  inset: 0;
-  width: 100%; height: 100%;
+  bottom: -10px; left: 50%; transform: translateX(-50%);
+  border: 6px solid transparent;
+  border-top-color: rgba(255,255,255,0.92);
+  border-bottom: none;
+}
+#speech-bubble.show { opacity: 1; }
+
+/* ── MIC BUTTON ── */
+#mic-btn {
+  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(0,0,0,0.12); border: 2px solid rgba(0,0,0,0.15);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; z-index: 20;
+  transition: background 0.2s, transform 0.1s;
+}
+#mic-btn:active { transform: translateX(-50%) scale(0.93); }
+#mic-btn.listening {
+  background: rgba(239,68,68,0.25);
+  border-color: rgba(239,68,68,0.5);
+  animation: mic-pulse 1s infinite;
+}
+@keyframes mic-pulse { 0%,100%{transform:translateX(-50%) scale(1)} 50%{transform:translateX(-50%) scale(1.08)} }
+#mic-icon { width: 20px; height: 20px; }
+
+/* ── FACE WRAP ── */
+#face-wrap {
+  width: min(78vw, 64vh);
+  height: min(78vw, 64vh);
+  position: relative;
+  cursor: pointer; user-select: none; -webkit-user-select: none;
+  flex-shrink: 0;
+}
+.face-svg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
   transition: opacity 0.3s;
 }
 .face-svg.hidden { opacity: 0; pointer-events: none; }
 
-/* Flash ring on face swap */
 #flash-ring {
-  position: absolute;
-  inset: -4px;
-  border-radius: 50%;
+  position: absolute; inset: -4px; border-radius: 50%;
   border: 4px solid rgba(255,255,255,0);
-  pointer-events: none;
-  transition: border-color 0.15s;
-  z-index: 5;
+  pointer-events: none; transition: border-color 0.15s; z-index: 5;
 }
 #flash-ring.flash { border-color: rgba(255,255,255,0.8); }
+
+/* Robot face LED scan animation */
+@keyframes scan-l {
+  0%,100% { transform: translateX(0); }
+  50%      { transform: translateX(6px); }
+}
+@keyframes scan-r {
+  0%,100% { transform: translateX(0); }
+  50%      { transform: translateX(-6px); }
+}
+.r-scan-l { animation: scan-l 2.4s ease-in-out infinite; }
+.r-scan-r { animation: scan-r 2.4s ease-in-out infinite; }
 </style>
 </head>
 <body>
 
-<a id="back-link" href="index.html">← StEEvE-01</a>
-<div id="swap-hint">face swapped</div>
+<a id="back-link" href="index.html">← unit-01</a>
+<div id="swap-hint">kitty mode</div>
+<div id="speech-bubble"></div>
 
 <div id="face-wrap">
   <div id="flash-ring"></div>
@@ -108,27 +144,20 @@ body {
        FACE A — HELLO KITTY
        ══════════════════════════════════════════ -->
   <svg class="face-svg" id="face-kitty" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
-
     <polygon id="k-ear-l" points="30,72 48,30 68,72" fill="#FFFFFF"/>
     <polygon id="k-ear-r" points="132,72 152,30 170,72" fill="#FFFFFF"/>
-
     <g id="k-bow">
       <ellipse cx="47" cy="26" rx="11" ry="7" fill="#FF9AAC" transform="rotate(-20,47,26)"/>
       <ellipse cx="67" cy="20" rx="11" ry="7" fill="#FF9AAC" transform="rotate(15,67,20)"/>
       <circle  cx="57" cy="24" r="5" fill="#FF6B8A"/>
     </g>
-
-    <!-- angry brows — hidden by default -->
     <g id="k-angry-brows" opacity="0">
       <rect x="52" y="108" width="34" height="6" rx="3" fill="#2C2C2A" transform="rotate(18,69,111)"/>
       <rect x="114" y="108" width="34" height="6" rx="3" fill="#2C2C2A" transform="rotate(-18,131,111)"/>
     </g>
-
     <rect id="k-head" x="18" y="60" width="164" height="138" rx="36" fill="#FFFFFF"/>
-
     <ellipse id="k-cheek-l" cx="38"  cy="148" rx="16" ry="11" fill="#FFB3C6" opacity="0"/>
     <ellipse id="k-cheek-r" cx="162" cy="148" rx="16" ry="11" fill="#FFB3C6" opacity="0"/>
-
     <g id="k-eye-l">
       <ellipse id="k-eyeball-l" cx="76"  cy="130" rx="16" ry="18" fill="#2C2C2A"/>
       <circle  id="k-shine-l"   cx="82"  cy="123" r="5"   fill="white"/>
@@ -139,9 +168,7 @@ body {
       <circle  id="k-shine-r"   cx="130" cy="123" r="5"   fill="white"/>
       <rect    id="k-lid-r"     x="108"  y="112"  width="32" height="2" rx="3" fill="#FFD166"/>
     </g>
-
     <ellipse id="k-nose" cx="100" cy="152" rx="6" ry="4.5" fill="#F5A623"/>
-
     <g id="k-sparkle-l" opacity="0">
       <line x1="26" y1="100" x2="26" y2="112" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
       <line x1="20" y1="106" x2="32" y2="106" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
@@ -154,13 +181,11 @@ body {
       <line x1="169" y1="101" x2="179" y2="111" stroke="#FF9AAC" stroke-width="1.5" stroke-linecap="round"/>
       <line x1="179" y1="101" x2="169" y2="111" stroke="#FF9AAC" stroke-width="1.5" stroke-linecap="round"/>
     </g>
-
     <g id="k-zzz" opacity="0">
       <text x="158" y="108" font-family="Arial" font-size="13" fill="#9090C0" opacity="0.7">z</text>
       <text x="166" y="94"  font-family="Arial" font-size="16" fill="#9090C0" opacity="0.5">z</text>
       <text x="176" y="78"  font-family="Arial" font-size="20" fill="#9090C0" opacity="0.35">z</text>
     </g>
-
     <g id="k-sweat" opacity="0">
       <ellipse cx="168" cy="95" rx="5" ry="7" fill="#A8D8FF"/>
       <polygon points="163,95 173,95 168,85" fill="#A8D8FF"/>
@@ -168,136 +193,68 @@ body {
   </svg>
 
   <!-- ══════════════════════════════════════════
-       FACE B — NICK JR FACE
-       No head shape. Features float directly on
-       the background colour. Big wobbly eyes,
-       massive expressive mouth, thick outlines.
+       FACE B — ROBOT
+       Cute rounded square head. Rectangular LED
+       eyes that glow and scan. Segmented mouth
+       display. Antenna on top. All colours adapt
+       to the current mood background.
        ══════════════════════════════════════════ -->
-  <svg class="face-svg hidden" id="face-gumball" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
+  <svg class="face-svg hidden" id="face-robot" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
 
-    <!-- ── EYES — big round blobs, slightly uneven like drawn by hand ── -->
-    <g id="g-eye-l">
-      <!-- outer white sclera blob — thick black stroke is the "outline" -->
-      <ellipse id="g-eyeball-l" cx="64" cy="88" rx="30" ry="32"
-               fill="white" stroke="#1A1A18" stroke-width="5"/>
-      <!-- iris -->
-      <circle cx="64" cy="90" r="17" fill="#1A1A18"/>
-      <!-- main shine — large, like Nick Jr FACE -->
-      <circle id="g-shine-l" cx="72" cy="80" r="9" fill="white"/>
-      <!-- tiny second shine -->
-      <circle cx="58" cy="96" r="4" fill="white" opacity="0.5"/>
-      <!-- blink lid — matches bg, sweeps down from top of eye -->
-      <rect id="g-lid-l" x="34" y="56" width="60" height="2" rx="4" fill="#FFD166"/>
+    <!-- Antenna -->
+    <line x1="100" y1="28" x2="100" y2="48" stroke="#555" stroke-width="3" stroke-linecap="round"/>
+    <circle id="r-antenna-dot" cx="100" cy="24" r="6" fill="#06d6a0"/>
+
+    <!-- Head — rounded square, dark panel -->
+    <rect id="r-head" x="22" y="48" width="156" height="136" rx="22" fill="#2C2C2A"/>
+
+    <!-- Head highlight strip at top -->
+    <rect x="32" y="54" width="136" height="8" rx="4" fill="#3a3a38" opacity="0.8"/>
+
+    <!-- Ear bolts -->
+    <circle cx="22" cy="98"  r="7" fill="#3a3a38" stroke="#555" stroke-width="1.5"/>
+    <circle cx="178" cy="98" r="7" fill="#3a3a38" stroke="#555" stroke-width="1.5"/>
+
+    <!-- ── LEFT EYE — rectangular LED display ── -->
+    <g id="r-eye-l">
+      <!-- eye housing -->
+      <rect x="36" y="76" width="54" height="44" rx="8" fill="#111"/>
+      <!-- eye glow panel — colour changes with mood -->
+      <rect id="r-eye-l-glow" x="40" y="80" width="46" height="36" rx="5" fill="#06d6a0" opacity="0.15"/>
+      <!-- scanning bar — the moving highlight inside eye -->
+      <rect id="r-scan-l" x="42" y="82" width="20" height="32" rx="4" fill="#06d6a0" opacity="0.7" class="r-scan-l"/>
+      <!-- lid — same colour as head, sweeps down -->
+      <rect id="r-lid-l" x="36" y="76" width="54" height="2" rx="3" fill="#2C2C2A"/>
     </g>
 
-    <g id="g-eye-r">
-      <ellipse id="g-eyeball-r" cx="136" cy="88" rx="30" ry="32"
-               fill="white" stroke="#1A1A18" stroke-width="5"/>
-      <circle cx="136" cy="90" r="17" fill="#1A1A18"/>
-      <circle id="g-shine-r" cx="144" cy="80" r="9" fill="white"/>
-      <circle cx="128" cy="96" r="4" fill="white" opacity="0.5"/>
-      <rect id="g-lid-r" x="106" y="56" width="60" height="2" rx="4" fill="#FFD166"/>
+    <!-- ── RIGHT EYE ── -->
+    <g id="r-eye-r">
+      <rect x="110" y="76" width="54" height="44" rx="8" fill="#111"/>
+      <rect id="r-eye-r-glow" x="114" y="80" width="46" height="36" rx="5" fill="#06d6a0" opacity="0.15"/>
+      <rect id="r-scan-r" x="128" y="82" width="20" height="32" rx="4" fill="#06d6a0" opacity="0.7" class="r-scan-r"/>
+      <rect id="r-lid-r" x="110" y="76" width="54" height="2" rx="3" fill="#2C2C2A"/>
     </g>
 
-    <!-- ── MOUTH — the whole bottom third of the face, very Nick Jr ── -->
-    <!-- Each mood swaps which path is visible via opacity             -->
+    <!-- ── NOSE — tiny LED dot ── -->
+    <circle id="r-nose" cx="100" cy="132" r="4" fill="#06d6a0" opacity="0.6"/>
 
-    <!-- HAPPY / LOVE / EXCITED — wide open grin, big teeth, tongue out -->
-    <g id="g-mouth-open" opacity="1">
-      <!-- dark mouth cavity -->
-      <path d="M28 152 Q50 140 100 138 Q150 140 172 152 Q165 195 100 198 Q35 195 28 152Z"
-            fill="#1A1A18" stroke="#1A1A18" stroke-width="3" stroke-linejoin="round"/>
-      <!-- inner red mouth -->
-      <path d="M34 155 Q55 145 100 143 Q145 145 166 155 Q158 190 100 193 Q42 190 34 155Z"
-            fill="#CC2244"/>
-      <!-- teeth — 4 chunky rectangles -->
-      <rect x="46"  y="144" width="22" height="18" rx="4" fill="white"/>
-      <rect x="72"  y="142" width="22" height="20" rx="4" fill="white"/>
-      <rect x="98"  y="142" width="22" height="20" rx="4" fill="white"/>
-      <rect x="124" y="144" width="22" height="18" rx="4" fill="white"/>
-      <!-- tooth dividers -->
-      <line x1="68"  y1="142" x2="68"  y2="162" stroke="#1A1A18" stroke-width="2"/>
-      <line x1="94"  y1="140" x2="94"  y2="162" stroke="#1A1A18" stroke-width="2"/>
-      <line x1="120" y1="140" x2="120" y2="162" stroke="#1A1A18" stroke-width="2"/>
-      <line x1="146" y1="142" x2="146" y2="162" stroke="#1A1A18" stroke-width="2"/>
-      <!-- big round tongue -->
-      <ellipse id="g-tongue" cx="100" cy="182" rx="34" ry="16" fill="#FF6B8A"/>
-    </g>
+    <!-- ── MOUTH — segmented display row ── -->
+    <!-- mouth housing -->
+    <rect x="44" y="146" width="112" height="26" rx="6" fill="#111"/>
+    <!-- 7 segment blocks — toggled on/off per mood -->
+    <rect id="r-seg-0" x="50"  y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
+    <rect id="r-seg-1" x="66"  y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
+    <rect id="r-seg-2" x="82"  y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
+    <rect id="r-seg-3" x="98"  y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
+    <rect id="r-seg-4" x="114" y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
+    <rect id="r-seg-5" x="130" y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
+    <rect id="r-seg-6" x="146" y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
 
-    <!-- THINKING / MOVING — small closed hmm smile, one side raised -->
-    <g id="g-mouth-hmm" opacity="0">
-      <path d="M62 162 Q100 148 138 162" fill="none"
-            stroke="#1A1A18" stroke-width="7" stroke-linecap="round"/>
-    </g>
-
-    <!-- SLEEPY — tiny flat line -->
-    <g id="g-mouth-flat" opacity="0">
-      <path d="M74 168 Q100 165 126 168" fill="none"
-            stroke="#1A1A18" stroke-width="7" stroke-linecap="round"/>
-    </g>
-
-    <!-- SURPRISED — round O mouth -->
-    <g id="g-mouth-o" opacity="0">
-      <ellipse cx="100" cy="168" rx="22" ry="24"
-               fill="#1A1A18" stroke="#1A1A18" stroke-width="3"/>
-      <ellipse cx="100" cy="168" rx="16" ry="18" fill="#CC2244"/>
-    </g>
-
-    <!-- SAD — downward curve, no teeth -->
-    <g id="g-mouth-sad" opacity="0">
-      <path d="M58 172 Q100 155 142 172" fill="none"
-            stroke="#1A1A18" stroke-width="7" stroke-linecap="round"/>
-    </g>
-
-    <!-- ANGRY — teeth-bared grimace, straight line top, curved bottom -->
-    <g id="g-mouth-angry" opacity="0">
-      <path d="M40 160 Q100 156 160 160 Q145 180 100 182 Q55 180 40 160Z"
-            fill="#1A1A18"/>
-      <path d="M46 162 Q100 158 154 162 Q140 178 100 180 Q60 178 46 162Z"
-            fill="#CC2244"/>
-      <!-- gritted teeth lines -->
-      <line x1="60"  y1="160" x2="60"  y2="173" stroke="#1A1A18" stroke-width="3"/>
-      <line x1="78"  y1="159" x2="78"  y2="173" stroke="#1A1A18" stroke-width="3"/>
-      <line x1="96"  y1="158" x2="96"  y2="173" stroke="#1A1A18" stroke-width="3"/>
-      <line x1="114" y1="158" x2="114" y2="173" stroke="#1A1A18" stroke-width="3"/>
-      <line x1="132" y1="159" x2="132" y2="173" stroke="#1A1A18" stroke-width="3"/>
-      <!-- horizontal gum line -->
-      <line x1="40" y1="163" x2="160" y2="163" stroke="white" stroke-width="3" opacity="0.5"/>
-    </g>
-
-    <!-- ── BROWS — only show on angry, float above eyes ── -->
-    <g id="g-angry-brows" opacity="0">
-      <path d="M34 52 Q64 38 88 50" fill="none"
-            stroke="#1A1A18" stroke-width="8" stroke-linecap="round"/>
-      <path d="M112 50 Q136 38 166 52" fill="none"
-            stroke="#1A1A18" stroke-width="8" stroke-linecap="round"/>
-    </g>
-
-    <!-- ── ZZZ ── -->
-    <g id="g-zzz" opacity="0">
-      <text x="156" y="52" font-family="Arial" font-weight="900" font-size="14" fill="#9090C0" opacity="0.7">z</text>
-      <text x="166" y="36" font-family="Arial" font-weight="900" font-size="18" fill="#9090C0" opacity="0.5">z</text>
-      <text x="178" y="18" font-family="Arial" font-weight="900" font-size="22" fill="#9090C0" opacity="0.35">z</text>
-    </g>
-
-    <!-- ── SWEAT DROP ── -->
-    <g id="g-sweat" opacity="0">
-      <ellipse cx="174" cy="60" rx="6" ry="9" fill="#A8D8FF"/>
-      <polygon points="168,60 180,60 174,47" fill="#A8D8FF"/>
-    </g>
-
-    <!-- ── SPARKLES (love) ── -->
-    <g id="g-sparkle-l" opacity="0">
-      <line x1="14" y1="78" x2="14" y2="94"  stroke="#FF9AAC" stroke-width="3.5" stroke-linecap="round"/>
-      <line x1="6"  y1="86" x2="22" y2="86"  stroke="#FF9AAC" stroke-width="3.5" stroke-linecap="round"/>
-      <line x1="7"  y1="79" x2="21" y2="93"  stroke="#FF9AAC" stroke-width="2"   stroke-linecap="round"/>
-      <line x1="21" y1="79" x2="7"  y2="93"  stroke="#FF9AAC" stroke-width="2"   stroke-linecap="round"/>
-    </g>
-    <g id="g-sparkle-r" opacity="0">
-      <line x1="186" y1="78" x2="186" y2="94" stroke="#FF9AAC" stroke-width="3.5" stroke-linecap="round"/>
-      <line x1="178" y1="86" x2="194" y2="86" stroke="#FF9AAC" stroke-width="3.5" stroke-linecap="round"/>
-      <line x1="179" y1="79" x2="193" y2="93" stroke="#FF9AAC" stroke-width="2"   stroke-linecap="round"/>
-      <line x1="193" y1="79" x2="179" y2="93" stroke="#FF9AAC" stroke-width="2"   stroke-linecap="round"/>
+    <!-- ZZZ -->
+    <g id="r-zzz" opacity="0">
+      <text x="156" y="68" font-family="Arial" font-size="13" fill="#9090C0" opacity="0.7">z</text>
+      <text x="165" y="52" font-family="Arial" font-size="16" fill="#9090C0" opacity="0.5">z</text>
+      <text x="176" y="34" font-family="Arial" font-size="20" fill="#9090C0" opacity="0.35">z</text>
     </g>
 
   </svg>
@@ -305,182 +262,199 @@ body {
 
 <div id="mood-name">happy</div>
 
+<!-- Mic button -->
+<div id="mic-btn" onclick="toggleMic()">
+  <svg id="mic-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="9" y="2" width="6" height="12" rx="3" fill="rgba(0,0,0,0.5)"/>
+    <path d="M5 11a7 7 0 0 0 14 0" stroke="rgba(0,0,0,0.5)" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <line x1="12" y1="18" x2="12" y2="22" stroke="rgba(0,0,0,0.5)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="8"  y1="22" x2="16" y2="22" stroke="rgba(0,0,0,0.5)" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+</div>
+
 <script>
 // ══════════════════════════════════════════════════════════════
-//  SHARED MOOD DEFINITIONS
-//  Both faces read the same mood table.
-//  Keys used by Kitty:    eyeLry/Rry, lidH, cheekOp,
-//                         bowFill, bowKnot, sparkOp, zzzOp, sweatOp
-//  Keys used by Gumball:  eyeLry/Rry (height), lidH, cheekOp,
-//                         browRotL/R, mouthOp, teethOp, tongueOp,
-//                         sparkOp, zzzOp, sweatOp
-//  bg and label are shared.
+//  BROADCAST CHANNEL — sends voice commands to index.html
+//  index.html listens on the same channel name and calls send()
+// ══════════════════════════════════════════════════════════════
+const cmdChannel = new BroadcastChannel('robot-commands')
+
+// ══════════════════════════════════════════════════════════════
+//  MOOD DEFINITIONS
 // ══════════════════════════════════════════════════════════════
 const MOODS = {
   happy: {
-    bg:'#FFD166',
+    bg:'#FFD166', bowFill:'#FF9AAC', bowKnot:'#FF6B8A',
     eyeLry:18, eyeRry:18, lidH:2, cheekOp:0,
-    bowFill:'#FF9AAC', bowKnot:'#FF6B8A',
     browRotL:0, browRotR:0,
-    mouthShape:'open',
-    mouthScale:1, mouthOp:1, teethOp:1, tongueOp:1,
     sparkOp:0, zzzOp:0, sweatOp:0,
+    rEyeColour:'#06d6a0', rSegs:[1,1,1,1,1,1,1], rAntenna:'#06d6a0',
     label:'happy',
   },
   excited: {
-    bg:'#FFD166',
+    bg:'#FFD166', bowFill:'#FF6B8A', bowKnot:'#E8445A',
     eyeLry:22, eyeRry:22, lidH:2, cheekOp:0.7,
-    bowFill:'#FF6B8A', bowKnot:'#E8445A',
     browRotL:0, browRotR:0,
-    mouthShape:'open',
-    mouthScale:1.1, mouthOp:1, teethOp:1, tongueOp:1,
     sparkOp:0, zzzOp:0, sweatOp:0,
+    rEyeColour:'#FFD166', rSegs:[1,0,1,0,1,0,1], rAntenna:'#FFD166',
     label:'excited!',
   },
   thinking: {
-    bg:'#C7EFCF',
+    bg:'#C7EFCF', bowFill:'#A8D8B0', bowKnot:'#6DBF7E',
     eyeLry:14, eyeRry:16, lidH:8, cheekOp:0,
-    bowFill:'#A8D8B0', bowKnot:'#6DBF7E',
     browRotL:-4, browRotR:4,
-    mouthShape:'hmm',
-    mouthScale:0.6, mouthOp:0.7, teethOp:0, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:0,
+    rEyeColour:'#A8D8B0', rSegs:[0,1,0,1,0,1,0], rAntenna:'#A8D8B0',
     label:'thinking...',
   },
   sleepy: {
-    bg:'#B8C0FF',
+    bg:'#B8C0FF', bowFill:'#C0C8FF', bowKnot:'#9098E8',
     eyeLry:7, eyeRry:7, lidH:20, cheekOp:0,
-    bowFill:'#C0C8FF', bowKnot:'#9098E8',
     browRotL:0, browRotR:0,
-    mouthShape:'flat',
-    mouthScale:0.5, mouthOp:0.5, teethOp:0, tongueOp:0,
     sparkOp:0, zzzOp:1, sweatOp:0,
+    rEyeColour:'#9098E8', rSegs:[1,0,0,0,0,0,1], rAntenna:'#9098E8',
     label:'sleepy zzz',
   },
   surprised: {
-    bg:'#FFBE7B',
+    bg:'#FFBE7B', bowFill:'#FFB347', bowKnot:'#E8922A',
     eyeLry:24, eyeRry:24, lidH:2, cheekOp:0.5,
-    bowFill:'#FFB347', bowKnot:'#E8922A',
     browRotL:6, browRotR:-6,
-    mouthShape:'o',
-    mouthScale:0.7, mouthOp:1, teethOp:0, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:1,
+    rEyeColour:'#FFBE7B', rSegs:[1,1,0,0,1,1,0], rAntenna:'#FFBE7B',
     label:'woah!',
   },
   love: {
-    bg:'#FFB3C6',
+    bg:'#FFB3C6', bowFill:'#FF6B8A', bowKnot:'#E8445A',
     eyeLry:18, eyeRry:18, lidH:2, cheekOp:0.85,
-    bowFill:'#FF6B8A', bowKnot:'#E8445A',
     browRotL:0, browRotR:0,
-    mouthShape:'open',
-    mouthScale:1, mouthOp:1, teethOp:1, tongueOp:1,
     sparkOp:1, zzzOp:0, sweatOp:0,
+    rEyeColour:'#FF6B8A', rSegs:[1,1,1,1,1,1,1], rAntenna:'#FF6B8A',
     label:'hehe',
   },
   moving: {
-    bg:'#A8E6CF',
+    bg:'#A8E6CF', bowFill:'#6DBF9E', bowKnot:'#3DAA7E',
     eyeLry:16, eyeRry:16, lidH:5, cheekOp:0.4,
-    bowFill:'#6DBF9E', bowKnot:'#3DAA7E',
     browRotL:-2, browRotR:2,
-    mouthShape:'hmm',
-    mouthScale:0.9, mouthOp:1, teethOp:1, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:0,
+    rEyeColour:'#3DAA7E', rSegs:[1,1,1,0,1,1,1], rAntenna:'#3DAA7E',
     label:'vroom!',
   },
   sad: {
-    bg:'#CFD8E8',
+    bg:'#CFD8E8', bowFill:'#A0AEC0', bowKnot:'#718096',
     eyeLry:13, eyeRry:13, lidH:12, cheekOp:0,
-    bowFill:'#A0AEC0', bowKnot:'#718096',
     browRotL:5, browRotR:-5,
-    mouthShape:'sad',
-    mouthScale:0.6, mouthOp:0.8, teethOp:0, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:0,
+    rEyeColour:'#718096', rSegs:[1,0,0,0,0,0,1], rAntenna:'#718096',
     label:'aww...',
   },
   angry: {
-    bg:'#FF6B6B',
+    bg:'#FF6B6B', bowFill:'#CC2244', bowKnot:'#991133',
     eyeLry:12, eyeRry:12, lidH:14, cheekOp:0,
-    bowFill:'#CC2244', bowKnot:'#991133',
     browRotL:20, browRotR:-20,
-    mouthShape:'angry',
-    mouthScale:0.7, mouthOp:1, teethOp:1, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:0,
+    rEyeColour:'#ef4444', rSegs:[1,1,0,0,0,1,1], rAntenna:'#ef4444',
     label:'GRRRR!!',
   },
 }
 
 // ══════════════════════════════════════════════════════════════
-//  STATE
+//  SPEECH BUBBLES — random phrases per mood
 // ══════════════════════════════════════════════════════════════
-let currentMood    = 'happy'
-let currentFace    = 'kitty'   // 'kitty' | 'gumball'
-let priorMood      = 'happy'   // mood before angry, to restore after
-let isAngry        = false
-let blinkTimer, idleTimer, angryTimer
+const PHRASES = {
+  happy:    ['beep boop!', 'hello human!', 'i like you :)', 'brrr zap!', 'fun fun fun!', 'yay!'],
+  excited:  ['WOOOOO!', 'let\'s gooo!', 'zoom zoom!', '!!!', 'so fast!'],
+  thinking: ['hmmmm...', 'calculating...', 'one moment...', '...', 'processing!'],
+  sleepy:   ['zzz...', 'so tired...', '*yawn*', 'need recharge', 'battery low'],
+  surprised:['oh!', 'woah!!', 'what?!', '*bzzzt*', 'did not expect'],
+  love:     ['<3 <3 <3', 'best human!', 'hehe~', 'you\'re great!', 'beep beep <3'],
+  moving:   ['vroom!', 'wheee!', 'going fast!', 'zoom!', 'clear the way!'],
+  sad:      ['...', 'oh no', 'low energy', ':\'(', 'need a hug?'],
+  angry:    ['BZZZT!!', 'DOES NOT COMPUTE', 'ERROR!', 'grrrr!!', '>:('],
+}
+
+let bubbleTimer = null
+let bubbleVisible = false
+
+function showBubble(text) {
+  const el = document.getElementById('speech-bubble')
+  el.textContent = text
+  el.classList.add('show')
+  bubbleVisible = true
+  clearTimeout(bubbleTimer)
+  bubbleTimer = setTimeout(() => {
+    el.classList.remove('show')
+    bubbleVisible = false
+    scheduleBubble()
+  }, 3200)
+}
+
+function scheduleBubble() {
+  clearTimeout(bubbleTimer)
+  bubbleTimer = setTimeout(() => {
+    if (!isAngry) {
+      const pool = PHRASES[currentMood] || PHRASES.happy
+      const phrase = pool[Math.floor(Math.random() * pool.length)]
+      showBubble(phrase)
+    } else {
+      scheduleBubble()
+    }
+  }, 15000 + Math.random() * 15000)
+}
 
 // ══════════════════════════════════════════════════════════════
-//  APPLY MOOD — routes to the right face renderer
+//  APPLY MOOD
 // ══════════════════════════════════════════════════════════════
+let currentMood = 'happy'
+let currentFace = 'kitty'
+let priorMood   = 'happy'
+let isAngry     = false
+let blinkTimer, idleTimer, angryTimer
+
 function applyMood(mood) {
   const m = MOODS[mood]
   if (!m) return
   currentMood = mood
-
   document.body.style.background = m.bg
   document.getElementById('mood-name').textContent = m.label
   document.querySelector('meta[name="theme-color"]').setAttribute('content', m.bg)
-
   if (currentFace === 'kitty') applyKitty(m)
-  else                         applyGumball(m)
+  else                         applyRobot(m)
 }
 
 // ── KITTY RENDERER ────────────────────────────────────────────
 function applyKitty(m) {
   const bg = m.bg
-  sa('k-lid-l', 'fill', bg); sa('k-lid-r', 'fill', bg)
-  sa('k-lid-l', 'height', m.lidH); sa('k-lid-r', 'height', m.lidH)
-  sa('k-eyeball-l', 'ry', m.eyeLry); sa('k-eyeball-r', 'ry', m.eyeRry)
-  sa('k-shine-l', 'cy', 130 - m.eyeLry * 0.4)
-  sa('k-shine-r', 'cy', 130 - m.eyeRry * 0.4)
-  sa('k-cheek-l', 'opacity', m.cheekOp); sa('k-cheek-r', 'opacity', m.cheekOp)
+  sa('k-lid-l','fill',bg); sa('k-lid-r','fill',bg)
+  sa('k-lid-l','height',m.lidH); sa('k-lid-r','height',m.lidH)
+  sa('k-eyeball-l','ry',m.eyeLry); sa('k-eyeball-r','ry',m.eyeRry)
+  sa('k-shine-l','cy', 130 - m.eyeLry * 0.4)
+  sa('k-shine-r','cy', 130 - m.eyeRry * 0.4)
+  sa('k-cheek-l','opacity',m.cheekOp); sa('k-cheek-r','opacity',m.cheekOp)
   document.querySelectorAll('#k-bow ellipse').forEach(el => el.setAttribute('fill', m.bowFill))
   document.querySelector('#k-bow circle').setAttribute('fill', m.bowKnot)
   document.querySelectorAll('#k-sparkle-l line,#k-sparkle-r line').forEach(l => l.setAttribute('stroke', m.bowFill))
   sa('k-sparkle-l','opacity',m.sparkOp); sa('k-sparkle-r','opacity',m.sparkOp)
   sa('k-zzz','opacity',m.zzzOp); sa('k-sweat','opacity',m.sweatOp)
-  // Angry brows on kitty — use browRotL as a proxy: >10 = angry
   sa('k-angry-brows','opacity', Math.abs(m.browRotL) >= 20 ? 1 : 0)
 }
 
-// ── NICK JR FACE RENDERER ────────────────────────────────────
-// Mouth is per-mood discrete groups, not a scaled single shape.
-// Eyes still use lid-height blink system same as Kitty.
-// No head shape — everything floats on the bg colour.
-function applyGumball(m) {
-  const bg = m.bg
-
-  // Lid colour matches bg to erase eye on blink
-  sa('g-lid-l','fill',bg); sa('g-lid-r','fill',bg)
-  sa('g-lid-l','height',m.lidH); sa('g-lid-r','height',m.lidH)
-
-  // Eye size
-  sa('g-eyeball-l','ry',m.eyeLry); sa('g-eyeball-r','ry',m.eyeRry)
-  sa('g-shine-l','cy', 88 - m.eyeLry * 0.3)
-  sa('g-shine-r','cy', 88 - m.eyeRry * 0.3)
-
-  // Angry brows — only on angry mood
-  const angry = Math.abs(m.browRotL) >= 20
-  sa('g-angry-brows','opacity', angry ? 1 : 0)
-
-  // Pick which mouth group to show based on mood
-  // mouthShape is a new key we add — derived from mood name
-  const shape = m.mouthShape || 'open'
-  const mouths = ['open','hmm','flat','o','sad','angry']
-  mouths.forEach(n => sa(`g-mouth-${n}`, 'opacity', n === shape ? 1 : 0))
-
+// ── ROBOT RENDERER ────────────────────────────────────────────
+function applyRobot(m) {
+  const c = m.rEyeColour
+  // Eye glow colour
+  sa('r-eye-l-glow','fill',c); sa('r-eye-r-glow','fill',c)
+  sa('r-scan-l','fill',c); sa('r-scan-r','fill',c)
+  sa('r-nose','fill',c)
+  sa('r-antenna-dot','fill',c)
+  // Lid — matches head colour (#2C2C2A) always, creates blink
+  sa('r-lid-l','fill','#2C2C2A'); sa('r-lid-r','fill','#2C2C2A')
+  sa('r-lid-l','height',m.lidH); sa('r-lid-r','height',m.lidH)
+  // Segments — each either bright or dim
+  m.rSegs.forEach((on, i) => sa(`r-seg-${i}`, 'opacity', on ? 0.9 : 0.08))
+  // Segment colour matches eye
+  for (let i=0;i<7;i++) sa(`r-seg-${i}`,'fill',c)
   // Extras
-  sa('g-sparkle-l','opacity',m.sparkOp); sa('g-sparkle-r','opacity',m.sparkOp)
-  sa('g-zzz','opacity',m.zzzOp); sa('g-sweat','opacity',m.sweatOp)
+  sa('r-zzz','opacity',m.zzzOp)
 }
 
 function sa(id, attr, val) {
@@ -489,60 +463,51 @@ function sa(id, attr, val) {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  FACE SWAP — called on long press
+//  FACE SWAP
 // ══════════════════════════════════════════════════════════════
 function swapFace() {
-  currentFace = currentFace === 'kitty' ? 'gumball' : 'kitty'
-
+  currentFace = currentFace === 'kitty' ? 'robot' : 'kitty'
   document.getElementById('face-kitty').classList.toggle('hidden', currentFace !== 'kitty')
-  document.getElementById('face-gumball').classList.toggle('hidden', currentFace !== 'gumball')
-
-  // Flash ring feedback
+  document.getElementById('face-robot').classList.toggle('hidden', currentFace !== 'robot')
   const ring = document.getElementById('flash-ring')
   ring.classList.add('flash')
   setTimeout(() => ring.classList.remove('flash'), 300)
-
-  // Hint text
   const hint = document.getElementById('swap-hint')
-  const name = currentFace === 'kitty' ? 'kitty mode' : 'nick jr mode'
-  hint.textContent = name
+  hint.textContent = currentFace === 'kitty' ? 'kitty mode' : 'robot mode'
   hint.classList.add('show')
   setTimeout(() => hint.classList.remove('show'), 1800)
-
-  // Re-apply current mood to new face
   applyMood(currentMood)
 }
 
 // ══════════════════════════════════════════════════════════════
-//  ANGRY — double tap triggers, reverts after 5s
+//  ANGRY
 // ══════════════════════════════════════════════════════════════
 function triggerAngry() {
   if (isAngry) return
-  isAngry   = true
-  priorMood = currentMood
-  clearTimeout(idleTimer)
-  clearTimeout(blinkTimer)
+  isAngry = true; priorMood = currentMood
+  clearTimeout(idleTimer); clearTimeout(blinkTimer)
   applyMood('angry')
+  showBubble(PHRASES.angry[Math.floor(Math.random()*PHRASES.angry.length)])
   angryTimer = setTimeout(() => {
     isAngry = false
     applyMood(priorMood)
-    scheduleBlink()
-    scheduleIdle()
+    scheduleBlink(); scheduleIdle()
   }, 5000)
 }
 
 // ══════════════════════════════════════════════════════════════
-//  BLINK — works for both faces via lid height
+//  BLINK
 // ══════════════════════════════════════════════════════════════
 function blink() {
   if (currentMood === 'sleepy' || isAngry) return
-  const m = MOODS[currentMood]
-  // Kitty eyes: ry up to ~24, Nick Jr eyes: ry up to ~32 (bigger)
-  const maxClose = currentFace === 'kitty'
-    ? Math.max(m.eyeLry * 1.1, 18)
-    : Math.max(m.eyeLry * 1.3, 28)
-  const frames   = [2, 6, 14, maxClose, 14, 6, 2]
-  const prefix   = currentFace === 'kitty' ? 'k' : 'g'
+  const m     = MOODS[currentMood]
+  const isRobot = currentFace === 'robot'
+  // Robot eyes are 44px tall (y:76 to y:120), kitty eyes up to ~24ry
+  const maxClose = isRobot ? 44 : Math.max(m.eyeLry * 1.1, 18)
+  const frames   = isRobot
+    ? [2, 10, 24, 44, 24, 10, 2]
+    : [2, 6, 14, maxClose, 14, 6, 2]
+  const prefix   = isRobot ? 'r' : 'k'
   let i = 0
   const t = setInterval(() => {
     sa(`${prefix}-lid-l`, 'height', frames[i])
@@ -571,86 +536,130 @@ function scheduleIdle() {
       const pick = Math.random() < 0.5 ? 'thinking' : 'sleepy'
       applyMood(pick)
       setTimeout(() => { applyMood('happy'); scheduleIdle() }, 4000)
-    } else {
-      scheduleIdle()
-    }
+    } else { scheduleIdle() }
   }, 10000 + Math.random() * 8000)
 }
 
 // ══════════════════════════════════════════════════════════════
-//  GESTURE DETECTION
-//  — Single tap  → random positive reaction
-//  — Double tap  → angry
-//  — Long press  → swap face
+//  GESTURES — single tap, double tap, long press
 // ══════════════════════════════════════════════════════════════
-const TAP_MOODS  = ['excited', 'surprised', 'love']
-let tapCount     = 0
-let tapTimer     = null
-let tapLock      = false
-let pressTimer   = null
-let pressStarted = false
-
-const LONG_PRESS_MS  = 600
-const DOUBLE_TAP_MS  = 300
-
+const TAP_MOODS = ['excited', 'surprised', 'love']
+let tapCount=0, tapTimer=null, tapLock=false
+let pressTimer=null, pressStarted=false
+const LONG_MS=600, DBL_MS=300
 const wrap = document.getElementById('face-wrap')
 
 wrap.addEventListener('pointerdown', e => {
-  e.preventDefault()
-  pressStarted = true
+  e.preventDefault(); pressStarted = true
   pressTimer = setTimeout(() => {
-    // Long press fired — cancel any pending tap logic
-    pressStarted = false
-    tapCount = 0
-    clearTimeout(tapTimer)
-    swapFace()
-  }, LONG_PRESS_MS)
+    pressStarted=false; tapCount=0; clearTimeout(tapTimer); swapFace()
+  }, LONG_MS)
 })
-
 wrap.addEventListener('pointerup', e => {
   e.preventDefault()
   if (!pressStarted) return
-  clearTimeout(pressTimer)
-  pressStarted = false
-
-  // Count taps
-  tapCount++
-  clearTimeout(tapTimer)
-
+  clearTimeout(pressTimer); pressStarted=false
+  tapCount++; clearTimeout(tapTimer)
   tapTimer = setTimeout(() => {
-    const count = tapCount
-    tapCount = 0
-
-    if (count >= 2) {
-      // Double tap → angry
-      triggerAngry()
-    } else {
-      // Single tap → reaction
-      if (tapLock || isAngry) return
-      tapLock = true
-      clearTimeout(idleTimer)
-      const r = TAP_MOODS[Math.floor(Math.random() * TAP_MOODS.length)]
+    const c=tapCount; tapCount=0
+    if (c>=2) { triggerAngry() }
+    else {
+      if (tapLock||isAngry) return
+      tapLock=true; clearTimeout(idleTimer)
+      const r=TAP_MOODS[Math.floor(Math.random()*TAP_MOODS.length)]
       applyMood(r)
-      setTimeout(() => {
-        applyMood('happy')
-        scheduleIdle()
-        tapLock = false
-      }, 2000)
+      const p=PHRASES[r]
+      showBubble(p[Math.floor(Math.random()*p.length)])
+      setTimeout(()=>{ applyMood('happy'); scheduleIdle(); tapLock=false }, 2000)
     }
-  }, DOUBLE_TAP_MS)
+  }, DBL_MS)
 })
+wrap.addEventListener('pointercancel',()=>{ clearTimeout(pressTimer); pressStarted=false })
 
-wrap.addEventListener('pointercancel', () => {
-  clearTimeout(pressTimer)
-  pressStarted = false
-})
+// ══════════════════════════════════════════════════════════════
+//  VOICE COMMANDS — Web Speech API
+//  Recognised: forward, back, backward, left, right, stop, horn
+//  Commands broadcast to index.html via BroadcastChannel.
+//  index.html just needs to listen and call send().
+// ══════════════════════════════════════════════════════════════
+const VOICE_MAP = {
+  'forward':  'F', 'forwards': 'F', 'go':       'F',
+  'back':     'B', 'backward': 'B', 'backwards':'B', 'reverse':'B',
+  'left':     'L', 'turn left':'L',
+  'right':    'R', 'turn right':'R',
+  'stop':     'S', 'halt':     'S', 'freeze':   'S',
+  'horn':     'H', 'beep':     'H', 'honk':     'H',
+}
+
+let recognition = null
+let micActive   = false
+
+function setupSpeech() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition
+  if (!SR) {
+    document.getElementById('mic-btn').style.opacity = '0.3'
+    document.getElementById('mic-btn').title = 'Speech not supported in this browser'
+    return
+  }
+  recognition = new SR()
+  recognition.continuous      = false
+  recognition.interimResults  = false
+  recognition.lang            = 'en-US'
+  recognition.maxAlternatives = 3
+
+  recognition.onresult = e => {
+    // Try each alternative until we find a match
+    for (let a=0; a < e.results[0].length; a++) {
+      const heard = e.results[0][a].transcript.toLowerCase().trim()
+      // Check full phrase first, then first word
+      const cmd = VOICE_MAP[heard] || VOICE_MAP[heard.split(' ')[0]]
+      if (cmd) {
+        cmdChannel.postMessage({ type:'drive', cmd })
+        showBubble(heardPhrase(cmd))
+        applyMood(cmd==='S' ? 'happy' : 'moving')
+        if (cmd!=='S') setTimeout(()=>{ applyMood('happy') }, 2000)
+        break
+      }
+    }
+    stopMic()
+  }
+
+  recognition.onerror = () => stopMic()
+  recognition.onend   = () => stopMic()
+}
+
+function heardPhrase(cmd) {
+  const map={F:'going forward!',B:'reversing!',L:'turning left!',R:'turning right!',S:'stopping!',H:'beep beep!'}
+  return map[cmd] || 'ok!'
+}
+
+function toggleMic() {
+  if (micActive) stopMic()
+  else           startMic()
+}
+
+function startMic() {
+  if (!recognition) return
+  micActive = true
+  document.getElementById('mic-btn').classList.add('listening')
+  showBubble('listening...')
+  try { recognition.start() } catch(e) { stopMic() }
+}
+
+function stopMic() {
+  micActive = false
+  document.getElementById('mic-btn').classList.remove('listening')
+  try { recognition.stop() } catch(e) {}
+}
 
 // ══════════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════════
+setupSpeech()
 applyMood('happy')
 scheduleBlink()
 scheduleIdle()
+scheduleBubble()
 </script>
 </body>
 </html>

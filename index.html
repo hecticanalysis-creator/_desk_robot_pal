@@ -9,13 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="UNIT-01">
 <meta name="theme-color" content="#080a08">
 <link rel="manifest" href="manifest.json">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="UNIT-01">
-<meta name="theme-color" content="#080a08">
-<link rel="manifest" href="manifest.json">
-<title>StEEvE-01 // CONTROL</title>
+<title>UNIT-01 // CONTROL</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 /* Portrait lock — show overlay in landscape, hide all content */
@@ -353,8 +347,8 @@ body::after {
 
 <div class="topbar">
   <div class="topbar-left">
-    <div class="unit-id">StEEvE-01 </div>
-    <a class="buddy-link" href="buddy.html">★ BESTIE</a>
+    <div class="unit-id">UNIT-01</div>
+    <a class="buddy-link" href="buddy.html">★ BUDDY</a>
   </div>
   <div class="conn-group">
     <div id="status-dot"></div>
@@ -759,6 +753,21 @@ setInterval(()=>{
 },1000)
 
 requestTiltPermission()
+
+// ── VOICE COMMAND RECEIVER ────────────────────────────────────
+// buddy.html broadcasts voice commands on 'robot-commands'.
+// We receive them here and call send() exactly like a button press.
+// Drive commands (F/B/L/R) send once then stop after 800ms —
+// enough to move meaningfully without needing a separate stop command.
+const voiceChannel = new BroadcastChannel('robot-commands')
+voiceChannel.onmessage = e => {
+  if (e.data.type !== 'drive') return
+  const cmd = e.data.cmd
+  send(cmd)
+  if (cmd !== 'S' && cmd !== 'H') {
+    setTimeout(() => send('S'), 800)
+  }
+}
 
 const keyMap={ArrowUp:'F',ArrowDown:'B',ArrowLeft:'L',ArrowRight:'R',' ':'S',h:'H'}
 const heldKeys=new Set()
