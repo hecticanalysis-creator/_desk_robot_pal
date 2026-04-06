@@ -1,6 +1,6 @@
 {
-  "name": "UNIT-01 Control",
-  "short_name": "UNIT-01",
+  "name": "StEEvE-01 Control",
+  "short_name": "StEEvE-01",
   "description": "RoboBuddy controller and face",
   "start_url": "./index.html",
   "display": "fullscreen",
