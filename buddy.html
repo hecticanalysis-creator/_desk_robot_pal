@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<title>BUDDY</title>
+<style>
+* { box-sizing:border-box; margin:0; padding:0; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
+html, body { width:100%; height:100%; overflow:hidden; }
+
+body {
+  background: #FFD166;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.5s ease;
+  position: relative;
+}
+
+/* Force landscape */
+@media (orientation: portrait) {
+  #rotate-msg { display: flex !important; }
+  #face-wrap, #back-link, #mood-name { visibility: hidden; }
+}
+
+#rotate-msg {
+  display: none;
+  position: fixed; inset: 0;
+  background: #1a1a2e;
+  color: #f59e0b;
+  font-family: 'Courier New', monospace;
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: 0.3em;
+  align-items: center;
+  justify-content: center;
+  z-index: 999;
+}
+
+/* Back link — top-left corner, subtle */
+#back-link {
+  position: fixed;
+  top: 16px;
+  left: 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: rgba(0,0,0,0.25);
+  text-decoration: none;
+  text-transform: uppercase;
+  z-index: 10;
+  transition: color 0.2s;
+}
+#back-link:active { color: rgba(0,0,0,0.6); }
+
+/* Mood name — bottom centre, subtle */
+#mood-name {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-family: 'Courier New', monospace;
+  font-size: 11px;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.2);
+  z-index: 10;
+  pointer-events: none;
+}
+
+/* Face SVG — takes most of the screen */
+#face-wrap {
+  width: min(85vh, 85vw);
+  height: min(85vh, 85vw);
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#face-svg {
+  width: 100%;
+  height: 100%;
+}
+</style>
+</head>
+<body>
+
+<div id="rotate-msg">ROTATE DEVICE</div>
+
+<a id="back-link" href="index.html">← UNIT-01</a>
+
+<div id="face-wrap">
+  <svg id="face-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- Cheeks -->
+    <circle id="cheek-l" cx="30" cy="128" r="20" fill="#FF6B9D" opacity="0.45"/>
+    <circle id="cheek-r" cx="170" cy="128" r="20" fill="#FF6B9D" opacity="0.45"/>
+
+    <!-- LEFT EYE -->
+    <g id="eye-l">
+      <ellipse id="eyeball-l" cx="68" cy="96" rx="26" ry="28" fill="white"/>
+      <circle  id="pupil-l"   cx="70" cy="98" r="15" fill="#2D2D2D"/>
+      <circle  id="shine-l"   cx="76" cy="91" r="5.5" fill="white"/>
+      <!-- eyelid — animated for blink/sleepy -->
+      <rect id="lid-l" x="42" y="68" width="52" height="0" fill="currentColor" rx="4"/>
+    </g>
+
+    <!-- RIGHT EYE -->
+    <g id="eye-r">
+      <ellipse id="eyeball-r" cx="132" cy="96" rx="26" ry="28" fill="white"/>
+      <circle  id="pupil-r"   cx="134" cy="98" r="15" fill="#2D2D2D"/>
+      <circle  id="shine-r"   cx="140" cy="91" r="5.5" fill="white"/>
+      <rect id="lid-r" x="106" y="68" width="52" height="0" fill="currentColor" rx="4"/>
+    </g>
+
+    <!-- BROWS -->
+    <path id="brow-l" d="M46 70 Q68 58 90 70" stroke="#2D2D2D" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <path id="brow-r" d="M110 70 Q132 58 154 70" stroke="#2D2D2D" stroke-width="5" fill="none" stroke-linecap="round"/>
+
+    <!-- MOUTH -->
+    <path id="mouth" d="M70 136 Q100 158 130 136" stroke="#2D2D2D" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+
+    <!-- Tongue (excited only) -->
+    <ellipse id="tongue" cx="100" cy="152" rx="15" ry="11" fill="#FF6B9D" opacity="0"/>
+
+    <!-- Stars for love mood -->
+    <text id="star-l" x="20" y="75" font-size="22" opacity="0" text-anchor="middle">★</text>
+    <text id="star-r" x="180" y="75" font-size="22" opacity="0" text-anchor="middle">★</text>
+
+    <!-- ZZZ for sleepy -->
+    <g id="zzz" opacity="0">
+      <text x="148" y="65" font-size="14" fill="#2D2D2D" opacity="0.5">z</text>
+      <text x="158" y="50" font-size="18" fill="#2D2D2D" opacity="0.4">z</text>
+      <text x="170" y="32" font-size="22" fill="#2D2D2D" opacity="0.3">z</text>
+    </g>
+
+  </svg>
+</div>
+
+<div id="mood-name">happy</div>
+
+<script>
+// ── MOOD DEFINITIONS ─────────────────────────────────────────
+// Each mood changes: bg colour, brow paths, mouth path,
+// pupil offset, eye size, eyelid height, cheek opacity, extras
+const MOODS = {
+  happy: {
+    bg:       '#FFD166',
+    browL:    'M46 70 Q68 58 90 70',
+    browR:    'M110 70 Q132 58 154 70',
+    mouth:    'M70 136 Q100 158 130 136',
+    pupilLx:70,  pupilLy:98,
+    pupilRx:134, pupilRy:98,
+    eyeLry:28, eyeRry:28,
+    lidH:0,
+    cheekOp:0.45,
+    tongueOp:0,
+    starOp:0,
+    zzzOp:0,
+    label:'happy',
+  },
+  excited: {
+    bg:       '#FFD166',
+    browL:    'M46 75 Q68 63 90 75',
+    browR:    'M110 75 Q132 63 154 75',
+    mouth:    'M65 132 Q100 162 135 132',
+    pupilLx:70,  pupilLy:100,
+    pupilRx:134, pupilRy:100,
+    eyeLry:30, eyeRry:30,
+    lidH:0,
+    cheekOp:0.65,
+    tongueOp:1,
+    starOp:0,
+    zzzOp:0,
+    label:'excited!',
+  },
+  thinking: {
+    bg:       '#C7EFCF',
+    browL:    'M46 70 Q68 70 90 70',
+    browR:    'M110 64 Q132 70 154 64',
+    mouth:    'M74 142 Q100 134 126 142',
+    pupilLx:68,  pupilLy:96,
+    pupilRx:136, pupilRy:96,
+    eyeLry:24, eyeRry:24,
+    lidH:0,
+    cheekOp:0.15,
+    tongueOp:0,
+    starOp:0,
+    zzzOp:0,
+    label:'thinking...',
+  },
+  sleepy: {
+    bg:       '#B8C0FF',
+    browL:    'M46 72 Q68 72 90 72',
+    browR:    'M110 72 Q132 72 154 72',
+    mouth:    'M76 140 Q100 145 124 140',
+    pupilLx:70,  pupilLy:100,
+    pupilRx:134, pupilRy:100,
+    eyeLry:13, eyeRry:13,
+    lidH:18,
+    cheekOp:0.25,
+    tongueOp:0,
+    starOp:0,
+    zzzOp:1,
+    label:'sleepy zzz',
+  },
+  surprised: {
+    bg:       '#FFBE7B',
+    browL:    'M46 62 Q68 50 90 62',
+    browR:    'M110 62 Q132 50 154 62',
+    mouth:    'M84 138 Q100 152 116 138',
+    pupilLx:70,  pupilLy:100,
+    pupilRx:134, pupilRy:100,
+    eyeLry:32, eyeRry:32,
+    lidH:0,
+    cheekOp:0.55,
+    tongueOp:0,
+    starOp:0,
+    zzzOp:0,
+    label:'woah!',
+  },
+  love: {
+    bg:       '#FFB3C6',
+    browL:    'M46 70 Q68 58 90 70',
+    browR:    'M110 70 Q132 58 154 70',
+    mouth:    'M70 136 Q100 158 130 136',
+    pupilLx:70,  pupilLy:98,
+    pupilRx:134, pupilRy:98,
+    eyeLry:28, eyeRry:28,
+    lidH:0,
+    cheekOp:0.75,
+    tongueOp:0,
+    starOp:1,
+    zzzOp:0,
+    label:'hehe ♥',
+  },
+  moving: {
+    bg:       '#A8E6CF',
+    browL:    'M46 64 Q68 52 90 64',
+    browR:    'M110 64 Q132 52 154 64',
+    mouth:    'M74 138 Q100 128 126 138',
+    pupilLx:68,  pupilLy:94,
+    pupilRx:136, pupilRy:94,
+    eyeLry:26, eyeRry:26,
+    lidH:0,
+    cheekOp:0.5,
+    tongueOp:0,
+    starOp:0,
+    zzzOp:0,
+    label:'vroom!',
+  },
+  sad: {
+    bg:       '#ADB5BD',
+    browL:    'M46 66 Q68 76 90 66',
+    browR:    'M110 66 Q132 76 154 66',
+    mouth:    'M72 148 Q100 136 128 148',
+    pupilLx:70,  pupilLy:100,
+    pupilRx:134, pupilRy:100,
+    eyeLry:24, eyeRry:24,
+    lidH:6,
+    cheekOp:0.1,
+    tongueOp:0,
+    starOp:0,
+    zzzOp:0,
+    label:'aww...',
+  },
+}
+
+let currentMood = 'happy'
+let blinkTimer, idleTimer
+
+function applyMood(mood, animate) {
+  const m = MOODS[mood]
+  if (!m) return
+  currentMood = mood
+
+  // Background colour
+  document.body.style.background = m.bg
+
+  // Lid colour matches bg (makes lid "erase" the eye)
+  document.getElementById('lid-l').style.color = m.bg
+  document.getElementById('lid-r').style.color = m.bg
+
+  // SVG elements
+  set('brow-l', 'd', m.browL)
+  set('brow-r', 'd', m.browR)
+  set('mouth',  'd', m.mouth)
+
+  setAttr('pupil-l', 'cx', m.pupilLx)
+  setAttr('pupil-l', 'cy', m.pupilLy)
+  setAttr('shine-l', 'cx', m.pupilLx + 6)
+  setAttr('shine-l', 'cy', m.pupilLy - 7)
+
+  setAttr('pupil-r', 'cx', m.pupilRx)
+  setAttr('pupil-r', 'cy', m.pupilRy)
+  setAttr('shine-r', 'cx', m.pupilRx + 6)
+  setAttr('shine-r', 'cy', m.pupilRy - 7)
+
+  setAttr('eyeball-l', 'ry', m.eyeLry)
+  setAttr('eyeball-r', 'ry', m.eyeRry)
+
+  setAttr('lid-l', 'height', m.lidH)
+  setAttr('lid-r', 'height', m.lidH)
+
+  setAttr('cheek-l', 'opacity', m.cheekOp)
+  setAttr('cheek-r', 'opacity', m.cheekOp)
+
+  setAttr('tongue', 'opacity', m.tongueOp)
+  setAttr('star-l', 'opacity', m.starOp)
+  setAttr('star-r', 'opacity', m.starOp)
+  setAttr('zzz',    'opacity', m.zzzOp)
+
+  document.getElementById('mood-name').textContent = m.label
+}
+
+function set(id, attr, val)    { document.getElementById(id).setAttribute(attr, val) }
+function setAttr(id, attr, val){ document.getElementById(id).setAttribute(attr, val) }
+
+// ── BLINK ────────────────────────────────────────────────────
+function blink() {
+  if (currentMood === 'sleepy') return
+  const m = MOODS[currentMood]
+  const steps = [0, 10, 22, 30, 28, 22, 10, 0]
+  let i = 0
+  const t = setInterval(() => {
+    setAttr('lid-l', 'height', steps[i])
+    setAttr('lid-r', 'height', steps[i])
+    i++
+    if (i >= steps.length) {
+      clearInterval(t)
+      setAttr('lid-l', 'height', m.lidH)
+      setAttr('lid-r', 'height', m.lidH)
+    }
+  }, 35)
+}
+
+function scheduleBlink() {
+  clearTimeout(blinkTimer)
+  blinkTimer = setTimeout(() => { blink(); scheduleBlink() }, 2200 + Math.random() * 3200)
+}
+
+// ── IDLE DRIFT ───────────────────────────────────────────────
+const IDLE_MOODS = ['thinking', 'sleepy']
+
+function scheduleIdle() {
+  clearTimeout(idleTimer)
+  idleTimer = setTimeout(() => {
+    if (currentMood === 'happy') {
+      const next = IDLE_MOODS[Math.floor(Math.random() * IDLE_MOODS.length)]
+      applyMood(next)
+      setTimeout(() => { applyMood('happy'); scheduleIdle() }, 4000)
+    } else {
+      scheduleIdle()
+    }
+  }, 9000 + Math.random() * 9000)
+}
+
+// ── TAP / CLICK ──────────────────────────────────────────────
+const TAP_REACTIONS = ['excited', 'surprised', 'love']
+let tapLock = false
+
+document.getElementById('face-wrap').addEventListener('click', () => {
+  if (tapLock) return
+  tapLock = true
+  const r = TAP_REACTIONS[Math.floor(Math.random() * TAP_REACTIONS.length)]
+  applyMood(r)
+  clearTimeout(idleTimer)
+  setTimeout(() => {
+    applyMood('happy')
+    scheduleIdle()
+    tapLock = false
+  }, 1800)
+})
+
+// ── INIT ─────────────────────────────────────────────────────
+applyMood('happy')
+scheduleBlink()
+scheduleIdle()
+</script>
+</body>
+</html>
