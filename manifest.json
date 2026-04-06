@@ -2,7 +2,7 @@
   "name": "UNIT-01 Control",
   "short_name": "UNIT-01",
   "description": "RoboBuddy controller and face",
-  "start_url": "/index.html",
+  "start_url": "./index.html",
   "display": "fullscreen",
   "background_color": "#080a08",
   "theme_color": "#080a08",
