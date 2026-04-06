@@ -9,7 +9,7 @@
 <meta name="apple-mobile-web-app-title" content="Buddy">
 <meta name="theme-color" content="#FFD166">
 <link rel="manifest" href="manifest.json">
-<title>StEEvE-01</title>
+<title>BUDDY</title>
 <style>
 * { box-sizing:border-box; margin:0; padding:0; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
 html, body { width:100%; height:100%; overflow:hidden; }
@@ -168,81 +168,136 @@ body {
   </svg>
 
   <!-- ══════════════════════════════════════════
-       FACE B — GUMBALL
+       FACE B — NICK JR FACE
+       No head shape. Features float directly on
+       the background colour. Big wobbly eyes,
+       massive expressive mouth, thick outlines.
        ══════════════════════════════════════════ -->
   <svg class="face-svg hidden" id="face-gumball" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
 
-    <!-- Round head — no ears, full circle shape -->
-    <ellipse id="g-head" cx="100" cy="112" rx="88" ry="92" fill="#FFFFFF"/>
-
-    <!-- Cheeks -->
-    <ellipse id="g-cheek-l" cx="30"  cy="140" rx="18" ry="13" fill="#FFB3C6" opacity="0"/>
-    <ellipse id="g-cheek-r" cx="170" cy="140" rx="18" ry="13" fill="#FFB3C6" opacity="0"/>
-
-    <!-- BROWS — Gumball's thick expressive brows -->
-    <rect id="g-brow-l" x="42" y="82" width="52" height="9" rx="4.5" fill="#2C2C2A"/>
-    <rect id="g-brow-r" x="106" y="82" width="52" height="9" rx="4.5" fill="#2C2C2A"/>
-
-    <!-- LEFT EYE — big oval, Gumball style -->
+    <!-- ── EYES — big round blobs, slightly uneven like drawn by hand ── -->
     <g id="g-eye-l">
-      <ellipse id="g-eyeball-l" cx="68"  cy="118" rx="22" ry="26" fill="#2C2C2A"/>
-      <circle  id="g-shine-l"   cx="76"  cy="108" r="8"   fill="white"/>
-      <rect    id="g-lid-l"     x="46"   y="92"   width="44" height="2" rx="3" fill="#FFD166"/>
+      <!-- outer white sclera blob — thick black stroke is the "outline" -->
+      <ellipse id="g-eyeball-l" cx="64" cy="88" rx="30" ry="32"
+               fill="white" stroke="#1A1A18" stroke-width="5"/>
+      <!-- iris -->
+      <circle cx="64" cy="90" r="17" fill="#1A1A18"/>
+      <!-- main shine — large, like Nick Jr FACE -->
+      <circle id="g-shine-l" cx="72" cy="80" r="9" fill="white"/>
+      <!-- tiny second shine -->
+      <circle cx="58" cy="96" r="4" fill="white" opacity="0.5"/>
+      <!-- blink lid — matches bg, sweeps down from top of eye -->
+      <rect id="g-lid-l" x="34" y="56" width="60" height="2" rx="4" fill="#FFD166"/>
     </g>
 
-    <!-- RIGHT EYE -->
     <g id="g-eye-r">
-      <ellipse id="g-eyeball-r" cx="132" cy="118" rx="22" ry="26" fill="#2C2C2A"/>
-      <circle  id="g-shine-r"   cx="140" cy="108" r="8"   fill="white"/>
-      <rect    id="g-lid-r"     x="110"  y="92"   width="44" height="2" rx="3" fill="#FFD166"/>
+      <ellipse id="g-eyeball-r" cx="136" cy="88" rx="30" ry="32"
+               fill="white" stroke="#1A1A18" stroke-width="5"/>
+      <circle cx="136" cy="90" r="17" fill="#1A1A18"/>
+      <circle id="g-shine-r" cx="144" cy="80" r="9" fill="white"/>
+      <circle cx="128" cy="96" r="4" fill="white" opacity="0.5"/>
+      <rect id="g-lid-r" x="106" y="56" width="60" height="2" rx="4" fill="#FFD166"/>
     </g>
 
-    <!-- MOUTH — Gumball's big wide mouth, changes shape per mood -->
-    <!-- Outer mouth shape -->
-    <path id="g-mouth-outer" d="M48 162 Q100 200 152 162 Q130 185 100 188 Q70 185 48 162Z" fill="#CC2244"/>
-    <!-- Teeth row -->
-    <path id="g-teeth" d="M62 165 Q100 172 138 165 L138 174 Q100 180 62 174Z" fill="white"/>
-    <!-- Tongue -->
-    <ellipse id="g-tongue" cx="100" cy="178" rx="22" ry="11" fill="#FF8FAB"/>
-    <!-- mouth visible group for easy hide -->
-    <g id="g-mouth-group">
-      <!-- just references above, controlled by opacity on whole group -->
+    <!-- ── MOUTH — the whole bottom third of the face, very Nick Jr ── -->
+    <!-- Each mood swaps which path is visible via opacity             -->
+
+    <!-- HAPPY / LOVE / EXCITED — wide open grin, big teeth, tongue out -->
+    <g id="g-mouth-open" opacity="1">
+      <!-- dark mouth cavity -->
+      <path d="M28 152 Q50 140 100 138 Q150 140 172 152 Q165 195 100 198 Q35 195 28 152Z"
+            fill="#1A1A18" stroke="#1A1A18" stroke-width="3" stroke-linejoin="round"/>
+      <!-- inner red mouth -->
+      <path d="M34 155 Q55 145 100 143 Q145 145 166 155 Q158 190 100 193 Q42 190 34 155Z"
+            fill="#CC2244"/>
+      <!-- teeth — 4 chunky rectangles -->
+      <rect x="46"  y="144" width="22" height="18" rx="4" fill="white"/>
+      <rect x="72"  y="142" width="22" height="20" rx="4" fill="white"/>
+      <rect x="98"  y="142" width="22" height="20" rx="4" fill="white"/>
+      <rect x="124" y="144" width="22" height="18" rx="4" fill="white"/>
+      <!-- tooth dividers -->
+      <line x1="68"  y1="142" x2="68"  y2="162" stroke="#1A1A18" stroke-width="2"/>
+      <line x1="94"  y1="140" x2="94"  y2="162" stroke="#1A1A18" stroke-width="2"/>
+      <line x1="120" y1="140" x2="120" y2="162" stroke="#1A1A18" stroke-width="2"/>
+      <line x1="146" y1="142" x2="146" y2="162" stroke="#1A1A18" stroke-width="2"/>
+      <!-- big round tongue -->
+      <ellipse id="g-tongue" cx="100" cy="182" rx="34" ry="16" fill="#FF6B8A"/>
     </g>
 
-    <!-- NOSE — tiny, centred -->
-    <ellipse id="g-nose" cx="100" cy="150" rx="5" ry="4" fill="#2C2C2A" opacity="0.15"/>
+    <!-- THINKING / MOVING — small closed hmm smile, one side raised -->
+    <g id="g-mouth-hmm" opacity="0">
+      <path d="M62 162 Q100 148 138 162" fill="none"
+            stroke="#1A1A18" stroke-width="7" stroke-linecap="round"/>
+    </g>
 
-    <!-- Angry brows overlay — V-shaped heavy brows -->
+    <!-- SLEEPY — tiny flat line -->
+    <g id="g-mouth-flat" opacity="0">
+      <path d="M74 168 Q100 165 126 168" fill="none"
+            stroke="#1A1A18" stroke-width="7" stroke-linecap="round"/>
+    </g>
+
+    <!-- SURPRISED — round O mouth -->
+    <g id="g-mouth-o" opacity="0">
+      <ellipse cx="100" cy="168" rx="22" ry="24"
+               fill="#1A1A18" stroke="#1A1A18" stroke-width="3"/>
+      <ellipse cx="100" cy="168" rx="16" ry="18" fill="#CC2244"/>
+    </g>
+
+    <!-- SAD — downward curve, no teeth -->
+    <g id="g-mouth-sad" opacity="0">
+      <path d="M58 172 Q100 155 142 172" fill="none"
+            stroke="#1A1A18" stroke-width="7" stroke-linecap="round"/>
+    </g>
+
+    <!-- ANGRY — teeth-bared grimace, straight line top, curved bottom -->
+    <g id="g-mouth-angry" opacity="0">
+      <path d="M40 160 Q100 156 160 160 Q145 180 100 182 Q55 180 40 160Z"
+            fill="#1A1A18"/>
+      <path d="M46 162 Q100 158 154 162 Q140 178 100 180 Q60 178 46 162Z"
+            fill="#CC2244"/>
+      <!-- gritted teeth lines -->
+      <line x1="60"  y1="160" x2="60"  y2="173" stroke="#1A1A18" stroke-width="3"/>
+      <line x1="78"  y1="159" x2="78"  y2="173" stroke="#1A1A18" stroke-width="3"/>
+      <line x1="96"  y1="158" x2="96"  y2="173" stroke="#1A1A18" stroke-width="3"/>
+      <line x1="114" y1="158" x2="114" y2="173" stroke="#1A1A18" stroke-width="3"/>
+      <line x1="132" y1="159" x2="132" y2="173" stroke="#1A1A18" stroke-width="3"/>
+      <!-- horizontal gum line -->
+      <line x1="40" y1="163" x2="160" y2="163" stroke="white" stroke-width="3" opacity="0.5"/>
+    </g>
+
+    <!-- ── BROWS — only show on angry, float above eyes ── -->
     <g id="g-angry-brows" opacity="0">
-      <rect x="42" y="86" width="52" height="11" rx="5" fill="#2C2C2A" transform="rotate(14,68,91)"/>
-      <rect x="106" y="86" width="52" height="11" rx="5" fill="#2C2C2A" transform="rotate(-14,132,91)"/>
+      <path d="M34 52 Q64 38 88 50" fill="none"
+            stroke="#1A1A18" stroke-width="8" stroke-linecap="round"/>
+      <path d="M112 50 Q136 38 166 52" fill="none"
+            stroke="#1A1A18" stroke-width="8" stroke-linecap="round"/>
     </g>
 
-    <!-- ZZZ -->
+    <!-- ── ZZZ ── -->
     <g id="g-zzz" opacity="0">
-      <text x="158" y="80" font-family="Arial" font-size="13" fill="#9090C0" opacity="0.7">z</text>
-      <text x="167" y="64" font-family="Arial" font-size="16" fill="#9090C0" opacity="0.5">z</text>
-      <text x="178" y="46" font-family="Arial" font-size="20" fill="#9090C0" opacity="0.35">z</text>
+      <text x="156" y="52" font-family="Arial" font-weight="900" font-size="14" fill="#9090C0" opacity="0.7">z</text>
+      <text x="166" y="36" font-family="Arial" font-weight="900" font-size="18" fill="#9090C0" opacity="0.5">z</text>
+      <text x="178" y="18" font-family="Arial" font-weight="900" font-size="22" fill="#9090C0" opacity="0.35">z</text>
     </g>
 
-    <!-- Sweat drop -->
+    <!-- ── SWEAT DROP ── -->
     <g id="g-sweat" opacity="0">
-      <ellipse cx="172" cy="75" rx="6" ry="8" fill="#A8D8FF"/>
-      <polygon points="166,75 178,75 172,63" fill="#A8D8FF"/>
+      <ellipse cx="174" cy="60" rx="6" ry="9" fill="#A8D8FF"/>
+      <polygon points="168,60 180,60 174,47" fill="#A8D8FF"/>
     </g>
 
-    <!-- Sparkles -->
+    <!-- ── SPARKLES (love) ── -->
     <g id="g-sparkle-l" opacity="0">
-      <line x1="22" y1="90" x2="22" y2="104" stroke="#FF9AAC" stroke-width="3" stroke-linecap="round"/>
-      <line x1="15" y1="97" x2="29" y2="97"  stroke="#FF9AAC" stroke-width="3" stroke-linecap="round"/>
-      <line x1="16" y1="91" x2="28" y2="103" stroke="#FF9AAC" stroke-width="2" stroke-linecap="round"/>
-      <line x1="28" y1="91" x2="16" y2="103" stroke="#FF9AAC" stroke-width="2" stroke-linecap="round"/>
+      <line x1="14" y1="78" x2="14" y2="94"  stroke="#FF9AAC" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="6"  y1="86" x2="22" y2="86"  stroke="#FF9AAC" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="7"  y1="79" x2="21" y2="93"  stroke="#FF9AAC" stroke-width="2"   stroke-linecap="round"/>
+      <line x1="21" y1="79" x2="7"  y2="93"  stroke="#FF9AAC" stroke-width="2"   stroke-linecap="round"/>
     </g>
     <g id="g-sparkle-r" opacity="0">
-      <line x1="178" y1="90" x2="178" y2="104" stroke="#FF9AAC" stroke-width="3" stroke-linecap="round"/>
-      <line x1="171" y1="97" x2="185" y2="97"  stroke="#FF9AAC" stroke-width="3" stroke-linecap="round"/>
-      <line x1="172" y1="91" x2="184" y2="103" stroke="#FF9AAC" stroke-width="2" stroke-linecap="round"/>
-      <line x1="184" y1="91" x2="172" y2="103" stroke="#FF9AAC" stroke-width="2" stroke-linecap="round"/>
+      <line x1="186" y1="78" x2="186" y2="94" stroke="#FF9AAC" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="178" y1="86" x2="194" y2="86" stroke="#FF9AAC" stroke-width="3.5" stroke-linecap="round"/>
+      <line x1="179" y1="79" x2="193" y2="93" stroke="#FF9AAC" stroke-width="2"   stroke-linecap="round"/>
+      <line x1="193" y1="79" x2="179" y2="93" stroke="#FF9AAC" stroke-width="2"   stroke-linecap="round"/>
     </g>
 
   </svg>
@@ -267,6 +322,7 @@ const MOODS = {
     eyeLry:18, eyeRry:18, lidH:2, cheekOp:0,
     bowFill:'#FF9AAC', bowKnot:'#FF6B8A',
     browRotL:0, browRotR:0,
+    mouthShape:'open',
     mouthScale:1, mouthOp:1, teethOp:1, tongueOp:1,
     sparkOp:0, zzzOp:0, sweatOp:0,
     label:'happy',
@@ -276,6 +332,7 @@ const MOODS = {
     eyeLry:22, eyeRry:22, lidH:2, cheekOp:0.7,
     bowFill:'#FF6B8A', bowKnot:'#E8445A',
     browRotL:0, browRotR:0,
+    mouthShape:'open',
     mouthScale:1.1, mouthOp:1, teethOp:1, tongueOp:1,
     sparkOp:0, zzzOp:0, sweatOp:0,
     label:'excited!',
@@ -285,6 +342,7 @@ const MOODS = {
     eyeLry:14, eyeRry:16, lidH:8, cheekOp:0,
     bowFill:'#A8D8B0', bowKnot:'#6DBF7E',
     browRotL:-4, browRotR:4,
+    mouthShape:'hmm',
     mouthScale:0.6, mouthOp:0.7, teethOp:0, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:0,
     label:'thinking...',
@@ -294,6 +352,7 @@ const MOODS = {
     eyeLry:7, eyeRry:7, lidH:20, cheekOp:0,
     bowFill:'#C0C8FF', bowKnot:'#9098E8',
     browRotL:0, browRotR:0,
+    mouthShape:'flat',
     mouthScale:0.5, mouthOp:0.5, teethOp:0, tongueOp:0,
     sparkOp:0, zzzOp:1, sweatOp:0,
     label:'sleepy zzz',
@@ -303,6 +362,7 @@ const MOODS = {
     eyeLry:24, eyeRry:24, lidH:2, cheekOp:0.5,
     bowFill:'#FFB347', bowKnot:'#E8922A',
     browRotL:6, browRotR:-6,
+    mouthShape:'o',
     mouthScale:0.7, mouthOp:1, teethOp:0, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:1,
     label:'woah!',
@@ -312,6 +372,7 @@ const MOODS = {
     eyeLry:18, eyeRry:18, lidH:2, cheekOp:0.85,
     bowFill:'#FF6B8A', bowKnot:'#E8445A',
     browRotL:0, browRotR:0,
+    mouthShape:'open',
     mouthScale:1, mouthOp:1, teethOp:1, tongueOp:1,
     sparkOp:1, zzzOp:0, sweatOp:0,
     label:'hehe',
@@ -321,6 +382,7 @@ const MOODS = {
     eyeLry:16, eyeRry:16, lidH:5, cheekOp:0.4,
     bowFill:'#6DBF9E', bowKnot:'#3DAA7E',
     browRotL:-2, browRotR:2,
+    mouthShape:'hmm',
     mouthScale:0.9, mouthOp:1, teethOp:1, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:0,
     label:'vroom!',
@@ -330,6 +392,7 @@ const MOODS = {
     eyeLry:13, eyeRry:13, lidH:12, cheekOp:0,
     bowFill:'#A0AEC0', bowKnot:'#718096',
     browRotL:5, browRotR:-5,
+    mouthShape:'sad',
     mouthScale:0.6, mouthOp:0.8, teethOp:0, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:0,
     label:'aww...',
@@ -339,6 +402,7 @@ const MOODS = {
     eyeLry:12, eyeRry:12, lidH:14, cheekOp:0,
     bowFill:'#CC2244', bowKnot:'#991133',
     browRotL:20, browRotR:-20,
+    mouthShape:'angry',
     mouthScale:0.7, mouthOp:1, teethOp:1, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:0,
     label:'GRRRR!!',
@@ -388,39 +452,33 @@ function applyKitty(m) {
   sa('k-angry-brows','opacity', Math.abs(m.browRotL) >= 20 ? 1 : 0)
 }
 
-// ── GUMBALL RENDERER ──────────────────────────────────────────
+// ── NICK JR FACE RENDERER ────────────────────────────────────
+// Mouth is per-mood discrete groups, not a scaled single shape.
+// Eyes still use lid-height blink system same as Kitty.
+// No head shape — everything floats on the bg colour.
 function applyGumball(m) {
   const bg = m.bg
+
+  // Lid colour matches bg to erase eye on blink
   sa('g-lid-l','fill',bg); sa('g-lid-r','fill',bg)
   sa('g-lid-l','height',m.lidH); sa('g-lid-r','height',m.lidH)
+
+  // Eye size
   sa('g-eyeball-l','ry',m.eyeLry); sa('g-eyeball-r','ry',m.eyeRry)
-  sa('g-shine-l','cy', 118 - m.eyeLry * 0.45)
-  sa('g-shine-r','cy', 118 - m.eyeRry * 0.45)
-  sa('g-cheek-l','opacity',m.cheekOp); sa('g-cheek-r','opacity',m.cheekOp)
+  sa('g-shine-l','cy', 88 - m.eyeLry * 0.3)
+  sa('g-shine-r','cy', 88 - m.eyeRry * 0.3)
 
-  // Brow rotation — normal brows tilt with mood, angry brows swap in
-  const isAngryMood = Math.abs(m.browRotL) >= 20
-  sa('g-angry-brows','opacity', isAngryMood ? 1 : 0)
-  // Normal brow tilt
-  document.getElementById('g-brow-l').setAttribute('transform',
-    isAngryMood ? '' : `rotate(${m.browRotL},68,86)`)
-  document.getElementById('g-brow-r').setAttribute('transform',
-    isAngryMood ? '' : `rotate(${m.browRotR},132,86)`)
+  // Angry brows — only on angry mood
+  const angry = Math.abs(m.browRotL) >= 20
+  sa('g-angry-brows','opacity', angry ? 1 : 0)
 
-  // Mouth — scale vertically via transform on the whole mouth group
-  const mScale = m.mouthScale
-  const mouthEl = document.getElementById('g-mouth-outer')
-  // We translate to mouth centre (100,180), scale, translate back
-  mouthEl.setAttribute('transform',
-    `translate(100,175) scale(${mScale}) translate(-100,-175)`)
-  sa('g-mouth-outer','opacity',m.mouthOp)
-  sa('g-teeth','opacity', m.teethOp * m.mouthOp)
+  // Pick which mouth group to show based on mood
+  // mouthShape is a new key we add — derived from mood name
+  const shape = m.mouthShape || 'open'
+  const mouths = ['open','hmm','flat','o','sad','angry']
+  mouths.forEach(n => sa(`g-mouth-${n}`, 'opacity', n === shape ? 1 : 0))
 
-  // Tongue transform matches mouth
-  document.getElementById('g-tongue').setAttribute('transform',
-    `translate(100,178) scale(${mScale}) translate(-100,-178)`)
-  sa('g-tongue','opacity', m.tongueOp * m.mouthOp)
-
+  // Extras
   sa('g-sparkle-l','opacity',m.sparkOp); sa('g-sparkle-r','opacity',m.sparkOp)
   sa('g-zzz','opacity',m.zzzOp); sa('g-sweat','opacity',m.sweatOp)
 }
@@ -446,7 +504,7 @@ function swapFace() {
 
   // Hint text
   const hint = document.getElementById('swap-hint')
-  const name = currentFace === 'kitty' ? 'kitty mode' : 'gumball mode'
+  const name = currentFace === 'kitty' ? 'kitty mode' : 'nick jr mode'
   hint.textContent = name
   hint.classList.add('show')
   setTimeout(() => hint.classList.remove('show'), 1800)
@@ -479,7 +537,10 @@ function triggerAngry() {
 function blink() {
   if (currentMood === 'sleepy' || isAngry) return
   const m = MOODS[currentMood]
-  const maxClose = Math.max(m.eyeLry * 1.1, 18)
+  // Kitty eyes: ry up to ~24, Nick Jr eyes: ry up to ~32 (bigger)
+  const maxClose = currentFace === 'kitty'
+    ? Math.max(m.eyeLry * 1.1, 18)
+    : Math.max(m.eyeLry * 1.3, 28)
   const frames   = [2, 6, 14, maxClose, 14, 6, 2]
   const prefix   = currentFace === 'kitty' ? 'k' : 'g'
   let i = 0
