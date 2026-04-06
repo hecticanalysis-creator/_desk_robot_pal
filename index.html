@@ -3,9 +3,27 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="UNIT-01">
+<meta name="theme-color" content="#080a08">
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="UNIT-01">
+<meta name="theme-color" content="#080a08">
+<link rel="manifest" href="manifest.json">
 <title>UNIT-01 // CONTROL</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
+/* Portrait lock — show overlay in landscape, hide all content */
+@media (orientation: landscape) {
+  #portrait-gate { display: flex !important; }
+  body > *:not(#portrait-gate) { visibility: hidden; }
+}
+
 :root {
   --bg:        #080a08;
   --bg2:       #0d110d;
@@ -21,10 +39,10 @@
   --font-mono: 'Share Tech Mono', monospace;
 }
 
-* { box-sizing: border-box; margin: 0; padding: 0;
-    touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+* { box-sizing:border-box; margin:0; padding:0;
+    touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
 
-html, body { height: 100%; overflow: hidden; }
+html, body { height:100%; overflow:hidden; }
 
 body {
   background: var(--bg);
@@ -37,56 +55,31 @@ body {
   overflow: hidden;
 }
 
-/* Force landscape */
-@media (orientation: portrait) {
-  body::before {
-    content: 'ROTATE DEVICE';
-    position: fixed; inset: 0;
-    background: var(--bg);
-    color: var(--amber);
-    font-family: var(--font-hud);
-    font-size: 18px;
-    font-weight: 900;
-    letter-spacing: 0.3em;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-  }
-  /* hide everything in portrait */
-  body > * { visibility: hidden; }
-}
-@media (orientation: portrait) {
-  body::before { display: flex; }
-}
-
-/* Scanline overlay */
+/* Corner frame decoration */
 body::after {
   content: '';
-  position: fixed; inset: 8px;
+  position: fixed; inset: 6px;
   border: 1px solid var(--border);
   pointer-events: none;
   z-index: 99;
   clip-path: polygon(
-    0 16px, 16px 0,
-    calc(100% - 16px) 0, 100% 16px,
-    100% calc(100% - 16px), calc(100% - 16px) 100%,
-    16px 100%, 0 calc(100% - 16px)
+    0 14px, 14px 0,
+    calc(100% - 14px) 0, 100% 14px,
+    100% calc(100% - 14px), calc(100% - 14px) 100%,
+    14px 100%, 0 calc(100% - 14px)
   );
 }
 
-/* Top bar */
+/* ── TOP BAR ── */
 .topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 20px;
+  padding: 10px 16px 8px;
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
-  height: 44px;
 }
-
-.topbar-left { display: flex; align-items: center; gap: 16px; }
+.topbar-left { display:flex; align-items:center; gap:14px; }
 
 .unit-id {
   font-family: var(--font-hud);
@@ -97,7 +90,6 @@ body::after {
   text-shadow: 0 0 12px rgba(245,158,11,0.5);
 }
 
-/* Buddy link */
 .buddy-link {
   font-family: var(--font-hud);
   font-size: 9px;
@@ -111,19 +103,16 @@ body::after {
   text-decoration: none;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
   clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
   transition: all 0.2s;
 }
 .buddy-link:active { background: var(--cyan); color: var(--bg); }
 
-.conn-group { display: flex; align-items: center; gap: 10px; }
+.conn-group { display:flex; align-items:center; gap:8px; }
 
 #status-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--muted);
-  transition: all 0.3s;
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--muted); transition: all 0.3s;
 }
 #status-dot.live {
   background: var(--cyan);
@@ -133,391 +122,235 @@ body::after {
 @keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
 #status-text {
-  font-size: 10px;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  text-transform: uppercase;
+  font-size: 10px; letter-spacing: 0.12em;
+  color: var(--muted); text-transform: uppercase;
 }
 #status-text.live { color: var(--cyan); }
 
 #btn-connect {
   font-family: var(--font-hud);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  background: transparent;
-  border: 1px solid var(--amber);
-  color: var(--amber);
-  padding: 5px 12px;
-  cursor: pointer;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.15em;
+  background: transparent; border: 1px solid var(--amber);
+  color: var(--amber); padding: 5px 12px; cursor: pointer;
   clip-path: polygon(6px 0%, 100% 0%, calc(100% - 6px) 100%, 0% 100%);
   transition: all 0.2s;
 }
 #btn-connect:active { background: var(--amber); color: var(--bg); }
 #btn-connect.hide { display: none; }
 
-/* Sensor strip — horizontal, compact for landscape */
+/* ── SENSOR STRIP ── */
 .sensors {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
   gap: 1px;
   background: var(--border);
   border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 .sensor-cell {
-  flex: 1;
   background: var(--panel);
-  padding: 5px 10px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.sc-label {
-  font-size: 8px;
-  letter-spacing: 0.15em;
-  color: var(--muted);
-  text-transform: uppercase;
-  flex-shrink: 0;
-}
-.sc-val {
-  font-family: var(--font-hud);
-  font-size: 16px;
-  font-weight: 700;
-  line-height: 1;
-  transition: color 0.3s;
-}
-.sc-unit { font-size: 8px; color: var(--muted); margin-left: 2px; }
-.v-ok   { color: var(--cyan); text-shadow: 0 0 8px rgba(6,214,160,0.4); }
-.v-warn { color: var(--amber); text-shadow: 0 0 8px rgba(245,158,11,0.4); }
-.v-bad  { color: var(--red); text-shadow: 0 0 8px rgba(239,68,68,0.4); }
-
-/* Obstacle alert */
-#obstacle-alert {
-  background: rgba(239,68,68,0.15);
-  border-bottom: 1px solid var(--red);
-  padding: 4px;
+  padding: 5px 8px;
   text-align: center;
-  font-size: 9px;
-  letter-spacing: 0.2em;
-  color: var(--red);
-  text-transform: uppercase;
-  display: none;
-  flex-shrink: 0;
 }
-#obstacle-alert.show {
-  display: block;
-  animation: alert-pulse 0.6s infinite alternate;
+.sc-label { font-size: 8px; letter-spacing: 0.12em; color: var(--muted); text-transform: uppercase; margin-bottom: 1px; }
+.sc-val { font-family: var(--font-hud); font-size: 15px; font-weight: 700; line-height: 1; transition: color 0.3s; }
+.sc-unit { font-size: 7px; color: var(--muted); }
+.v-ok   { color: var(--cyan);  text-shadow: 0 0 8px rgba(6,214,160,0.4); }
+.v-warn { color: var(--amber); text-shadow: 0 0 8px rgba(245,158,11,0.4); }
+.v-bad  { color: var(--red);   text-shadow: 0 0 8px rgba(239,68,68,0.4); }
+
+/* ── OBSTACLE ALERT ── */
+#obstacle-alert {
+  display: none; background: rgba(239,68,68,0.15);
+  border-bottom: 1px solid var(--red);
+  padding: 5px; text-align: center;
+  font-size: 9px; letter-spacing: 0.2em;
+  color: var(--red); text-transform: uppercase; flex-shrink: 0;
 }
+#obstacle-alert.show { display: block; animation: alert-pulse 0.6s infinite alternate; }
 @keyframes alert-pulse { from{opacity:1} to{opacity:0.4} }
 
-/* Mode bar */
+/* ── MODE BAR ── */
 .mode-bar {
-  display: flex;
-  gap: 1px;
-  background: var(--border);
-  border-bottom: 1px solid var(--border);
+  display: flex; gap: 1px;
+  background: var(--border); border-bottom: 1px solid var(--border);
   flex-shrink: 0;
 }
 .mode-btn {
-  flex: 1;
-  padding: 7px 4px;
-  font-family: var(--font-hud);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.15em;
-  background: var(--panel);
-  color: var(--muted);
-  border: none;
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: all 0.2s;
+  flex: 1; padding: 8px 4px;
+  font-family: var(--font-hud); font-size: 9px; font-weight: 700;
+  letter-spacing: 0.15em; background: var(--panel); color: var(--muted);
+  border: none; cursor: pointer; text-transform: uppercase; transition: all 0.2s;
 }
 .mode-btn.active { background: rgba(245,158,11,0.12); color: var(--amber); }
 
-/* Main area */
+/* ── MAIN ── */
 .main { flex: 1; overflow: hidden; position: relative; min-height: 0; }
-.view { display: none; height: 100%; }
-.view.active { display: flex; flex-direction: row; }
+.view { display: none; height: 100%; flex-direction: column; }
+.view.active { display: flex; }
 
-/* ── DRIVE VIEW — landscape two-column layout ── */
-#view-drive { flex-direction: row; align-items: stretch; }
+/* ── DRIVE VIEW — portrait two-row layout ── */
+#view-drive {
+  flex-direction: row;   /* tilt on left, dpad on right */
+}
 
-/* Left panel: tilt zone */
+/* Left: tilt panel — narrower in portrait */
 .tilt-panel {
-  width: 220px;
+  width: 160px;
   flex-shrink: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 10px 14px;
+  padding: 10px 10px;
   border-right: 1px solid var(--border);
   gap: 8px;
 }
 
-.tilt-label {
-  font-size: 8px;
-  letter-spacing: 0.2em;
-  color: var(--muted);
-  text-transform: uppercase;
-}
+.tilt-label { font-size: 8px; letter-spacing: 0.18em; color: var(--muted); text-transform: uppercase; }
 
-.reticle-wrap {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  flex-shrink: 0;
-}
-.reticle-ring {
-  position: absolute; inset: 0;
-  border: 1px solid var(--dim);
-  border-radius: 50%;
-}
-.reticle-ring-inner {
-  position: absolute; inset: 25px;
-  border: 1px solid var(--dim);
-  border-radius: 50%;
-}
-.reticle-cross {
-  position: absolute; inset: 0;
-}
-.reticle-cross::before, .reticle-cross::after {
-  content: '';
-  position: absolute;
-  background: var(--dim);
-}
+.reticle-wrap { position: relative; width: 100px; height: 100px; flex-shrink: 0; }
+.reticle-ring { position: absolute; inset: 0; border: 1px solid var(--dim); border-radius: 50%; }
+.reticle-ring-inner { position: absolute; inset: 22px; border: 1px solid var(--dim); border-radius: 50%; }
+.reticle-cross { position: absolute; inset: 0; }
+.reticle-cross::before, .reticle-cross::after { content: ''; position: absolute; background: var(--dim); }
 .reticle-cross::before { left:50%; top:0; width:1px; height:100%; transform:translateX(-50%); }
 .reticle-cross::after  { top:50%; left:0; height:1px; width:100%; transform:translateY(-50%); }
 
 #tilt-dot {
-  position: absolute;
-  width: 12px; height: 12px;
-  border-radius: 50%;
+  position: absolute; width: 12px; height: 12px; border-radius: 50%;
   background: var(--amber);
   box-shadow: 0 0 10px var(--amber), 0 0 20px rgba(245,158,11,0.4);
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  transition: top 0.06s, left 0.06s;
-  z-index: 2;
+  top: 50%; left: 50%; transform: translate(-50%,-50%);
+  transition: top 0.06s, left 0.06s; z-index: 2;
 }
 
 #tilt-dir-label {
-  font-family: var(--font-hud);
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.2em;
-  color: var(--amber);
-  min-height: 16px;
-  text-align: center;
-}
-
-/* Tilt landscape note */
-#tilt-axis-note {
-  font-size: 8px;
-  color: var(--muted);
-  letter-spacing: 0.08em;
-  text-align: center;
-  line-height: 1.5;
+  font-family: var(--font-hud); font-size: 10px; font-weight: 700;
+  letter-spacing: 0.15em; color: var(--amber); min-height: 14px; text-align: center;
 }
 
 #tilt-toggle {
-  font-family: var(--font-hud);
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  background: transparent;
-  border: 1px solid var(--dim);
-  color: var(--muted);
-  padding: 5px 16px;
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: all 0.2s;
+  font-family: var(--font-hud); font-size: 8px; font-weight: 700;
+  letter-spacing: 0.12em; background: transparent;
+  border: 1px solid var(--dim); color: var(--muted);
+  padding: 5px 10px; cursor: pointer; text-transform: uppercase; transition: all 0.2s;
 }
-#tilt-toggle.armed {
-  border-color: var(--cyan);
-  color: var(--cyan);
-  box-shadow: 0 0 8px rgba(6,214,160,0.3);
+#tilt-toggle.armed { border-color: var(--cyan); color: var(--cyan); box-shadow: 0 0 8px rgba(6,214,160,0.3); }
+
+.tilt-hint {
+  font-size: 8px; color: var(--muted); letter-spacing: 0.06em;
+  text-align: center; line-height: 1.6;
 }
 
-/* Right panel: d-pad + controls — fills remaining space */
+/* Right: d-pad panel */
 .dpad-panel {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  gap: 8px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 10px; gap: 8px;
 }
 
 .pad {
   display: grid;
-  grid-template-columns: repeat(3, 64px);
-  grid-template-rows: repeat(3, 64px);
+  grid-template-columns: repeat(3, 68px);
+  grid-template-rows: repeat(3, 68px);
   gap: 5px;
 }
 
 .btn {
-  background: var(--panel);
-  border: 1px solid var(--dim);
-  color: var(--text);
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  user-select: none;
-  transition: all 0.1s;
+  background: var(--panel); border: 1px solid var(--dim);
+  color: var(--text); font-size: 22px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; user-select: none; transition: all 0.1s;
   clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
 }
 .btn:active, .btn.held {
-  background: rgba(245,158,11,0.2);
-  border-color: var(--amber);
-  color: var(--amber);
-  box-shadow: inset 0 0 12px rgba(245,158,11,0.15);
+  background: rgba(245,158,11,0.2); border-color: var(--amber);
+  color: var(--amber); box-shadow: inset 0 0 12px rgba(245,158,11,0.15);
 }
 .btn.blocked { background: rgba(239,68,68,0.1); border-color: var(--red); color: var(--red); }
 .btn-stop {
-  background: rgba(239,68,68,0.08);
-  border-color: #5b1a1a;
-  color: #fca5a5;
-  font-family: var(--font-hud);
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  clip-path: none;
-  border-radius: 2px;
+  background: rgba(239,68,68,0.08); border-color: #5b1a1a; color: #fca5a5;
+  font-family: var(--font-hud); font-size: 8px; font-weight: 700;
+  letter-spacing: 0.1em; clip-path: none; border-radius: 2px;
 }
 .btn-stop:active { background: rgba(239,68,68,0.3); }
-.btn-horn {
-  background: rgba(6,214,160,0.06);
-  border-color: #0a3a2a;
-  font-size: 18px;
-  clip-path: none;
-  border-radius: 2px;
-}
+.btn-horn { background: rgba(6,214,160,0.06); border-color: #0a3a2a; font-size: 20px; clip-path: none; border-radius: 2px; }
 .btn-horn:active { background: rgba(6,214,160,0.2); border-color: var(--cyan); }
 .x { visibility: hidden; }
 
-.speed-row { display: flex; gap: 5px; }
+.bottom-row { display:flex; gap:5px; width: 214px; }
+.speed-row  { display:flex; gap:5px; }
+
 .spd {
-  background: var(--panel);
-  border: 1px solid var(--dim);
-  color: var(--muted);
-  font-family: var(--font-hud);
-  font-size: 8px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  padding: 5px 14px;
-  cursor: pointer;
-  text-transform: uppercase;
+  background: var(--panel); border: 1px solid var(--dim);
+  color: var(--muted); font-family: var(--font-hud);
+  font-size: 8px; font-weight: 700; letter-spacing: 0.12em;
+  padding: 6px 14px; cursor: pointer; text-transform: uppercase;
   transition: all 0.2s;
   clip-path: polygon(5px 0%, 100% 0%, calc(100% - 5px) 100%, 0% 100%);
 }
 .spd.active { background: rgba(245,158,11,0.15); border-color: var(--amber); color: var(--amber); }
 
 /* ── SCRIPTS VIEW ── */
-#view-scripts {
-  flex-direction: column;
-  padding: 12px;
-  gap: 10px;
-  overflow-y: auto;
-}
+#view-scripts { padding: 12px; gap: 10px; overflow-y: auto; }
 .section-label {
-  font-size: 8px;
-  letter-spacing: 0.25em;
-  color: var(--muted);
-  text-transform: uppercase;
-  padding-bottom: 8px;
-  border-bottom: 1px solid var(--border);
+  font-size: 8px; letter-spacing: 0.25em; color: var(--muted);
+  text-transform: uppercase; padding-bottom: 8px; border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
-.script-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
+.script-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .script-btn {
-  background: var(--panel);
-  border: 1px solid var(--dim);
-  color: var(--text);
-  padding: 14px 10px;
-  cursor: pointer;
-  text-align: center;
-  font-family: var(--font-mono);
-  transition: all 0.15s;
+  background: var(--panel); border: 1px solid var(--dim); color: var(--text);
+  padding: 16px 10px; cursor: pointer; text-align: center;
+  font-family: var(--font-mono); transition: all 0.15s;
   clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
 }
 .script-btn:active { background: rgba(6,214,160,0.12); border-color: var(--cyan); color: var(--cyan); }
-.script-icon { font-size: 24px; display: block; margin-bottom: 6px; }
+.script-icon { font-size: 26px; display: block; margin-bottom: 6px; }
 .script-name { font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase; }
 
 /* ── RECORD VIEW ── */
-#view-record {
-  flex-direction: column;
-  padding: 12px;
-  gap: 10px;
-}
-.rec-row { display: flex; gap: 8px; }
+#view-record { padding: 12px; gap: 10px; }
+.rec-row { display:flex; gap:8px; }
 .rec-btn {
-  flex: 1;
-  padding: 10px 6px;
-  font-family: var(--font-hud);
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  background: var(--panel);
-  border: 1px solid var(--dim);
-  color: var(--muted);
-  cursor: pointer;
-  text-transform: uppercase;
-  transition: all 0.2s;
+  flex:1; padding: 12px 6px; font-family: var(--font-hud); font-size: 9px;
+  font-weight: 700; letter-spacing: 0.12em; background: var(--panel);
+  border: 1px solid var(--dim); color: var(--muted); cursor: pointer;
+  text-transform: uppercase; transition: all 0.2s;
 }
 .rec-btn:disabled { opacity: 0.3; cursor: default; }
 .rec-btn.recording { background: rgba(239,68,68,0.15); border-color: var(--red); color: var(--red); animation: alert-pulse 0.6s infinite alternate; }
 .rec-btn.ready { background: rgba(6,214,160,0.1); border-color: var(--cyan); color: var(--cyan); }
 .rec-log {
-  background: var(--panel);
-  border: 1px solid var(--border);
-  padding: 12px;
-  font-size: 11px;
-  color: var(--muted);
-  min-height: 60px;
-  flex: 1;
-  word-break: break-all;
-  line-height: 1.7;
+  background: var(--panel); border: 1px solid var(--border);
+  padding: 12px; font-size: 11px; color: var(--muted);
+  min-height: 70px; flex:1; word-break: break-all; line-height: 1.7;
 }
 .rec-note {
-  font-size: 9px;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-  line-height: 1.6;
-  padding: 8px;
-  border: 1px solid var(--border);
-  background: var(--panel);
+  font-size: 9px; letter-spacing: 0.08em; color: var(--muted); line-height: 1.6;
+  padding: 8px; border: 1px solid var(--border); background: var(--panel);
 }
 
-/* Ticker */
+/* ── TICKER ── */
 .ticker {
-  border-top: 1px solid var(--border);
-  padding: 4px 16px;
-  font-size: 9px;
-  letter-spacing: 0.12em;
-  color: var(--muted);
-  white-space: nowrap;
-  flex-shrink: 0;
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  height: 26px;
+  border-top: 1px solid var(--border); padding: 4px 14px;
+  font-size: 9px; letter-spacing: 0.12em; color: var(--muted);
+  white-space: nowrap; flex-shrink: 0;
+  display: flex; align-items: center; gap: 14px; height: 26px;
 }
-.ticker-item { display: flex; align-items: center; gap: 6px; }
-.ticker-item::before { content: '//'; color: var(--dim); }
+.ticker-item::before { content: '//'; color: var(--dim); margin-right: 6px; }
 #tick-time { color: var(--dim); font-size: 9px; }
 </style>
 </head>
 <body>
 
-<!-- Top bar -->
+<div id="portrait-gate" style="display:none;position:fixed;inset:0;background:#080a08;color:#f59e0b;font-family:'Orbitron',monospace;font-size:15px;font-weight:900;letter-spacing:0.25em;align-items:center;justify-content:center;z-index:9999;flex-direction:column;gap:16px;">
+  <svg width="48" height="48" viewBox="0 0 48 48" fill="none"><rect x="8" y="4" width="32" height="40" rx="4" stroke="#f59e0b" stroke-width="2"/><path d="M20 38 L28 38" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"/><path d="M24 12 L24 28 M17 19 L24 12 L31 19" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+  ROTATE DEVICE
+</div>
+
 <div class="topbar">
   <div class="topbar-left">
     <div class="unit-id">UNIT-01</div>
@@ -530,7 +363,6 @@ body::after {
   </div>
 </div>
 
-<!-- Sensor strip -->
 <div class="sensors">
   <div class="sensor-cell">
     <div class="sc-label">Range</div>
@@ -554,25 +386,21 @@ body::after {
   </div>
 </div>
 
-<!-- Obstacle alert -->
 <div id="obstacle-alert">⚠ PROXIMITY ALERT — FORWARD VECTOR BLOCKED</div>
 
-<!-- Mode bar -->
 <div class="mode-bar">
   <button class="mode-btn active" onclick="switchView('drive')">DRIVE</button>
   <button class="mode-btn"        onclick="switchView('scripts')">SCRIPTS</button>
   <button class="mode-btn"        onclick="switchView('record')">RECORD</button>
 </div>
 
-<!-- Main area -->
 <div class="main">
 
   <!-- DRIVE VIEW -->
   <div class="view active" id="view-drive">
 
-    <!-- Left: tilt zone -->
     <div class="tilt-panel">
-      <div class="tilt-label">// TILT VECTOR</div>
+      <div class="tilt-label">// TILT</div>
       <div class="reticle-wrap">
         <div class="reticle-ring"></div>
         <div class="reticle-ring-inner"></div>
@@ -580,11 +408,10 @@ body::after {
         <div id="tilt-dot"></div>
       </div>
       <div id="tilt-dir-label">STANDBY</div>
-      <div id="tilt-axis-note">LANDSCAPE: tilt top/bottom<br>= fwd / rev</div>
+      <div class="tilt-hint">tilt top fwd<br>= forward</div>
       <button id="tilt-toggle" onclick="toggleTilt()">TILT OFF</button>
     </div>
 
-    <!-- Right: d-pad -->
     <div class="dpad-panel">
       <div class="pad">
         <div class="x"></div>
@@ -600,11 +427,11 @@ body::after {
         <div class="x"></div>
       </div>
 
-      <div style="display:flex; gap:5px; width:202px;">
+      <div class="bottom-row">
         <div class="btn btn-horn" id="H"
-             style="width:64px;height:36px;border-radius:2px;font-size:16px;">📯</div>
-        <div class="btn btn-horn" id="btn-wiggle"
-             style="flex:1;height:36px;border-radius:2px;font-size:9px;
+             style="width:68px;height:38px;border-radius:2px;font-size:18px;">📯</div>
+        <div class="btn btn-horn"
+             style="flex:1;height:38px;border-radius:2px;font-size:9px;
                     font-family:var(--font-hud);letter-spacing:0.1em;font-weight:700;color:var(--cyan);"
              onclick="sendScript('WIGGLE')">WIGGLE</div>
       </div>
@@ -657,7 +484,6 @@ body::after {
 
 </div>
 
-<!-- Ticker -->
 <div class="ticker">
   <span class="ticker-item">TURTLE V3</span>
   <span class="ticker-item">BLE UART</span>
@@ -671,15 +497,14 @@ body::after {
 const UART_SVC = '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
 const UART_TX  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'
 const UART_RX  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'
-
-let tx = null, rx = null, bleDevice = null
+let tx=null, rx=null, bleDevice=null
 
 async function connectBLE() {
   try {
     setStatus('SCANNING', false)
     bleDevice = await navigator.bluetooth.requestDevice({
-      filters: [{ namePrefix: 'BBC micro:bit' }],
-      optionalServices: [UART_SVC]
+      filters:[{namePrefix:'BBC micro:bit'}],
+      optionalServices:[UART_SVC]
     })
     bleDevice.addEventListener('gattserverdisconnected', onDisconnect)
     const server  = await bleDevice.gatt.connect()
@@ -690,283 +515,228 @@ async function connectBLE() {
     rx.addEventListener('characteristicvaluechanged', onSensorData)
     setStatus(bleDevice.name, true)
     document.getElementById('btn-connect').classList.add('hide')
-    document.getElementById('s-rssi').textContent = '●'
-    setClass('s-rssi', 'v-ok')
-  } catch(e) {
-    setStatus('ERR: ' + e.message.substring(0,20), false)
-  }
+    document.getElementById('s-rssi').textContent='●'; setClass('s-rssi','v-ok')
+  } catch(e) { setStatus('ERR: '+e.message.substring(0,20), false) }
 }
 
 function onDisconnect() {
-  tx = null; rx = null
-  setStatus('OFFLINE', false)
+  tx=null; rx=null; setStatus('OFFLINE',false)
   document.getElementById('btn-connect').classList.remove('hide')
-  document.getElementById('s-rssi').textContent = '--'
-  setClass('s-rssi', 'v-ok')
-  ;['s-dist','s-batt'].forEach(id => { document.getElementById(id).textContent='--'; setClass(id,'v-ok') })
-  showObstacle(false); isBlocked = false
+  document.getElementById('s-rssi').textContent='--'; setClass('s-rssi','v-ok')
+  ;['s-dist','s-batt'].forEach(id=>{document.getElementById(id).textContent='--';setClass(id,'v-ok')})
+  showObstacle(false); isBlocked=false
   document.getElementById('F').classList.remove('blocked')
 }
 
 function send(cmd) {
-  if (!tx) return
-  tx.writeValue(new TextEncoder().encode(cmd + '#')).catch(() => {})
+  if(!tx) return
+  tx.writeValue(new TextEncoder().encode(cmd+'#')).catch(()=>{})
 }
 
 // ── SENSOR DATA ───────────────────────────────────────────────
-let isBlocked = false
+let isBlocked=false
 
 function onSensorData(e) {
-  const raw   = new TextDecoder().decode(e.target.value).replace('#','')
-  const parts = raw.split('|')
-  if (parts[0] !== 'SENSOR') return
-  updateDist(parseInt(parts[1]) || 0)
-  updateBatt(parseInt(parts[2]) || 0)
+  const raw=new TextDecoder().decode(e.target.value).replace('#','')
+  const parts=raw.split('|')
+  if(parts[0]!=='SENSOR') return
+  updateDist(parseInt(parts[1])||0)
+  updateBatt(parseInt(parts[2])||0)
 }
 
 function updateDist(d) {
-  const el = document.getElementById('s-dist')
-  el.textContent = d > 0 ? d : '--'
-  if      (d <= 0)  { setClass('s-dist','v-ok');   showObstacle(false); isBlocked = false }
-  else if (d <= 5)  { setClass('s-dist','v-bad');  showObstacle(true);  isBlocked = true  }
-  else if (d <= 15) { setClass('s-dist','v-warn'); showObstacle(false); isBlocked = false }
-  else              { setClass('s-dist','v-ok');   showObstacle(false); isBlocked = false }
-  document.getElementById('F').classList.toggle('blocked', isBlocked)
+  document.getElementById('s-dist').textContent=d>0?d:'--'
+  if     (d<=0) {setClass('s-dist','v-ok');  showObstacle(false);isBlocked=false}
+  else if(d<=5) {setClass('s-dist','v-bad'); showObstacle(true); isBlocked=true }
+  else if(d<=15){setClass('s-dist','v-warn');showObstacle(false);isBlocked=false}
+  else          {setClass('s-dist','v-ok');  showObstacle(false);isBlocked=false}
+  document.getElementById('F').classList.toggle('blocked',isBlocked)
 }
 
 function updateBatt(b) {
-  document.getElementById('s-batt').textContent = b || '--'
-  if      (b>0 && b<=20) setClass('s-batt','v-bad')
-  else if (b>0 && b<=40) setClass('s-batt','v-warn')
-  else                   setClass('s-batt','v-ok')
+  document.getElementById('s-batt').textContent=b||'--'
+  if     (b>0&&b<=20) setClass('s-batt','v-bad')
+  else if(b>0&&b<=40) setClass('s-batt','v-warn')
+  else                setClass('s-batt','v-ok')
 }
 
 function showObstacle(show) {
-  document.getElementById('obstacle-alert').classList.toggle('show', show)
+  document.getElementById('obstacle-alert').classList.toggle('show',show)
 }
 
-// ── TILT — landscape-aware ────────────────────────────────────
+// ── TILT — portrait, simple and stable ───────────────────────
 //
-// In PORTRAIT the phone is upright:
-//   beta  = forward/back tilt (around X axis)  — natural drive axis
-//   gamma = left/right tilt   (around Y axis)  — natural steer axis
+// Portrait hold, phone upright in your hand:
+//   beta  = forward / back tilt  (-180 to 180)
+//             ~90° when held upright → subtract 90 to zero it
+//   gamma = left / right tilt    (-90 to 90)
+//             near 0 when held upright → no adjustment needed
 //
-// In LANDSCAPE (phone rotated 90° clockwise, standard game hold):
-//   beta  is now the left/right lean
-//   gamma is now the forward/back lean (but sign may flip)
-//
-// We read screen.orientation.angle to decide which mapping to use.
-// angle=90  → landscape-right (top of phone points right)
-// angle=270 → landscape-left  (top of phone points left)
-// We normalise so that tilting the TOP of the phone away from you = FORWARD.
+// Threshold is 14° so small hand tremors don't trigger movement.
+// Dot tracks actual tilt so you can see the deadzone.
 
-let tiltArmed   = false
-let tiltLastCmd = ''
-const TILT_THRESHOLD = 12   // degrees
+let tiltArmed=false, tiltLastCmd=''
+const TILT_DEAD = 14   // degrees of deadzone — raise if too twitchy
 
-function getLandscapeAngle() {
-  if (screen.orientation && screen.orientation.angle !== undefined) {
-    return screen.orientation.angle
-  }
-  // fallback for iOS
-  return window.orientation || 0
-}
+window.addEventListener('deviceorientation', e => {
+  if(!tiltArmed) return
 
-window.addEventListener('deviceorientation', (e) => {
-  if (!tiltArmed) return
+  // Zero beta at the natural upright holding angle (~90°)
+  const fb = (e.beta  || 0) - 90   // positive = tilt top away from you (forward)
+  const lr =  e.gamma || 0          // positive = tilt right
 
-  const beta  = e.beta  || 0   // tilt around X: forward lean
-  const gamma = e.gamma || 0   // tilt around Y: left/right lean
-
-  let fb, lr   // forward-back and left-right, normalised for landscape
-
-  const angle = getLandscapeAngle()
-
-  if (angle === 90) {
-    // Landscape-right: phone top points right
-    // gamma drives forward/back, beta drives steer
-    fb = -gamma   // tilt top-right (gamma positive) = forward
-    lr =  beta - 45  // adjust for natural resting angle
-  } else if (angle === 270 || angle === -90) {
-    // Landscape-left: phone top points left
-    fb =  gamma
-    lr = -(beta - 45)
-  } else {
-    // Portrait fallback (shouldn't be reached but safe)
-    fb = -(beta - 45)
-    lr =   gamma
-  }
-
-  // Dot position on reticle
-  const maxPx = 42
+  // Dot: map ±45° to ±50% of the 100px reticle
+  const maxPx = 38
   const dotX = Math.max(-maxPx, Math.min(maxPx, (lr / 45) * maxPx))
-  const dotY = Math.max(-maxPx, Math.min(maxPx, (fb / 45) * maxPx))
+  const dotY = Math.max(-maxPx, Math.min(maxPx, (-fb / 45) * maxPx)) // invert Y: dot up = fwd
   moveDot(dotX, dotY)
 
-  // Direction
-  let cmd = 'S'
-  if      (fb < -TILT_THRESHOLD && Math.abs(fb) > Math.abs(lr)) cmd = 'F'
-  else if (fb >  TILT_THRESHOLD && Math.abs(fb) > Math.abs(lr)) cmd = 'B'
-  else if (lr < -TILT_THRESHOLD) cmd = 'L'
-  else if (lr >  TILT_THRESHOLD) cmd = 'R'
+  // Direction — forward/back takes priority over left/right when both exceed threshold
+  let cmd='S'
+  if     (fb >  TILT_DEAD && Math.abs(fb) >= Math.abs(lr)) cmd='F'
+  else if(fb < -TILT_DEAD && Math.abs(fb) >= Math.abs(lr)) cmd='B'
+  else if(lr >  TILT_DEAD) cmd='R'
+  else if(lr < -TILT_DEAD) cmd='L'
 
-  const labels = { F:'▲ FWD', B:'▼ REV', L:'◀ LEFT', R:'▶ RIGHT', S:'◆ HOLD' }
-  document.getElementById('tilt-dir-label').textContent = labels[cmd] || ''
-  document.getElementById('s-tilt').textContent = cmd === 'S' ? 'ON' : labels[cmd].split(' ')[1]
+  const labels={F:'▲ FWD',B:'▼ REV',L:'◀ LEFT',R:'▶ RIGHT',S:'◆ HOLD'}
+  document.getElementById('tilt-dir-label').textContent = labels[cmd]
+  document.getElementById('s-tilt').textContent = cmd==='S'?'ON':cmd
 
-  if (cmd !== tiltLastCmd) {
-    tiltLastCmd = cmd
-    const toSend = (cmd === 'F' && isBlocked) ? 'S' : cmd
-    send(toSend)
-    if (isRecording) recordStep(toSend)
+  if(cmd!==tiltLastCmd) {
+    tiltLastCmd=cmd
+    send((cmd==='F'&&isBlocked)?'S':cmd)
+    if(isRecording) recordStep(cmd)
   }
 })
 
-function moveDot(x, y) {
-  const dot = document.getElementById('tilt-dot')
-  dot.style.left = (50 + (x/120*100)) + '%'
-  dot.style.top  = (50 + (y/120*100)) + '%'
+function moveDot(x,y) {
+  const d=document.getElementById('tilt-dot')
+  d.style.left=(50+(x/100*100))+'%'
+  d.style.top =(50+(y/100*100))+'%'
 }
 
 function toggleTilt() {
-  tiltArmed = !tiltArmed
-  const btn = document.getElementById('tilt-toggle')
-  btn.textContent = tiltArmed ? 'TILT ON' : 'TILT OFF'
-  btn.classList.toggle('armed', tiltArmed)
-  document.getElementById('s-tilt').textContent = tiltArmed ? 'ON' : 'OFF'
-  setClass('s-tilt', tiltArmed ? 'v-ok' : 'v-ok')
-  if (!tiltArmed) {
-    send('S'); tiltLastCmd = ''
-    document.getElementById('tilt-dir-label').textContent = 'STANDBY'
-    moveDot(0,0)
-  }
+  tiltArmed=!tiltArmed
+  const btn=document.getElementById('tilt-toggle')
+  btn.textContent=tiltArmed?'TILT ON':'TILT OFF'
+  btn.classList.toggle('armed',tiltArmed)
+  document.getElementById('s-tilt').textContent=tiltArmed?'ON':'OFF'
+  if(!tiltArmed){send('S');tiltLastCmd='';document.getElementById('tilt-dir-label').textContent='STANDBY';moveDot(0,0)}
 }
 
 function requestTiltPermission() {
-  if (typeof DeviceOrientationEvent !== 'undefined' &&
-      typeof DeviceOrientationEvent.requestPermission === 'function') {
-    DeviceOrientationEvent.requestPermission().catch(() => {})
+  if(typeof DeviceOrientationEvent!=='undefined' &&
+     typeof DeviceOrientationEvent.requestPermission==='function') {
+    DeviceOrientationEvent.requestPermission().catch(()=>{})
   }
 }
 
 // ── D-PAD ─────────────────────────────────────────────────────
-let holdTimer = null
+let holdTimer=null
 
-;['F','B','L','R'].forEach(cmd => {
-  const el = document.getElementById(cmd)
-  function startHold() {
-    if (cmd==='F' && isBlocked) return
-    el.classList.add('held')
-    send(cmd); if (isRecording) recordStep(cmd)
-    holdTimer = setInterval(() => {
-      if (cmd==='F' && isBlocked) { stopHold(); return }
-      send(cmd)
-    }, 150)
+;['F','B','L','R'].forEach(cmd=>{
+  const el=document.getElementById(cmd)
+  function startHold(){
+    if(cmd==='F'&&isBlocked) return
+    el.classList.add('held'); send(cmd); if(isRecording)recordStep(cmd)
+    holdTimer=setInterval(()=>{ if(cmd==='F'&&isBlocked){stopHold();return}; send(cmd) },150)
   }
-  function stopHold() {
-    el.classList.remove('held')
-    clearInterval(holdTimer)
-    send('S'); if (isRecording) recordStep('S')
+  function stopHold(){
+    el.classList.remove('held'); clearInterval(holdTimer)
+    send('S'); if(isRecording)recordStep('S')
   }
-  el.addEventListener('pointerdown',   e => { e.preventDefault(); startHold() })
-  el.addEventListener('pointerup',     e => { e.preventDefault(); stopHold()  })
-  el.addEventListener('pointerleave',  e => { e.preventDefault(); stopHold()  })
-  el.addEventListener('pointercancel', e => { e.preventDefault(); stopHold()  })
+  el.addEventListener('pointerdown',  e=>{e.preventDefault();startHold()})
+  el.addEventListener('pointerup',    e=>{e.preventDefault();stopHold()})
+  el.addEventListener('pointerleave', e=>{e.preventDefault();stopHold()})
+  el.addEventListener('pointercancel',e=>{e.preventDefault();stopHold()})
 })
 
-document.getElementById('S').addEventListener('pointerdown', () => { send('S'); if(isRecording) recordStep('S') })
-document.getElementById('H').addEventListener('pointerdown', () => send('H'))
+document.getElementById('S').addEventListener('pointerdown',()=>{send('S');if(isRecording)recordStep('S')})
+document.getElementById('H').addEventListener('pointerdown',()=>send('H'))
 
-function setSpeed(n) {
+function setSpeed(n){
   send(n)
-  document.querySelectorAll('.spd').forEach(el => el.classList.remove('active'))
+  document.querySelectorAll('.spd').forEach(el=>el.classList.remove('active'))
   document.getElementById('spd'+n).classList.add('active')
 }
 
 // ── SCRIPTS ───────────────────────────────────────────────────
-function sendScript(name) { send('SCRIPT:' + name) }
+function sendScript(name){send('SCRIPT:'+name)}
 
 // ── RECORD & REPLAY ───────────────────────────────────────────
-let isRecording = false, recLog = [], recStart = 0
+let isRecording=false,recLog=[],recStart=0
 
-function startRecording() {
-  isRecording = true; recLog = []; recStart = Date.now()
+function startRecording(){
+  isRecording=true;recLog=[];recStart=Date.now()
   document.getElementById('rec-start').classList.add('recording')
-  document.getElementById('rec-start').disabled = true
-  document.getElementById('rec-stop').disabled  = false
-  document.getElementById('rec-play').disabled  = true
+  document.getElementById('rec-start').disabled=true
+  document.getElementById('rec-stop').disabled=false
+  document.getElementById('rec-play').disabled=true
   document.getElementById('rec-play').classList.remove('ready')
-  document.getElementById('rec-log').textContent = 'REC ARMED — DRIVE NOW...'
+  document.getElementById('rec-log').textContent='REC ARMED — DRIVE NOW...'
 }
 
-function stopRecording() {
-  isRecording = false
+function stopRecording(){
+  isRecording=false
   document.getElementById('rec-start').classList.remove('recording')
-  document.getElementById('rec-start').disabled = false
-  document.getElementById('rec-stop').disabled  = true
-  if (recLog.length < 2) { document.getElementById('rec-log').textContent = 'NO DATA CAPTURED.'; return }
-  const steps = buildSteps(recLog)
-  const encoded = steps.join(',')
-  document.getElementById('rec-log').innerHTML = '<span style="color:var(--cyan)">SEQ:</span> ' + encoded
-  if (steps.length > 0) {
-    const btn = document.getElementById('rec-play')
-    btn.disabled = false; btn.classList.add('ready'); btn.dataset.steps = encoded
+  document.getElementById('rec-start').disabled=false
+  document.getElementById('rec-stop').disabled=true
+  if(recLog.length<2){document.getElementById('rec-log').textContent='NO DATA CAPTURED.';return}
+  const steps=buildSteps(recLog),encoded=steps.join(',')
+  document.getElementById('rec-log').innerHTML='<span style="color:var(--cyan)">SEQ:</span> '+encoded
+  if(steps.length>0){
+    const btn=document.getElementById('rec-play')
+    btn.disabled=false;btn.classList.add('ready');btn.dataset.steps=encoded
   }
 }
 
-function recordStep(dir) { recLog.push({ dir, time: Date.now() - recStart }) }
+function recordStep(dir){recLog.push({dir,time:Date.now()-recStart})}
 
-const MIN_STEP_MS = 80
-function buildSteps(log) {
-  const steps = []
-  for (let i = 0; i < log.length-1; i++) {
-    const dur = log[i+1].time - log[i].time
-    if (dur >= MIN_STEP_MS) steps.push(log[i].dir + dur)
+const MIN_STEP_MS=80
+function buildSteps(log){
+  const steps=[]
+  for(let i=0;i<log.length-1;i++){
+    const dur=log[i+1].time-log[i].time
+    if(dur>=MIN_STEP_MS) steps.push(log[i].dir+dur)
   }
   return steps
 }
 
-function playRecording() {
-  const encoded = document.getElementById('rec-play').dataset.steps
-  if (encoded) send('RUN:' + encoded)
+function playRecording(){
+  const encoded=document.getElementById('rec-play').dataset.steps
+  if(encoded) send('RUN:'+encoded)
 }
 
-// ── UI HELPERS ────────────────────────────────────────────────
-function setStatus(text, online) {
-  document.getElementById('status-text').textContent = text
-  document.getElementById('status-text').className   = online ? 'live' : ''
-  document.getElementById('status-dot').className    = online ? 'live' : ''
+// ── UI ────────────────────────────────────────────────────────
+function setStatus(text,online){
+  document.getElementById('status-text').textContent=text
+  document.getElementById('status-text').className=online?'live':''
+  document.getElementById('status-dot').className=online?'live':''
 }
-function setClass(id, cls) {
-  document.getElementById(id).className = 'sc-val ' + cls
-}
-function switchView(name) {
-  document.querySelectorAll('.view').forEach(v => v.classList.toggle('active', v.id==='view-'+name))
-  document.querySelectorAll('.mode-btn').forEach((b,i) => {
-    b.classList.toggle('active', ['drive','scripts','record'][i]===name)
-  })
-  document.getElementById('tick-mode').textContent = 'MODE: ' + name.toUpperCase()
+function setClass(id,cls){ document.getElementById(id).className='sc-val '+cls }
+function switchView(name){
+  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('active',v.id==='view-'+name))
+  document.querySelectorAll('.mode-btn').forEach((b,i)=>b.classList.toggle('active',['drive','scripts','record'][i]===name))
+  document.getElementById('tick-mode').textContent='MODE: '+name.toUpperCase()
 }
 
-// Clock
-setInterval(() => {
-  const n = new Date()
-  document.getElementById('tick-time').textContent =
+setInterval(()=>{
+  const n=new Date()
+  document.getElementById('tick-time').textContent=
     String(n.getHours()).padStart(2,'0')+':'+
     String(n.getMinutes()).padStart(2,'0')+':'+
     String(n.getSeconds()).padStart(2,'0')
-}, 1000)
+},1000)
 
 requestTiltPermission()
 
-// Keyboard shortcuts
-const keyMap = { ArrowUp:'F', ArrowDown:'B', ArrowLeft:'L', ArrowRight:'R', ' ':'S', h:'H' }
-const heldKeys = new Set()
-document.addEventListener('keydown', e => {
-  const cmd = keyMap[e.key]; if (cmd && !heldKeys.has(e.key)) { heldKeys.add(e.key); send(cmd); if(isRecording) recordStep(cmd) }
+const keyMap={ArrowUp:'F',ArrowDown:'B',ArrowLeft:'L',ArrowRight:'R',' ':'S',h:'H'}
+const heldKeys=new Set()
+document.addEventListener('keydown',e=>{
+  const cmd=keyMap[e.key];if(cmd&&!heldKeys.has(e.key)){heldKeys.add(e.key);send(cmd);if(isRecording)recordStep(cmd)}
 })
-document.addEventListener('keyup', e => {
-  const cmd = keyMap[e.key]; if (cmd) { heldKeys.delete(e.key); if(cmd!=='S'&&cmd!=='H'){send('S');if(isRecording)recordStep('S')} }
+document.addEventListener('keyup',e=>{
+  const cmd=keyMap[e.key];if(cmd){heldKeys.delete(e.key);if(cmd!=='S'&&cmd!=='H'){send('S');if(isRecording)recordStep('S')}}
 })
 </script>
 </body>

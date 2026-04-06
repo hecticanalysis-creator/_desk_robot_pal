@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Buddy">
+<meta name="theme-color" content="#FFD166">
+<link rel="manifest" href="manifest.json">
 <title>BUDDY</title>
 <style>
 * { box-sizing:border-box; margin:0; padding:0; touch-action:manipulation; -webkit-tap-highlight-color:transparent; }
@@ -13,257 +19,195 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background 0.5s ease;
+  transition: background 0.4s ease;
   position: relative;
+  height: 100dvh;
 }
 
-/* Force landscape */
-@media (orientation: portrait) {
-  #rotate-msg { display: flex !important; }
-  #face-wrap, #back-link, #mood-name { visibility: hidden; }
-}
-
-#rotate-msg {
-  display: none;
-  position: fixed; inset: 0;
-  background: #1a1a2e;
-  color: #f59e0b;
-  font-family: 'Courier New', monospace;
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0.3em;
-  align-items: center;
-  justify-content: center;
-  z-index: 999;
-}
-
-/* Back link — top-left corner, subtle */
 #back-link {
   position: fixed;
-  top: 16px;
-  left: 20px;
+  top: 18px; left: 20px;
   font-family: 'Courier New', monospace;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 11px; font-weight: 700;
   letter-spacing: 0.15em;
-  color: rgba(0,0,0,0.25);
+  color: rgba(0,0,0,0.2);
   text-decoration: none;
   text-transform: uppercase;
   z-index: 10;
   transition: color 0.2s;
 }
-#back-link:active { color: rgba(0,0,0,0.6); }
+#back-link:active { color: rgba(0,0,0,0.5); }
 
-/* Mood name — bottom centre, subtle */
 #mood-name {
   position: fixed;
-  bottom: 20px;
-  left: 50%;
+  bottom: 20px; left: 50%;
   transform: translateX(-50%);
   font-family: 'Courier New', monospace;
-  font-size: 11px;
-  letter-spacing: 0.25em;
+  font-size: 11px; letter-spacing: 0.25em;
   text-transform: uppercase;
-  color: rgba(0,0,0,0.2);
+  color: rgba(0,0,0,0.18);
   z-index: 10;
   pointer-events: none;
+  white-space: nowrap;
 }
 
-/* Face SVG — takes most of the screen */
 #face-wrap {
-  width: min(85vh, 85vw);
-  height: min(85vh, 85vw);
-  position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  width: min(82vw, 82vh);
+  height: min(82vw, 82vh);
 }
-
-#face-svg {
-  width: 100%;
-  height: 100%;
-}
+#face-svg { width:100%; height:100%; }
 </style>
 </head>
 <body>
 
-<div id="rotate-msg">ROTATE DEVICE</div>
-
-<a id="back-link" href="index.html">← UNIT-01</a>
+<a id="back-link" href="index.html">← unit-01</a>
 
 <div id="face-wrap">
-  <svg id="face-svg" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+<svg id="face-svg" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
 
-    <!-- Cheeks -->
-    <circle id="cheek-l" cx="30" cy="128" r="20" fill="#FF6B9D" opacity="0.45"/>
-    <circle id="cheek-r" cx="170" cy="128" r="20" fill="#FF6B9D" opacity="0.45"/>
+  <!-- LEFT EAR -->
+  <polygon id="ear-l" points="30,72 48,30 68,72" fill="#FFFFFF"/>
+  <!-- RIGHT EAR -->
+  <polygon id="ear-r" points="132,72 152,30 170,72" fill="#FFFFFF"/>
 
-    <!-- LEFT EYE -->
-    <g id="eye-l">
-      <ellipse id="eyeball-l" cx="68" cy="96" rx="26" ry="28" fill="white"/>
-      <circle  id="pupil-l"   cx="70" cy="98" r="15" fill="#2D2D2D"/>
-      <circle  id="shine-l"   cx="76" cy="91" r="5.5" fill="white"/>
-      <!-- eyelid — animated for blink/sleepy -->
-      <rect id="lid-l" x="42" y="68" width="52" height="0" fill="currentColor" rx="4"/>
-    </g>
+  <!-- BOW — sits on left ear, Hello Kitty style -->
+  <g id="bow">
+    <!-- left lobe -->
+    <ellipse cx="47" cy="26" rx="11" ry="7" fill="#FF9AAC" transform="rotate(-20,47,26)"/>
+    <!-- right lobe -->
+    <ellipse cx="67" cy="20" rx="11" ry="7" fill="#FF9AAC" transform="rotate(15,67,20)"/>
+    <!-- centre knot -->
+    <circle cx="57" cy="24" r="5" fill="#FF6B8A"/>
+  </g>
 
-    <!-- RIGHT EYE -->
-    <g id="eye-r">
-      <ellipse id="eyeball-r" cx="132" cy="96" rx="26" ry="28" fill="white"/>
-      <circle  id="pupil-r"   cx="134" cy="98" r="15" fill="#2D2D2D"/>
-      <circle  id="shine-r"   cx="140" cy="91" r="5.5" fill="white"/>
-      <rect id="lid-r" x="106" y="68" width="52" height="0" fill="currentColor" rx="4"/>
-    </g>
+  <!-- HEAD — wide, flat-topped rect with big radius -->
+  <rect id="face-head" x="18" y="60" width="164" height="138" rx="36" fill="#FFFFFF"/>
 
-    <!-- BROWS -->
-    <path id="brow-l" d="M46 70 Q68 58 90 70" stroke="#2D2D2D" stroke-width="5" fill="none" stroke-linecap="round"/>
-    <path id="brow-r" d="M110 70 Q132 58 154 70" stroke="#2D2D2D" stroke-width="5" fill="none" stroke-linecap="round"/>
+  <!-- CHEEKS -->
+  <ellipse id="cheek-l" cx="38"  cy="148" rx="16" ry="11" fill="#FFB3C6" opacity="0"/>
+  <ellipse id="cheek-r" cx="162" cy="148" rx="16" ry="11" fill="#FFB3C6" opacity="0"/>
 
-    <!-- MOUTH -->
-    <path id="mouth" d="M70 136 Q100 158 130 136" stroke="#2D2D2D" stroke-width="5.5" fill="none" stroke-linecap="round"/>
+  <!-- LEFT EYE GROUP -->
+  <g id="eye-l-group">
+    <ellipse id="eyeball-l" cx="76"  cy="130" rx="16" ry="18" fill="#2C2C2A"/>
+    <circle  id="shine-l"   cx="82"  cy="123" r="5"   fill="white"/>
+    <!-- blink lid — covers eye from top, colour set by JS to match bg -->
+    <rect id="lid-l" x="60" y="112" width="32" height="2" rx="3" fill="#FFD166"/>
+  </g>
 
-    <!-- Tongue (excited only) -->
-    <ellipse id="tongue" cx="100" cy="152" rx="15" ry="11" fill="#FF6B9D" opacity="0"/>
+  <!-- RIGHT EYE GROUP -->
+  <g id="eye-r-group">
+    <ellipse id="eyeball-r" cx="124" cy="130" rx="16" ry="18" fill="#2C2C2A"/>
+    <circle  id="shine-r"   cx="130" cy="123" r="5"   fill="white"/>
+    <rect id="lid-r" x="108" y="112" width="32" height="2" rx="3" fill="#FFD166"/>
+  </g>
 
-    <!-- Stars for love mood -->
-    <text id="star-l" x="20" y="75" font-size="22" opacity="0" text-anchor="middle">★</text>
-    <text id="star-r" x="180" y="75" font-size="22" opacity="0" text-anchor="middle">★</text>
+  <!-- NOSE — small oval, Hello Kitty style -->
+  <ellipse id="nose" cx="100" cy="152" rx="6" ry="4.5" fill="#F5A623"/>
 
-    <!-- ZZZ for sleepy -->
-    <g id="zzz" opacity="0">
-      <text x="148" y="65" font-size="14" fill="#2D2D2D" opacity="0.5">z</text>
-      <text x="158" y="50" font-size="18" fill="#2D2D2D" opacity="0.4">z</text>
-      <text x="170" y="32" font-size="22" fill="#2D2D2D" opacity="0.3">z</text>
-    </g>
+  <!-- NO MOUTH — Hello Kitty has no mouth. Expression is all eyes + cheeks + bow colour -->
 
-  </svg>
+  <!-- SPARKLES for love mood -->
+  <g id="sparkle-l" opacity="0">
+    <line x1="26" y1="100" x2="26" y2="112" stroke="#FFD166" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="20" y1="106" x2="32" y2="106" stroke="#FFD166" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="21" y1="101" x2="31" y2="111" stroke="#FFD166" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="31" y1="101" x2="21" y2="111" stroke="#FFD166" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+  <g id="sparkle-r" opacity="0">
+    <line x1="174" y1="100" x2="174" y2="112" stroke="#FFD166" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="168" y1="106" x2="180" y2="106" stroke="#FFD166" stroke-width="2.5" stroke-linecap="round"/>
+    <line x1="169" y1="101" x2="179" y2="111" stroke="#FFD166" stroke-width="1.5" stroke-linecap="round"/>
+    <line x1="179" y1="101" x2="169" y2="111" stroke="#FFD166" stroke-width="1.5" stroke-linecap="round"/>
+  </g>
+
+  <!-- ZZZ for sleepy -->
+  <g id="zzz" opacity="0">
+    <text x="158" y="108" font-family="Arial" font-size="13" fill="#9090C0" opacity="0.7">z</text>
+    <text x="166" y="94"  font-family="Arial" font-size="16" fill="#9090C0" opacity="0.5">z</text>
+    <text x="176" y="78"  font-family="Arial" font-size="20" fill="#9090C0" opacity="0.35">z</text>
+  </g>
+
+  <!-- SWEAT DROP for nervous/surprised -->
+  <g id="sweat" opacity="0">
+    <ellipse cx="168" cy="95" rx="5" ry="7" fill="#A8D8FF"/>
+    <polygon points="163,95 173,95 168,85" fill="#A8D8FF"/>
+  </g>
+
+</svg>
 </div>
 
 <div id="mood-name">happy</div>
 
 <script>
-// ── MOOD DEFINITIONS ─────────────────────────────────────────
-// Each mood changes: bg colour, brow paths, mouth path,
-// pupil offset, eye size, eyelid height, cheek opacity, extras
+// ── MOOD SYSTEM ───────────────────────────────────────────────
+// Hello Kitty has no mouth — all expression lives in:
+//   bg colour, eye shape/size, lid height, cheek opacity,
+//   bow colour, sparkles, zzz, sweat drop
+
 const MOODS = {
   happy: {
-    bg:       '#FFD166',
-    browL:    'M46 70 Q68 58 90 70',
-    browR:    'M110 70 Q132 58 154 70',
-    mouth:    'M70 136 Q100 158 130 136',
-    pupilLx:70,  pupilLy:98,
-    pupilRx:134, pupilRy:98,
-    eyeLry:28, eyeRry:28,
-    lidH:0,
-    cheekOp:0.45,
-    tongueOp:0,
-    starOp:0,
-    zzzOp:0,
+    bg:'#FFD166', headFill:'#FFFFFF',
+    eyeLry:18, eyeRry:18,
+    lidH:2,
+    cheekOp:0, bowFill:'#FF9AAC', bowKnot:'#FF6B8A',
+    sparkOp:0, zzzOp:0, sweatOp:0,
     label:'happy',
   },
   excited: {
-    bg:       '#FFD166',
-    browL:    'M46 75 Q68 63 90 75',
-    browR:    'M110 75 Q132 63 154 75',
-    mouth:    'M65 132 Q100 162 135 132',
-    pupilLx:70,  pupilLy:100,
-    pupilRx:134, pupilRy:100,
-    eyeLry:30, eyeRry:30,
-    lidH:0,
-    cheekOp:0.65,
-    tongueOp:1,
-    starOp:0,
-    zzzOp:0,
+    bg:'#FFD166', headFill:'#FFFFFF',
+    eyeLry:20, eyeRry:20,
+    lidH:2,
+    cheekOp:0.7, bowFill:'#FF6B8A', bowKnot:'#E8445A',
+    sparkOp:0, zzzOp:0, sweatOp:0,
     label:'excited!',
   },
   thinking: {
-    bg:       '#C7EFCF',
-    browL:    'M46 70 Q68 70 90 70',
-    browR:    'M110 64 Q132 70 154 64',
-    mouth:    'M74 142 Q100 134 126 142',
-    pupilLx:68,  pupilLy:96,
-    pupilRx:136, pupilRy:96,
-    eyeLry:24, eyeRry:24,
-    lidH:0,
-    cheekOp:0.15,
-    tongueOp:0,
-    starOp:0,
-    zzzOp:0,
+    bg:'#C7EFCF', headFill:'#FFFFFF',
+    eyeLry:14, eyeRry:16,
+    lidH:8,
+    cheekOp:0, bowFill:'#A8D8B0', bowKnot:'#6DBF7E',
+    sparkOp:0, zzzOp:0, sweatOp:0,
     label:'thinking...',
   },
   sleepy: {
-    bg:       '#B8C0FF',
-    browL:    'M46 72 Q68 72 90 72',
-    browR:    'M110 72 Q132 72 154 72',
-    mouth:    'M76 140 Q100 145 124 140',
-    pupilLx:70,  pupilLy:100,
-    pupilRx:134, pupilRy:100,
-    eyeLry:13, eyeRry:13,
+    bg:'#B8C0FF', headFill:'#FFFFFF',
+    eyeLry:8, eyeRry:8,
     lidH:18,
-    cheekOp:0.25,
-    tongueOp:0,
-    starOp:0,
-    zzzOp:1,
+    cheekOp:0, bowFill:'#C0C8FF', bowKnot:'#9098E8',
+    sparkOp:0, zzzOp:1, sweatOp:0,
     label:'sleepy zzz',
   },
   surprised: {
-    bg:       '#FFBE7B',
-    browL:    'M46 62 Q68 50 90 62',
-    browR:    'M110 62 Q132 50 154 62',
-    mouth:    'M84 138 Q100 152 116 138',
-    pupilLx:70,  pupilLy:100,
-    pupilRx:134, pupilRy:100,
-    eyeLry:32, eyeRry:32,
-    lidH:0,
-    cheekOp:0.55,
-    tongueOp:0,
-    starOp:0,
-    zzzOp:0,
+    bg:'#FFBE7B', headFill:'#FFFFFF',
+    eyeLry:22, eyeRry:22,
+    lidH:2,
+    cheekOp:0.5, bowFill:'#FFB347', bowKnot:'#E8922A',
+    sparkOp:0, zzzOp:0, sweatOp:1,
     label:'woah!',
   },
   love: {
-    bg:       '#FFB3C6',
-    browL:    'M46 70 Q68 58 90 70',
-    browR:    'M110 70 Q132 58 154 70',
-    mouth:    'M70 136 Q100 158 130 136',
-    pupilLx:70,  pupilLy:98,
-    pupilRx:134, pupilRy:98,
-    eyeLry:28, eyeRry:28,
-    lidH:0,
-    cheekOp:0.75,
-    tongueOp:0,
-    starOp:1,
-    zzzOp:0,
-    label:'hehe ♥',
+    bg:'#FFB3C6', headFill:'#FFFFFF',
+    eyeLry:18, eyeRry:18,
+    lidH:2,
+    cheekOp:0.85, bowFill:'#FF6B8A', bowKnot:'#E8445A',
+    sparkOp:1, zzzOp:0, sweatOp:0,
+    label:'hehe',
   },
   moving: {
-    bg:       '#A8E6CF',
-    browL:    'M46 64 Q68 52 90 64',
-    browR:    'M110 64 Q132 52 154 64',
-    mouth:    'M74 138 Q100 128 126 138',
-    pupilLx:68,  pupilLy:94,
-    pupilRx:136, pupilRy:94,
-    eyeLry:26, eyeRry:26,
-    lidH:0,
-    cheekOp:0.5,
-    tongueOp:0,
-    starOp:0,
-    zzzOp:0,
+    bg:'#A8E6CF', headFill:'#FFFFFF',
+    eyeLry:16, eyeRry:16,
+    lidH:5,
+    cheekOp:0.4, bowFill:'#6DBF9E', bowKnot:'#3DAA7E',
+    sparkOp:0, zzzOp:0, sweatOp:0,
     label:'vroom!',
   },
   sad: {
-    bg:       '#ADB5BD',
-    browL:    'M46 66 Q68 76 90 66',
-    browR:    'M110 66 Q132 76 154 66',
-    mouth:    'M72 148 Q100 136 128 148',
-    pupilLx:70,  pupilLy:100,
-    pupilRx:134, pupilRy:100,
-    eyeLry:24, eyeRry:24,
-    lidH:6,
-    cheekOp:0.1,
-    tongueOp:0,
-    starOp:0,
-    zzzOp:0,
+    bg:'#CFD8E8', headFill:'#FFFFFF',
+    eyeLry:13, eyeRry:13,
+    lidH:12,
+    cheekOp:0, bowFill:'#A0AEC0', bowKnot:'#718096',
+    sparkOp:0, zzzOp:0, sweatOp:0,
     label:'aww...',
   },
 }
@@ -271,110 +215,103 @@ const MOODS = {
 let currentMood = 'happy'
 let blinkTimer, idleTimer
 
-function applyMood(mood, animate) {
+function applyMood(mood) {
   const m = MOODS[mood]
   if (!m) return
   currentMood = mood
 
-  // Background colour
   document.body.style.background = m.bg
-
-  // Lid colour matches bg (makes lid "erase" the eye)
-  document.getElementById('lid-l').style.color = m.bg
-  document.getElementById('lid-r').style.color = m.bg
-
-  // SVG elements
-  set('brow-l', 'd', m.browL)
-  set('brow-r', 'd', m.browR)
-  set('mouth',  'd', m.mouth)
-
-  setAttr('pupil-l', 'cx', m.pupilLx)
-  setAttr('pupil-l', 'cy', m.pupilLy)
-  setAttr('shine-l', 'cx', m.pupilLx + 6)
-  setAttr('shine-l', 'cy', m.pupilLy - 7)
-
-  setAttr('pupil-r', 'cx', m.pupilRx)
-  setAttr('pupil-r', 'cy', m.pupilRy)
-  setAttr('shine-r', 'cx', m.pupilRx + 6)
-  setAttr('shine-r', 'cy', m.pupilRy - 7)
-
-  setAttr('eyeball-l', 'ry', m.eyeLry)
-  setAttr('eyeball-r', 'ry', m.eyeRry)
-
-  setAttr('lid-l', 'height', m.lidH)
-  setAttr('lid-r', 'height', m.lidH)
-
-  setAttr('cheek-l', 'opacity', m.cheekOp)
-  setAttr('cheek-r', 'opacity', m.cheekOp)
-
-  setAttr('tongue', 'opacity', m.tongueOp)
-  setAttr('star-l', 'opacity', m.starOp)
-  setAttr('star-r', 'opacity', m.starOp)
-  setAttr('zzz',    'opacity', m.zzzOp)
-
   document.getElementById('mood-name').textContent = m.label
+
+  // Lid colour always matches bg so it "erases" the eye
+  const lidColour = m.bg
+  sa('lid-l', 'fill', lidColour)
+  sa('lid-r', 'fill', lidColour)
+  sa('lid-l', 'height', m.lidH)
+  sa('lid-r', 'height', m.lidH)
+
+  sa('eyeball-l', 'ry', m.eyeLry)
+  sa('eyeball-r', 'ry', m.eyeRry)
+
+  // Shine moves with eye height change
+  sa('shine-l', 'cy', 130 - m.eyeLry * 0.4)
+  sa('shine-r', 'cy', 130 - m.eyeRry * 0.4)
+
+  sa('cheek-l', 'opacity', m.cheekOp)
+  sa('cheek-r', 'opacity', m.cheekOp)
+
+  // Bow colour changes with mood
+  document.querySelectorAll('#bow ellipse').forEach(el => el.setAttribute('fill', m.bowFill))
+  document.querySelector('#bow circle').setAttribute('fill', m.bowKnot)
+
+  // Sparkles colour matches bg for contrast
+  document.querySelectorAll('#sparkle-l line, #sparkle-r line').forEach(l => l.setAttribute('stroke', m.bowFill))
+
+  sa('sparkle-l', 'opacity', m.sparkOp)
+  sa('sparkle-r', 'opacity', m.sparkOp)
+  sa('zzz',       'opacity', m.zzzOp)
+  sa('sweat',     'opacity', m.sweatOp)
+
+  // Update theme-color meta so PWA status bar matches
+  document.querySelector('meta[name="theme-color"]').setAttribute('content', m.bg)
 }
 
-function set(id, attr, val)    { document.getElementById(id).setAttribute(attr, val) }
-function setAttr(id, attr, val){ document.getElementById(id).setAttribute(attr, val) }
+function sa(id, attr, val) {
+  document.getElementById(id).setAttribute(attr, val)
+}
 
-// ── BLINK ────────────────────────────────────────────────────
+// ── BLINK ─────────────────────────────────────────────────────
 function blink() {
   if (currentMood === 'sleepy') return
   const m = MOODS[currentMood]
-  const steps = [0, 10, 22, 30, 28, 22, 10, 0]
+  const maxClose = Math.max(m.eyeLry * 1.1, 18)
+  const frames = [2, 6, 14, maxClose, 14, 6, 2]
   let i = 0
   const t = setInterval(() => {
-    setAttr('lid-l', 'height', steps[i])
-    setAttr('lid-r', 'height', steps[i])
+    sa('lid-l', 'height', frames[i])
+    sa('lid-r', 'height', frames[i])
     i++
-    if (i >= steps.length) {
+    if (i >= frames.length) {
       clearInterval(t)
-      setAttr('lid-l', 'height', m.lidH)
-      setAttr('lid-r', 'height', m.lidH)
+      sa('lid-l', 'height', m.lidH)
+      sa('lid-r', 'height', m.lidH)
     }
-  }, 35)
+  }, 32)
 }
 
 function scheduleBlink() {
   clearTimeout(blinkTimer)
-  blinkTimer = setTimeout(() => { blink(); scheduleBlink() }, 2200 + Math.random() * 3200)
+  blinkTimer = setTimeout(() => { blink(); scheduleBlink() }, 2500 + Math.random() * 3000)
 }
 
-// ── IDLE DRIFT ───────────────────────────────────────────────
-const IDLE_MOODS = ['thinking', 'sleepy']
-
+// ── IDLE DRIFT ────────────────────────────────────────────────
 function scheduleIdle() {
   clearTimeout(idleTimer)
   idleTimer = setTimeout(() => {
     if (currentMood === 'happy') {
-      const next = IDLE_MOODS[Math.floor(Math.random() * IDLE_MOODS.length)]
-      applyMood(next)
+      const pick = Math.random() < 0.5 ? 'thinking' : 'sleepy'
+      applyMood(pick)
       setTimeout(() => { applyMood('happy'); scheduleIdle() }, 4000)
     } else {
       scheduleIdle()
     }
-  }, 9000 + Math.random() * 9000)
+  }, 10000 + Math.random() * 8000)
 }
 
-// ── TAP / CLICK ──────────────────────────────────────────────
-const TAP_REACTIONS = ['excited', 'surprised', 'love']
+// ── TAP ───────────────────────────────────────────────────────
+const TAP_MOODS = ['excited', 'surprised', 'love']
 let tapLock = false
 
 document.getElementById('face-wrap').addEventListener('click', () => {
   if (tapLock) return
   tapLock = true
-  const r = TAP_REACTIONS[Math.floor(Math.random() * TAP_REACTIONS.length)]
-  applyMood(r)
   clearTimeout(idleTimer)
-  setTimeout(() => {
-    applyMood('happy')
-    scheduleIdle()
-    tapLock = false
-  }, 1800)
+  const r = TAP_MOODS[Math.floor(Math.random() * TAP_MOODS.length)]
+  applyMood(r)
+  setTimeout(() => { applyMood('happy'); scheduleIdle(); tapLock = false }, 2000)
 })
 
-// ── INIT ─────────────────────────────────────────────────────
+// ── INIT ──────────────────────────────────────────────────────
 applyMood('happy')
 scheduleBlink()
 scheduleIdle()
