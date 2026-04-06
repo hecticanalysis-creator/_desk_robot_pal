@@ -15,7 +15,7 @@
 <meta name="apple-mobile-web-app-title" content="UNIT-01">
 <meta name="theme-color" content="#080a08">
 <link rel="manifest" href="manifest.json">
-<title>UNIT-01 // CONTROL</title>
+<title>StEEvE // CONTROL</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
 /* Portrait lock — show overlay in landscape, hide all content */
@@ -353,8 +353,8 @@ body::after {
 
 <div class="topbar">
   <div class="topbar-left">
-    <div class="unit-id">UNIT-01</div>
-    <a class="buddy-link" href="buddy.html">★ BUDDY</a>
+    <div class="unit-id">StEEve </div>
+    <a class="buddy-link" href="buddy.html">★ FACE</a>
   </div>
   <div class="conn-group">
     <div id="status-dot"></div>
@@ -564,70 +564,100 @@ function showObstacle(show) {
   document.getElementById('obstacle-alert').classList.toggle('show',show)
 }
 
-// ── TILT — portrait, simple and stable ───────────────────────
+// ── TILT — dynamic calibration ───────────────────────────────
 //
-// Portrait hold, phone upright in your hand:
-//   beta  = forward / back tilt  (-180 to 180)
-//             ~90° when held upright → subtract 90 to zero it
-//   gamma = left / right tilt    (-90 to 90)
-//             near 0 when held upright → no adjustment needed
+// Problem: beta's zero point varies depending on how the phone
+// was held when Chrome/PWA launched. Hardcoding "subtract 90"
+// breaks when launched from the home screen icon.
 //
-// Threshold is 14° so small hand tremors don't trigger movement.
-// Dot tracks actual tilt so you can see the deadzone.
+// Fix: when the user arms tilt, capture the current beta/gamma
+// as the neutral "resting" position and measure all movement
+// relative to that. Tilt works correctly no matter how the
+// phone was oriented at launch.
+//
+// To recalibrate: disarm and re-arm tilt (TILT OFF → TILT ON)
+// while holding the phone in your natural resting position.
 
-let tiltArmed=false, tiltLastCmd=''
-const TILT_DEAD = 14   // degrees of deadzone — raise if too twitchy
+let tiltArmed   = false
+let tiltLastCmd = ''
+let betaZero    = null   // captured neutral beta  on arm
+let gammaZero   = null   // captured neutral gamma on arm
+const TILT_DEAD = 14     // degrees deadzone — raise if too twitchy
+const CALIB_SAMPLES = 8  // number of readings to average for zero point
+let calibBuf = []        // buffer for averaging startup readings
 
 window.addEventListener('deviceorientation', e => {
-  if(!tiltArmed) return
+  if (!tiltArmed) return
 
-  // Zero beta at the natural upright holding angle (~90°)
-  const fb = (e.beta  || 0) - 90   // positive = tilt top away from you (forward)
-  const lr =  e.gamma || 0          // positive = tilt right
+  const rawBeta  = e.beta  || 0
+  const rawGamma = e.gamma || 0
 
-  // Dot: map ±45° to ±50% of the 100px reticle
+  // Calibration phase — average first N readings as the zero point
+  if (betaZero === null) {
+    calibBuf.push({ b: rawBeta, g: rawGamma })
+    if (calibBuf.length < CALIB_SAMPLES) return   // still collecting
+    betaZero  = calibBuf.reduce((s,r) => s + r.b, 0) / calibBuf.length
+    gammaZero = calibBuf.reduce((s,r) => s + r.g, 0) / calibBuf.length
+    calibBuf  = []
+    document.getElementById('tilt-dir-label').textContent = 'READY'
+  }
+
+  // Offset from the calibrated neutral position
+  const fb =  (rawBeta  - betaZero)    // positive = top tilted away (forward)
+  const lr =  (rawGamma - gammaZero)   // positive = tilted right
+
+  // Dot: map ±45° across the reticle
   const maxPx = 38
-  const dotX = Math.max(-maxPx, Math.min(maxPx, (lr / 45) * maxPx))
-  const dotY = Math.max(-maxPx, Math.min(maxPx, (-fb / 45) * maxPx)) // invert Y: dot up = fwd
+  const dotX = Math.max(-maxPx, Math.min(maxPx, ( lr / 45) * maxPx))
+  const dotY = Math.max(-maxPx, Math.min(maxPx, (-fb / 45) * maxPx))
   moveDot(dotX, dotY)
 
-  // Direction — forward/back takes priority over left/right when both exceed threshold
-  let cmd='S'
-  if     (fb >  TILT_DEAD && Math.abs(fb) >= Math.abs(lr)) cmd='F'
-  else if(fb < -TILT_DEAD && Math.abs(fb) >= Math.abs(lr)) cmd='B'
-  else if(lr >  TILT_DEAD) cmd='R'
-  else if(lr < -TILT_DEAD) cmd='L'
+  // Direction — forward/back wins when both axes exceed threshold
+  let cmd = 'S'
+  if      (fb >  TILT_DEAD && Math.abs(fb) >= Math.abs(lr)) cmd = 'F'
+  else if (fb < -TILT_DEAD && Math.abs(fb) >= Math.abs(lr)) cmd = 'B'
+  else if (lr >  TILT_DEAD) cmd = 'R'
+  else if (lr < -TILT_DEAD) cmd = 'L'
 
-  const labels={F:'▲ FWD',B:'▼ REV',L:'◀ LEFT',R:'▶ RIGHT',S:'◆ HOLD'}
+  const labels = {F:'▲ FWD', B:'▼ REV', L:'◀ LEFT', R:'▶ RIGHT', S:'◆ HOLD'}
   document.getElementById('tilt-dir-label').textContent = labels[cmd]
-  document.getElementById('s-tilt').textContent = cmd==='S'?'ON':cmd
+  document.getElementById('s-tilt').textContent = cmd==='S' ? 'ON' : cmd
 
-  if(cmd!==tiltLastCmd) {
-    tiltLastCmd=cmd
-    send((cmd==='F'&&isBlocked)?'S':cmd)
-    if(isRecording) recordStep(cmd)
+  if (cmd !== tiltLastCmd) {
+    tiltLastCmd = cmd
+    send((cmd==='F' && isBlocked) ? 'S' : cmd)
+    if (isRecording) recordStep(cmd)
   }
 })
 
-function moveDot(x,y) {
-  const d=document.getElementById('tilt-dot')
-  d.style.left=(50+(x/100*100))+'%'
-  d.style.top =(50+(y/100*100))+'%'
+function moveDot(x, y) {
+  const d = document.getElementById('tilt-dot')
+  d.style.left = (50 + (x / 100 * 100)) + '%'
+  d.style.top  = (50 + (y / 100 * 100)) + '%'
 }
 
 function toggleTilt() {
-  tiltArmed=!tiltArmed
-  const btn=document.getElementById('tilt-toggle')
-  btn.textContent=tiltArmed?'TILT ON':'TILT OFF'
-  btn.classList.toggle('armed',tiltArmed)
-  document.getElementById('s-tilt').textContent=tiltArmed?'ON':'OFF'
-  if(!tiltArmed){send('S');tiltLastCmd='';document.getElementById('tilt-dir-label').textContent='STANDBY';moveDot(0,0)}
+  tiltArmed = !tiltArmed
+  const btn = document.getElementById('tilt-toggle')
+  btn.textContent = tiltArmed ? 'TILT ON' : 'TILT OFF'
+  btn.classList.toggle('armed', tiltArmed)
+  document.getElementById('s-tilt').textContent = tiltArmed ? '...' : 'OFF'
+  if (tiltArmed) {
+    // Reset calibration — will re-capture zero on next readings
+    betaZero = null; gammaZero = null; calibBuf = []
+    tiltLastCmd = ''
+    document.getElementById('tilt-dir-label').textContent = 'HOLD STILL...'
+  } else {
+    send('S'); tiltLastCmd = ''
+    document.getElementById('tilt-dir-label').textContent = 'STANDBY'
+    moveDot(0, 0)
+  }
 }
 
 function requestTiltPermission() {
-  if(typeof DeviceOrientationEvent!=='undefined' &&
-     typeof DeviceOrientationEvent.requestPermission==='function') {
-    DeviceOrientationEvent.requestPermission().catch(()=>{})
+  if (typeof DeviceOrientationEvent !== 'undefined' &&
+      typeof DeviceOrientationEvent.requestPermission === 'function') {
+    DeviceOrientationEvent.requestPermission().catch(() => {})
   }
 }
 
