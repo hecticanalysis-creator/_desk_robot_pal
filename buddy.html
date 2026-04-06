@@ -34,7 +34,6 @@ body {
   text-decoration: none;
   text-transform: uppercase;
   z-index: 10;
-  transition: color 0.2s;
 }
 #back-link:active { color: rgba(0,0,0,0.5); }
 
@@ -51,170 +50,313 @@ body {
   white-space: nowrap;
 }
 
+/* Long-press hint — fades in briefly on face swap */
+#swap-hint {
+  position: fixed;
+  top: 18px; right: 20px;
+  font-family: 'Courier New', monospace;
+  font-size: 10px; letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.18);
+  z-index: 10;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s;
+}
+#swap-hint.show { opacity: 1; }
+
 #face-wrap {
   width: min(82vw, 82vh);
   height: min(82vw, 82vh);
+  position: relative;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
 }
-#face-svg { width:100%; height:100%; }
+
+/* Both SVGs sit in the same slot — only one visible at a time */
+.face-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%; height: 100%;
+  transition: opacity 0.3s;
+}
+.face-svg.hidden { opacity: 0; pointer-events: none; }
+
+/* Flash ring on face swap */
+#flash-ring {
+  position: absolute;
+  inset: -4px;
+  border-radius: 50%;
+  border: 4px solid rgba(255,255,255,0);
+  pointer-events: none;
+  transition: border-color 0.15s;
+  z-index: 5;
+}
+#flash-ring.flash { border-color: rgba(255,255,255,0.8); }
 </style>
 </head>
 <body>
 
 <a id="back-link" href="index.html">← unit-01</a>
+<div id="swap-hint">face swapped</div>
 
 <div id="face-wrap">
-<svg id="face-svg" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
+  <div id="flash-ring"></div>
 
-  <!-- LEFT EAR -->
-  <polygon id="ear-l" points="30,72 48,30 68,72" fill="#FFFFFF"/>
-  <!-- RIGHT EAR -->
-  <polygon id="ear-r" points="132,72 152,30 170,72" fill="#FFFFFF"/>
+  <!-- ══════════════════════════════════════════
+       FACE A — HELLO KITTY
+       ══════════════════════════════════════════ -->
+  <svg class="face-svg" id="face-kitty" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
 
-  <!-- BOW — sits on left ear, Hello Kitty style -->
-  <g id="bow">
-    <!-- left lobe -->
-    <ellipse cx="47" cy="26" rx="11" ry="7" fill="#FF9AAC" transform="rotate(-20,47,26)"/>
-    <!-- right lobe -->
-    <ellipse cx="67" cy="20" rx="11" ry="7" fill="#FF9AAC" transform="rotate(15,67,20)"/>
-    <!-- centre knot -->
-    <circle cx="57" cy="24" r="5" fill="#FF6B8A"/>
-  </g>
+    <polygon id="k-ear-l" points="30,72 48,30 68,72" fill="#FFFFFF"/>
+    <polygon id="k-ear-r" points="132,72 152,30 170,72" fill="#FFFFFF"/>
 
-  <!-- HEAD — wide, flat-topped rect with big radius -->
-  <rect id="face-head" x="18" y="60" width="164" height="138" rx="36" fill="#FFFFFF"/>
+    <g id="k-bow">
+      <ellipse cx="47" cy="26" rx="11" ry="7" fill="#FF9AAC" transform="rotate(-20,47,26)"/>
+      <ellipse cx="67" cy="20" rx="11" ry="7" fill="#FF9AAC" transform="rotate(15,67,20)"/>
+      <circle  cx="57" cy="24" r="5" fill="#FF6B8A"/>
+    </g>
 
-  <!-- CHEEKS -->
-  <ellipse id="cheek-l" cx="38"  cy="148" rx="16" ry="11" fill="#FFB3C6" opacity="0"/>
-  <ellipse id="cheek-r" cx="162" cy="148" rx="16" ry="11" fill="#FFB3C6" opacity="0"/>
+    <!-- angry brows — hidden by default -->
+    <g id="k-angry-brows" opacity="0">
+      <rect x="52" y="108" width="34" height="6" rx="3" fill="#2C2C2A" transform="rotate(18,69,111)"/>
+      <rect x="114" y="108" width="34" height="6" rx="3" fill="#2C2C2A" transform="rotate(-18,131,111)"/>
+    </g>
 
-  <!-- LEFT EYE GROUP -->
-  <g id="eye-l-group">
-    <ellipse id="eyeball-l" cx="76"  cy="130" rx="16" ry="18" fill="#2C2C2A"/>
-    <circle  id="shine-l"   cx="82"  cy="123" r="5"   fill="white"/>
-    <!-- blink lid — covers eye from top, colour set by JS to match bg -->
-    <rect id="lid-l" x="60" y="112" width="32" height="2" rx="3" fill="#FFD166"/>
-  </g>
+    <rect id="k-head" x="18" y="60" width="164" height="138" rx="36" fill="#FFFFFF"/>
 
-  <!-- RIGHT EYE GROUP -->
-  <g id="eye-r-group">
-    <ellipse id="eyeball-r" cx="124" cy="130" rx="16" ry="18" fill="#2C2C2A"/>
-    <circle  id="shine-r"   cx="130" cy="123" r="5"   fill="white"/>
-    <rect id="lid-r" x="108" y="112" width="32" height="2" rx="3" fill="#FFD166"/>
-  </g>
+    <ellipse id="k-cheek-l" cx="38"  cy="148" rx="16" ry="11" fill="#FFB3C6" opacity="0"/>
+    <ellipse id="k-cheek-r" cx="162" cy="148" rx="16" ry="11" fill="#FFB3C6" opacity="0"/>
 
-  <!-- NOSE — small oval, Hello Kitty style -->
-  <ellipse id="nose" cx="100" cy="152" rx="6" ry="4.5" fill="#F5A623"/>
+    <g id="k-eye-l">
+      <ellipse id="k-eyeball-l" cx="76"  cy="130" rx="16" ry="18" fill="#2C2C2A"/>
+      <circle  id="k-shine-l"   cx="82"  cy="123" r="5"   fill="white"/>
+      <rect    id="k-lid-l"     x="60"   y="112"  width="32" height="2" rx="3" fill="#FFD166"/>
+    </g>
+    <g id="k-eye-r">
+      <ellipse id="k-eyeball-r" cx="124" cy="130" rx="16" ry="18" fill="#2C2C2A"/>
+      <circle  id="k-shine-r"   cx="130" cy="123" r="5"   fill="white"/>
+      <rect    id="k-lid-r"     x="108"  y="112"  width="32" height="2" rx="3" fill="#FFD166"/>
+    </g>
 
-  <!-- NO MOUTH — Hello Kitty has no mouth. Expression is all eyes + cheeks + bow colour -->
+    <ellipse id="k-nose" cx="100" cy="152" rx="6" ry="4.5" fill="#F5A623"/>
 
-  <!-- SPARKLES for love mood -->
-  <g id="sparkle-l" opacity="0">
-    <line x1="26" y1="100" x2="26" y2="112" stroke="#FFD166" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="20" y1="106" x2="32" y2="106" stroke="#FFD166" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="21" y1="101" x2="31" y2="111" stroke="#FFD166" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="31" y1="101" x2="21" y2="111" stroke="#FFD166" stroke-width="1.5" stroke-linecap="round"/>
-  </g>
-  <g id="sparkle-r" opacity="0">
-    <line x1="174" y1="100" x2="174" y2="112" stroke="#FFD166" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="168" y1="106" x2="180" y2="106" stroke="#FFD166" stroke-width="2.5" stroke-linecap="round"/>
-    <line x1="169" y1="101" x2="179" y2="111" stroke="#FFD166" stroke-width="1.5" stroke-linecap="round"/>
-    <line x1="179" y1="101" x2="169" y2="111" stroke="#FFD166" stroke-width="1.5" stroke-linecap="round"/>
-  </g>
+    <g id="k-sparkle-l" opacity="0">
+      <line x1="26" y1="100" x2="26" y2="112" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="20" y1="106" x2="32" y2="106" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="21" y1="101" x2="31" y2="111" stroke="#FF9AAC" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="31" y1="101" x2="21" y2="111" stroke="#FF9AAC" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
+    <g id="k-sparkle-r" opacity="0">
+      <line x1="174" y1="100" x2="174" y2="112" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="168" y1="106" x2="180" y2="106" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
+      <line x1="169" y1="101" x2="179" y2="111" stroke="#FF9AAC" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="179" y1="101" x2="169" y2="111" stroke="#FF9AAC" stroke-width="1.5" stroke-linecap="round"/>
+    </g>
 
-  <!-- ZZZ for sleepy -->
-  <g id="zzz" opacity="0">
-    <text x="158" y="108" font-family="Arial" font-size="13" fill="#9090C0" opacity="0.7">z</text>
-    <text x="166" y="94"  font-family="Arial" font-size="16" fill="#9090C0" opacity="0.5">z</text>
-    <text x="176" y="78"  font-family="Arial" font-size="20" fill="#9090C0" opacity="0.35">z</text>
-  </g>
+    <g id="k-zzz" opacity="0">
+      <text x="158" y="108" font-family="Arial" font-size="13" fill="#9090C0" opacity="0.7">z</text>
+      <text x="166" y="94"  font-family="Arial" font-size="16" fill="#9090C0" opacity="0.5">z</text>
+      <text x="176" y="78"  font-family="Arial" font-size="20" fill="#9090C0" opacity="0.35">z</text>
+    </g>
 
-  <!-- SWEAT DROP for nervous/surprised -->
-  <g id="sweat" opacity="0">
-    <ellipse cx="168" cy="95" rx="5" ry="7" fill="#A8D8FF"/>
-    <polygon points="163,95 173,95 168,85" fill="#A8D8FF"/>
-  </g>
+    <g id="k-sweat" opacity="0">
+      <ellipse cx="168" cy="95" rx="5" ry="7" fill="#A8D8FF"/>
+      <polygon points="163,95 173,95 168,85" fill="#A8D8FF"/>
+    </g>
+  </svg>
 
-</svg>
+  <!-- ══════════════════════════════════════════
+       FACE B — GUMBALL
+       ══════════════════════════════════════════ -->
+  <svg class="face-svg hidden" id="face-gumball" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
+
+    <!-- Round head — no ears, full circle shape -->
+    <ellipse id="g-head" cx="100" cy="112" rx="88" ry="92" fill="#FFFFFF"/>
+
+    <!-- Cheeks -->
+    <ellipse id="g-cheek-l" cx="30"  cy="140" rx="18" ry="13" fill="#FFB3C6" opacity="0"/>
+    <ellipse id="g-cheek-r" cx="170" cy="140" rx="18" ry="13" fill="#FFB3C6" opacity="0"/>
+
+    <!-- BROWS — Gumball's thick expressive brows -->
+    <rect id="g-brow-l" x="42" y="82" width="52" height="9" rx="4.5" fill="#2C2C2A"/>
+    <rect id="g-brow-r" x="106" y="82" width="52" height="9" rx="4.5" fill="#2C2C2A"/>
+
+    <!-- LEFT EYE — big oval, Gumball style -->
+    <g id="g-eye-l">
+      <ellipse id="g-eyeball-l" cx="68"  cy="118" rx="22" ry="26" fill="#2C2C2A"/>
+      <circle  id="g-shine-l"   cx="76"  cy="108" r="8"   fill="white"/>
+      <rect    id="g-lid-l"     x="46"   y="92"   width="44" height="2" rx="3" fill="#FFD166"/>
+    </g>
+
+    <!-- RIGHT EYE -->
+    <g id="g-eye-r">
+      <ellipse id="g-eyeball-r" cx="132" cy="118" rx="22" ry="26" fill="#2C2C2A"/>
+      <circle  id="g-shine-r"   cx="140" cy="108" r="8"   fill="white"/>
+      <rect    id="g-lid-r"     x="110"  y="92"   width="44" height="2" rx="3" fill="#FFD166"/>
+    </g>
+
+    <!-- MOUTH — Gumball's big wide mouth, changes shape per mood -->
+    <!-- Outer mouth shape -->
+    <path id="g-mouth-outer" d="M48 162 Q100 200 152 162 Q130 185 100 188 Q70 185 48 162Z" fill="#CC2244"/>
+    <!-- Teeth row -->
+    <path id="g-teeth" d="M62 165 Q100 172 138 165 L138 174 Q100 180 62 174Z" fill="white"/>
+    <!-- Tongue -->
+    <ellipse id="g-tongue" cx="100" cy="178" rx="22" ry="11" fill="#FF8FAB"/>
+    <!-- mouth visible group for easy hide -->
+    <g id="g-mouth-group">
+      <!-- just references above, controlled by opacity on whole group -->
+    </g>
+
+    <!-- NOSE — tiny, centred -->
+    <ellipse id="g-nose" cx="100" cy="150" rx="5" ry="4" fill="#2C2C2A" opacity="0.15"/>
+
+    <!-- Angry brows overlay — V-shaped heavy brows -->
+    <g id="g-angry-brows" opacity="0">
+      <rect x="42" y="86" width="52" height="11" rx="5" fill="#2C2C2A" transform="rotate(14,68,91)"/>
+      <rect x="106" y="86" width="52" height="11" rx="5" fill="#2C2C2A" transform="rotate(-14,132,91)"/>
+    </g>
+
+    <!-- ZZZ -->
+    <g id="g-zzz" opacity="0">
+      <text x="158" y="80" font-family="Arial" font-size="13" fill="#9090C0" opacity="0.7">z</text>
+      <text x="167" y="64" font-family="Arial" font-size="16" fill="#9090C0" opacity="0.5">z</text>
+      <text x="178" y="46" font-family="Arial" font-size="20" fill="#9090C0" opacity="0.35">z</text>
+    </g>
+
+    <!-- Sweat drop -->
+    <g id="g-sweat" opacity="0">
+      <ellipse cx="172" cy="75" rx="6" ry="8" fill="#A8D8FF"/>
+      <polygon points="166,75 178,75 172,63" fill="#A8D8FF"/>
+    </g>
+
+    <!-- Sparkles -->
+    <g id="g-sparkle-l" opacity="0">
+      <line x1="22" y1="90" x2="22" y2="104" stroke="#FF9AAC" stroke-width="3" stroke-linecap="round"/>
+      <line x1="15" y1="97" x2="29" y2="97"  stroke="#FF9AAC" stroke-width="3" stroke-linecap="round"/>
+      <line x1="16" y1="91" x2="28" y2="103" stroke="#FF9AAC" stroke-width="2" stroke-linecap="round"/>
+      <line x1="28" y1="91" x2="16" y2="103" stroke="#FF9AAC" stroke-width="2" stroke-linecap="round"/>
+    </g>
+    <g id="g-sparkle-r" opacity="0">
+      <line x1="178" y1="90" x2="178" y2="104" stroke="#FF9AAC" stroke-width="3" stroke-linecap="round"/>
+      <line x1="171" y1="97" x2="185" y2="97"  stroke="#FF9AAC" stroke-width="3" stroke-linecap="round"/>
+      <line x1="172" y1="91" x2="184" y2="103" stroke="#FF9AAC" stroke-width="2" stroke-linecap="round"/>
+      <line x1="184" y1="91" x2="172" y2="103" stroke="#FF9AAC" stroke-width="2" stroke-linecap="round"/>
+    </g>
+
+  </svg>
 </div>
 
 <div id="mood-name">happy</div>
 
 <script>
-// ── MOOD SYSTEM ───────────────────────────────────────────────
-// Hello Kitty has no mouth — all expression lives in:
-//   bg colour, eye shape/size, lid height, cheek opacity,
-//   bow colour, sparkles, zzz, sweat drop
-
+// ══════════════════════════════════════════════════════════════
+//  SHARED MOOD DEFINITIONS
+//  Both faces read the same mood table.
+//  Keys used by Kitty:    eyeLry/Rry, lidH, cheekOp,
+//                         bowFill, bowKnot, sparkOp, zzzOp, sweatOp
+//  Keys used by Gumball:  eyeLry/Rry (height), lidH, cheekOp,
+//                         browRotL/R, mouthOp, teethOp, tongueOp,
+//                         sparkOp, zzzOp, sweatOp
+//  bg and label are shared.
+// ══════════════════════════════════════════════════════════════
 const MOODS = {
   happy: {
-    bg:'#FFD166', headFill:'#FFFFFF',
-    eyeLry:18, eyeRry:18,
-    lidH:2,
-    cheekOp:0, bowFill:'#FF9AAC', bowKnot:'#FF6B8A',
+    bg:'#FFD166',
+    eyeLry:18, eyeRry:18, lidH:2, cheekOp:0,
+    bowFill:'#FF9AAC', bowKnot:'#FF6B8A',
+    browRotL:0, browRotR:0,
+    mouthScale:1, mouthOp:1, teethOp:1, tongueOp:1,
     sparkOp:0, zzzOp:0, sweatOp:0,
     label:'happy',
   },
   excited: {
-    bg:'#FFD166', headFill:'#FFFFFF',
-    eyeLry:20, eyeRry:20,
-    lidH:2,
-    cheekOp:0.7, bowFill:'#FF6B8A', bowKnot:'#E8445A',
+    bg:'#FFD166',
+    eyeLry:22, eyeRry:22, lidH:2, cheekOp:0.7,
+    bowFill:'#FF6B8A', bowKnot:'#E8445A',
+    browRotL:0, browRotR:0,
+    mouthScale:1.1, mouthOp:1, teethOp:1, tongueOp:1,
     sparkOp:0, zzzOp:0, sweatOp:0,
     label:'excited!',
   },
   thinking: {
-    bg:'#C7EFCF', headFill:'#FFFFFF',
-    eyeLry:14, eyeRry:16,
-    lidH:8,
-    cheekOp:0, bowFill:'#A8D8B0', bowKnot:'#6DBF7E',
+    bg:'#C7EFCF',
+    eyeLry:14, eyeRry:16, lidH:8, cheekOp:0,
+    bowFill:'#A8D8B0', bowKnot:'#6DBF7E',
+    browRotL:-4, browRotR:4,
+    mouthScale:0.6, mouthOp:0.7, teethOp:0, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:0,
     label:'thinking...',
   },
   sleepy: {
-    bg:'#B8C0FF', headFill:'#FFFFFF',
-    eyeLry:8, eyeRry:8,
-    lidH:18,
-    cheekOp:0, bowFill:'#C0C8FF', bowKnot:'#9098E8',
+    bg:'#B8C0FF',
+    eyeLry:7, eyeRry:7, lidH:20, cheekOp:0,
+    bowFill:'#C0C8FF', bowKnot:'#9098E8',
+    browRotL:0, browRotR:0,
+    mouthScale:0.5, mouthOp:0.5, teethOp:0, tongueOp:0,
     sparkOp:0, zzzOp:1, sweatOp:0,
     label:'sleepy zzz',
   },
   surprised: {
-    bg:'#FFBE7B', headFill:'#FFFFFF',
-    eyeLry:22, eyeRry:22,
-    lidH:2,
-    cheekOp:0.5, bowFill:'#FFB347', bowKnot:'#E8922A',
+    bg:'#FFBE7B',
+    eyeLry:24, eyeRry:24, lidH:2, cheekOp:0.5,
+    bowFill:'#FFB347', bowKnot:'#E8922A',
+    browRotL:6, browRotR:-6,
+    mouthScale:0.7, mouthOp:1, teethOp:0, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:1,
     label:'woah!',
   },
   love: {
-    bg:'#FFB3C6', headFill:'#FFFFFF',
-    eyeLry:18, eyeRry:18,
-    lidH:2,
-    cheekOp:0.85, bowFill:'#FF6B8A', bowKnot:'#E8445A',
+    bg:'#FFB3C6',
+    eyeLry:18, eyeRry:18, lidH:2, cheekOp:0.85,
+    bowFill:'#FF6B8A', bowKnot:'#E8445A',
+    browRotL:0, browRotR:0,
+    mouthScale:1, mouthOp:1, teethOp:1, tongueOp:1,
     sparkOp:1, zzzOp:0, sweatOp:0,
     label:'hehe',
   },
   moving: {
-    bg:'#A8E6CF', headFill:'#FFFFFF',
-    eyeLry:16, eyeRry:16,
-    lidH:5,
-    cheekOp:0.4, bowFill:'#6DBF9E', bowKnot:'#3DAA7E',
+    bg:'#A8E6CF',
+    eyeLry:16, eyeRry:16, lidH:5, cheekOp:0.4,
+    bowFill:'#6DBF9E', bowKnot:'#3DAA7E',
+    browRotL:-2, browRotR:2,
+    mouthScale:0.9, mouthOp:1, teethOp:1, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:0,
     label:'vroom!',
   },
   sad: {
-    bg:'#CFD8E8', headFill:'#FFFFFF',
-    eyeLry:13, eyeRry:13,
-    lidH:12,
-    cheekOp:0, bowFill:'#A0AEC0', bowKnot:'#718096',
+    bg:'#CFD8E8',
+    eyeLry:13, eyeRry:13, lidH:12, cheekOp:0,
+    bowFill:'#A0AEC0', bowKnot:'#718096',
+    browRotL:5, browRotR:-5,
+    mouthScale:0.6, mouthOp:0.8, teethOp:0, tongueOp:0,
     sparkOp:0, zzzOp:0, sweatOp:0,
     label:'aww...',
   },
+  angry: {
+    bg:'#FF6B6B',
+    eyeLry:12, eyeRry:12, lidH:14, cheekOp:0,
+    bowFill:'#CC2244', bowKnot:'#991133',
+    browRotL:20, browRotR:-20,
+    mouthScale:0.7, mouthOp:1, teethOp:1, tongueOp:0,
+    sparkOp:0, zzzOp:0, sweatOp:0,
+    label:'GRRRR!!',
+  },
 }
 
-let currentMood = 'happy'
-let blinkTimer, idleTimer
+// ══════════════════════════════════════════════════════════════
+//  STATE
+// ══════════════════════════════════════════════════════════════
+let currentMood    = 'happy'
+let currentFace    = 'kitty'   // 'kitty' | 'gumball'
+let priorMood      = 'happy'   // mood before angry, to restore after
+let isAngry        = false
+let blinkTimer, idleTimer, angryTimer
 
+// ══════════════════════════════════════════════════════════════
+//  APPLY MOOD — routes to the right face renderer
+// ══════════════════════════════════════════════════════════════
 function applyMood(mood) {
   const m = MOODS[mood]
   if (!m) return
@@ -222,59 +364,133 @@ function applyMood(mood) {
 
   document.body.style.background = m.bg
   document.getElementById('mood-name').textContent = m.label
-
-  // Lid colour always matches bg so it "erases" the eye
-  const lidColour = m.bg
-  sa('lid-l', 'fill', lidColour)
-  sa('lid-r', 'fill', lidColour)
-  sa('lid-l', 'height', m.lidH)
-  sa('lid-r', 'height', m.lidH)
-
-  sa('eyeball-l', 'ry', m.eyeLry)
-  sa('eyeball-r', 'ry', m.eyeRry)
-
-  // Shine moves with eye height change
-  sa('shine-l', 'cy', 130 - m.eyeLry * 0.4)
-  sa('shine-r', 'cy', 130 - m.eyeRry * 0.4)
-
-  sa('cheek-l', 'opacity', m.cheekOp)
-  sa('cheek-r', 'opacity', m.cheekOp)
-
-  // Bow colour changes with mood
-  document.querySelectorAll('#bow ellipse').forEach(el => el.setAttribute('fill', m.bowFill))
-  document.querySelector('#bow circle').setAttribute('fill', m.bowKnot)
-
-  // Sparkles colour matches bg for contrast
-  document.querySelectorAll('#sparkle-l line, #sparkle-r line').forEach(l => l.setAttribute('stroke', m.bowFill))
-
-  sa('sparkle-l', 'opacity', m.sparkOp)
-  sa('sparkle-r', 'opacity', m.sparkOp)
-  sa('zzz',       'opacity', m.zzzOp)
-  sa('sweat',     'opacity', m.sweatOp)
-
-  // Update theme-color meta so PWA status bar matches
   document.querySelector('meta[name="theme-color"]').setAttribute('content', m.bg)
+
+  if (currentFace === 'kitty') applyKitty(m)
+  else                         applyGumball(m)
+}
+
+// ── KITTY RENDERER ────────────────────────────────────────────
+function applyKitty(m) {
+  const bg = m.bg
+  sa('k-lid-l', 'fill', bg); sa('k-lid-r', 'fill', bg)
+  sa('k-lid-l', 'height', m.lidH); sa('k-lid-r', 'height', m.lidH)
+  sa('k-eyeball-l', 'ry', m.eyeLry); sa('k-eyeball-r', 'ry', m.eyeRry)
+  sa('k-shine-l', 'cy', 130 - m.eyeLry * 0.4)
+  sa('k-shine-r', 'cy', 130 - m.eyeRry * 0.4)
+  sa('k-cheek-l', 'opacity', m.cheekOp); sa('k-cheek-r', 'opacity', m.cheekOp)
+  document.querySelectorAll('#k-bow ellipse').forEach(el => el.setAttribute('fill', m.bowFill))
+  document.querySelector('#k-bow circle').setAttribute('fill', m.bowKnot)
+  document.querySelectorAll('#k-sparkle-l line,#k-sparkle-r line').forEach(l => l.setAttribute('stroke', m.bowFill))
+  sa('k-sparkle-l','opacity',m.sparkOp); sa('k-sparkle-r','opacity',m.sparkOp)
+  sa('k-zzz','opacity',m.zzzOp); sa('k-sweat','opacity',m.sweatOp)
+  // Angry brows on kitty — use browRotL as a proxy: >10 = angry
+  sa('k-angry-brows','opacity', Math.abs(m.browRotL) >= 20 ? 1 : 0)
+}
+
+// ── GUMBALL RENDERER ──────────────────────────────────────────
+function applyGumball(m) {
+  const bg = m.bg
+  sa('g-lid-l','fill',bg); sa('g-lid-r','fill',bg)
+  sa('g-lid-l','height',m.lidH); sa('g-lid-r','height',m.lidH)
+  sa('g-eyeball-l','ry',m.eyeLry); sa('g-eyeball-r','ry',m.eyeRry)
+  sa('g-shine-l','cy', 118 - m.eyeLry * 0.45)
+  sa('g-shine-r','cy', 118 - m.eyeRry * 0.45)
+  sa('g-cheek-l','opacity',m.cheekOp); sa('g-cheek-r','opacity',m.cheekOp)
+
+  // Brow rotation — normal brows tilt with mood, angry brows swap in
+  const isAngryMood = Math.abs(m.browRotL) >= 20
+  sa('g-angry-brows','opacity', isAngryMood ? 1 : 0)
+  // Normal brow tilt
+  document.getElementById('g-brow-l').setAttribute('transform',
+    isAngryMood ? '' : `rotate(${m.browRotL},68,86)`)
+  document.getElementById('g-brow-r').setAttribute('transform',
+    isAngryMood ? '' : `rotate(${m.browRotR},132,86)`)
+
+  // Mouth — scale vertically via transform on the whole mouth group
+  const mScale = m.mouthScale
+  const mouthEl = document.getElementById('g-mouth-outer')
+  // We translate to mouth centre (100,180), scale, translate back
+  mouthEl.setAttribute('transform',
+    `translate(100,175) scale(${mScale}) translate(-100,-175)`)
+  sa('g-mouth-outer','opacity',m.mouthOp)
+  sa('g-teeth','opacity', m.teethOp * m.mouthOp)
+
+  // Tongue transform matches mouth
+  document.getElementById('g-tongue').setAttribute('transform',
+    `translate(100,178) scale(${mScale}) translate(-100,-178)`)
+  sa('g-tongue','opacity', m.tongueOp * m.mouthOp)
+
+  sa('g-sparkle-l','opacity',m.sparkOp); sa('g-sparkle-r','opacity',m.sparkOp)
+  sa('g-zzz','opacity',m.zzzOp); sa('g-sweat','opacity',m.sweatOp)
 }
 
 function sa(id, attr, val) {
-  document.getElementById(id).setAttribute(attr, val)
+  const el = document.getElementById(id)
+  if (el) el.setAttribute(attr, val)
 }
 
-// ── BLINK ─────────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+//  FACE SWAP — called on long press
+// ══════════════════════════════════════════════════════════════
+function swapFace() {
+  currentFace = currentFace === 'kitty' ? 'gumball' : 'kitty'
+
+  document.getElementById('face-kitty').classList.toggle('hidden', currentFace !== 'kitty')
+  document.getElementById('face-gumball').classList.toggle('hidden', currentFace !== 'gumball')
+
+  // Flash ring feedback
+  const ring = document.getElementById('flash-ring')
+  ring.classList.add('flash')
+  setTimeout(() => ring.classList.remove('flash'), 300)
+
+  // Hint text
+  const hint = document.getElementById('swap-hint')
+  const name = currentFace === 'kitty' ? 'kitty mode' : 'gumball mode'
+  hint.textContent = name
+  hint.classList.add('show')
+  setTimeout(() => hint.classList.remove('show'), 1800)
+
+  // Re-apply current mood to new face
+  applyMood(currentMood)
+}
+
+// ══════════════════════════════════════════════════════════════
+//  ANGRY — double tap triggers, reverts after 5s
+// ══════════════════════════════════════════════════════════════
+function triggerAngry() {
+  if (isAngry) return
+  isAngry   = true
+  priorMood = currentMood
+  clearTimeout(idleTimer)
+  clearTimeout(blinkTimer)
+  applyMood('angry')
+  angryTimer = setTimeout(() => {
+    isAngry = false
+    applyMood(priorMood)
+    scheduleBlink()
+    scheduleIdle()
+  }, 5000)
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BLINK — works for both faces via lid height
+// ══════════════════════════════════════════════════════════════
 function blink() {
-  if (currentMood === 'sleepy') return
+  if (currentMood === 'sleepy' || isAngry) return
   const m = MOODS[currentMood]
   const maxClose = Math.max(m.eyeLry * 1.1, 18)
-  const frames = [2, 6, 14, maxClose, 14, 6, 2]
+  const frames   = [2, 6, 14, maxClose, 14, 6, 2]
+  const prefix   = currentFace === 'kitty' ? 'k' : 'g'
   let i = 0
   const t = setInterval(() => {
-    sa('lid-l', 'height', frames[i])
-    sa('lid-r', 'height', frames[i])
+    sa(`${prefix}-lid-l`, 'height', frames[i])
+    sa(`${prefix}-lid-r`, 'height', frames[i])
     i++
     if (i >= frames.length) {
       clearInterval(t)
-      sa('lid-l', 'height', m.lidH)
-      sa('lid-r', 'height', m.lidH)
+      sa(`${prefix}-lid-l`, 'height', m.lidH)
+      sa(`${prefix}-lid-r`, 'height', m.lidH)
     }
   }, 32)
 }
@@ -284,11 +500,13 @@ function scheduleBlink() {
   blinkTimer = setTimeout(() => { blink(); scheduleBlink() }, 2500 + Math.random() * 3000)
 }
 
-// ── IDLE DRIFT ────────────────────────────────────────────────
+// ══════════════════════════════════════════════════════════════
+//  IDLE DRIFT
+// ══════════════════════════════════════════════════════════════
 function scheduleIdle() {
   clearTimeout(idleTimer)
   idleTimer = setTimeout(() => {
-    if (currentMood === 'happy') {
+    if (!isAngry && currentMood === 'happy') {
       const pick = Math.random() < 0.5 ? 'thinking' : 'sleepy'
       applyMood(pick)
       setTimeout(() => { applyMood('happy'); scheduleIdle() }, 4000)
@@ -298,20 +516,77 @@ function scheduleIdle() {
   }, 10000 + Math.random() * 8000)
 }
 
-// ── TAP ───────────────────────────────────────────────────────
-const TAP_MOODS = ['excited', 'surprised', 'love']
-let tapLock = false
+// ══════════════════════════════════════════════════════════════
+//  GESTURE DETECTION
+//  — Single tap  → random positive reaction
+//  — Double tap  → angry
+//  — Long press  → swap face
+// ══════════════════════════════════════════════════════════════
+const TAP_MOODS  = ['excited', 'surprised', 'love']
+let tapCount     = 0
+let tapTimer     = null
+let tapLock      = false
+let pressTimer   = null
+let pressStarted = false
 
-document.getElementById('face-wrap').addEventListener('click', () => {
-  if (tapLock) return
-  tapLock = true
-  clearTimeout(idleTimer)
-  const r = TAP_MOODS[Math.floor(Math.random() * TAP_MOODS.length)]
-  applyMood(r)
-  setTimeout(() => { applyMood('happy'); scheduleIdle(); tapLock = false }, 2000)
+const LONG_PRESS_MS  = 600
+const DOUBLE_TAP_MS  = 300
+
+const wrap = document.getElementById('face-wrap')
+
+wrap.addEventListener('pointerdown', e => {
+  e.preventDefault()
+  pressStarted = true
+  pressTimer = setTimeout(() => {
+    // Long press fired — cancel any pending tap logic
+    pressStarted = false
+    tapCount = 0
+    clearTimeout(tapTimer)
+    swapFace()
+  }, LONG_PRESS_MS)
 })
 
-// ── INIT ──────────────────────────────────────────────────────
+wrap.addEventListener('pointerup', e => {
+  e.preventDefault()
+  if (!pressStarted) return
+  clearTimeout(pressTimer)
+  pressStarted = false
+
+  // Count taps
+  tapCount++
+  clearTimeout(tapTimer)
+
+  tapTimer = setTimeout(() => {
+    const count = tapCount
+    tapCount = 0
+
+    if (count >= 2) {
+      // Double tap → angry
+      triggerAngry()
+    } else {
+      // Single tap → reaction
+      if (tapLock || isAngry) return
+      tapLock = true
+      clearTimeout(idleTimer)
+      const r = TAP_MOODS[Math.floor(Math.random() * TAP_MOODS.length)]
+      applyMood(r)
+      setTimeout(() => {
+        applyMood('happy')
+        scheduleIdle()
+        tapLock = false
+      }, 2000)
+    }
+  }, DOUBLE_TAP_MS)
+})
+
+wrap.addEventListener('pointercancel', () => {
+  clearTimeout(pressTimer)
+  pressStarted = false
+})
+
+// ══════════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════════
 applyMood('happy')
 scheduleBlink()
 scheduleIdle()
