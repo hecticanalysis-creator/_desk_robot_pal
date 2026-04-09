@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="StEEvE-V01">
-<meta name="theme-color" content="#FFD166">
+<meta name="theme-color" content="#F5E6D0">
 <link rel="manifest" href="manifest.json">
 <title>StEEvE-V01</title>
 <style>
@@ -15,293 +15,299 @@
 html, body { width:100%; height:100%; overflow:hidden; }
 
 body {
-  background: #FFD166;
+  background: #F5E6D0;
   display: flex;
-  flex-direction: column;
   align-items: center;
   justify-content: center;
-  transition: background 0.4s ease;
+  transition: background 0.5s ease;
   position: relative;
   height: 100dvh;
-  gap: 0;
 }
 
+/* ── TOP BAR ── */
+#top-bar {
+  position: fixed; top: 0; left: 0; right: 0;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 16px;
+  z-index: 30;
+}
 #back-link {
-  position: fixed; top: 18px; left: 20px;
   font-family: 'Courier New', monospace;
   font-size: 11px; font-weight: 700; letter-spacing: 0.15em;
-  color: rgba(0,0,0,0.2); text-decoration: none; text-transform: uppercase; z-index: 10;
+  color: rgba(0,0,0,0.18); text-decoration: none; text-transform: uppercase;
+  transition: color 0.5s;
 }
-#back-link:active { color: rgba(0,0,0,0.5); }
+#back-link:active { color: rgba(0,0,0,0.4); }
+body.dark #back-link { color: rgba(255,255,255,0.2); }
+body.dark #back-link:active { color: rgba(255,255,255,0.5); }
+body.dark #ble-btn { color: rgba(255,255,255,0.3); background: rgba(255,255,255,0.06); }
+body.dark #ble-btn.live { color: rgba(255,255,255,0.5); }
+body.dark #ble-dot { background: rgba(255,255,255,0.15); }
+body.dark #face-hint { color: rgba(255,255,255,0.15); }
+body.dark #mood-name { color: rgba(255,255,255,0.15); }
+body.dark #speech-bubble { background: rgba(20,20,30,0.85); color: #e0e0e0; }
+body.dark #speech-bubble::after { border-top-color: rgba(20,20,30,0.85); }
+body.dark .cmd-pill { color: rgba(255,255,255,0.45); background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.1); }
+body.dark #mic-btn { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
 
-#swap-hint {
-  position: fixed; top: 18px; right: 20px;
+/* ── BLE BUTTON — real <button> for Web Bluetooth ── */
+#ble-btn {
   font-family: 'Courier New', monospace;
-  font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
-  color: rgba(0,0,0,0.18); z-index: 10; pointer-events: none;
-  opacity: 0; transition: opacity 0.4s;
-}
-#swap-hint.show { opacity: 1; }
-
-#mood-name {
-  position: fixed; bottom: 72px; left: 50%; transform: translateX(-50%);
-  font-family: 'Courier New', monospace;
-  font-size: 11px; letter-spacing: 0.25em; text-transform: uppercase;
-  color: rgba(0,0,0,0.18); z-index: 10; pointer-events: none; white-space: nowrap;
-}
-
-/* ── BLE STATUS — minimal, top-right corner ── */
-#ble-status {
-  position: fixed; top: 18px; right: 20px;
-  display: flex; align-items: center; gap: 6px;
-  z-index: 20; cursor: pointer;
-  font-family: 'Courier New', monospace;
-  font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
-  color: rgba(0,0,0,0.25);
-  padding: 4px 10px;
-  border-radius: 12px;
-  border: none; outline: none;
+  font-size: 9px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(0,0,0,0.3);
   background: rgba(0,0,0,0.06);
-  transition: all 0.3s;
+  border: none; outline: none;
+  padding: 6px 12px;
+  border-radius: 14px;
+  cursor: pointer;
+  display: flex; align-items: center; gap: 6px;
   -webkit-appearance: none; appearance: none;
+  transition: all 0.3s;
 }
-#ble-status:active { background: rgba(0,0,0,0.12); }
+#ble-btn:active { background: rgba(0,0,0,0.12); }
+#ble-btn.live { color: rgba(0,0,0,0.45); }
 #ble-dot {
   width: 7px; height: 7px; border-radius: 50%;
   background: rgba(0,0,0,0.15);
-  transition: all 0.3s;
+  transition: all 0.3s; flex-shrink: 0;
 }
-#ble-dot.live {
-  background: #06d6a0;
-  box-shadow: 0 0 6px rgba(6,214,160,0.6);
-}
-#ble-label { transition: color 0.3s; }
-#ble-status.live #ble-label { color: rgba(0,0,0,0.4); }
+#ble-dot.live { background: #06d6a0; box-shadow: 0 0 6px rgba(6,214,160,0.6); }
 
-/* ── SPEECH BUBBLE ── */
+/* ── FACE HINT ── */
+#face-hint {
+  position: fixed; top: 48px; right: 16px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(0,0,0,0.12); z-index: 20; pointer-events: none;
+  opacity: 0; transition: opacity 0.5s;
+}
+#face-hint.show { opacity: 1; }
+
+/* ── SPEECH BUBBLE — wraps, stays longer ── */
 #speech-bubble {
   position: fixed;
-  top: 10%;
+  top: 12%;
   left: 50%; transform: translateX(-50%);
-  background: rgba(255,255,255,0.92);
-  border-radius: 20px;
-  padding: 10px 18px;
+  background: rgba(255,255,255,0.88);
+  border-radius: 18px;
+  padding: 12px 22px;
   font-family: 'Courier New', monospace;
-  font-size: 14px; font-weight: 700;
+  font-size: 15px; font-weight: 700; line-height: 1.5;
   color: #333;
-  white-space: nowrap;
-  z-index: 20;
-  pointer-events: none;
-  opacity: 0;
-  transition: opacity 0.4s;
-  max-width: 80vw;
+  white-space: normal; word-wrap: break-word;
+  z-index: 25; pointer-events: none;
+  opacity: 0; transition: opacity 0.5s;
+  max-width: 85vw; min-width: 60px;
   text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.08);
 }
 #speech-bubble::after {
   content: '';
   position: absolute;
   bottom: -10px; left: 50%; transform: translateX(-50%);
-  border: 6px solid transparent;
-  border-top-color: rgba(255,255,255,0.92);
+  border: 7px solid transparent;
+  border-top-color: rgba(255,255,255,0.88);
   border-bottom: none;
 }
 #speech-bubble.show { opacity: 1; }
+@media (orientation: landscape) {
+  #speech-bubble { top: auto; bottom: 15%; max-width: 50vw; font-size: 14px; }
+}
 
-/* ── MIC BUTTON ── */
+/* ── MOOD LABEL ── */
+#mood-name {
+  position: fixed; bottom: 70px; left: 50%; transform: translateX(-50%);
+  font-family: 'Courier New', monospace;
+  font-size: 10px; letter-spacing: 0.25em; text-transform: uppercase;
+  color: rgba(0,0,0,0.14); z-index: 10; pointer-events: none; white-space: nowrap;
+}
+@media (orientation: landscape) { #mood-name { bottom: 10px; } }
+
+/* ── FACE CONTAINER ── */
+#face-wrap {
+  width: min(88vw, 72vh);
+  height: min(88vw, 72vh);
+  position: relative;
+  cursor: pointer; user-select: none; -webkit-user-select: none;
+  flex-shrink: 0;
+}
+@media (orientation: landscape) {
+  #face-wrap { width: min(70vh, 55vw); height: min(70vh, 55vw); }
+}
+.face-svg {
+  position: absolute; inset: 0; width: 100%; height: 100%;
+  transition: opacity 0.35s;
+}
+.face-svg.hidden { opacity: 0; pointer-events: none; }
+#flash-overlay {
+  position: absolute; inset: 0;
+  background: rgba(255,255,255,0); pointer-events: none;
+  transition: background 0.15s; z-index: 5; border-radius: 12px;
+}
+#flash-overlay.flash { background: rgba(255,255,255,0.5); }
+
+/* ── MIC ── */
 #mic-btn {
-  position: fixed; bottom: 22px; left: 50%; transform: translateX(-50%);
+  position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%);
   width: 44px; height: 44px; border-radius: 50%;
-  background: rgba(0,0,0,0.12); border: 2px solid rgba(0,0,0,0.15);
+  background: rgba(0,0,0,0.1); border: 2px solid rgba(0,0,0,0.12);
   display: flex; align-items: center; justify-content: center;
   cursor: pointer; z-index: 20;
   transition: background 0.2s, transform 0.1s;
 }
 #mic-btn:active { transform: translateX(-50%) scale(0.93); }
 #mic-btn.listening {
-  background: rgba(239,68,68,0.25);
-  border-color: rgba(239,68,68,0.5);
+  background: rgba(239,68,68,0.25); border-color: rgba(239,68,68,0.5);
   animation: mic-pulse 1s infinite;
 }
 @keyframes mic-pulse { 0%,100%{transform:translateX(-50%) scale(1)} 50%{transform:translateX(-50%) scale(1.08)} }
-#mic-icon { width: 20px; height: 20px; }
+@media (orientation: landscape) {
+  #mic-btn { bottom: 10px; right: 16px; left: auto; transform: none; }
+  #mic-btn:active { transform: scale(0.93); }
+  #mic-btn.listening { animation: mic-lp 1s infinite; }
+  @keyframes mic-lp { 0%,100%{transform:scale(1)} 50%{transform:scale(1.08)} }
+}
 
-/* ── QUICK COMMAND BAR ── */
+/* ── COMMAND BAR ── */
 #cmd-bar {
-  position: fixed; bottom: 76px;
+  position: fixed; bottom: 70px;
   left: 50%; transform: translateX(-50%);
   display: flex; gap: 8px; z-index: 20;
-  opacity: 0; pointer-events: none;
-  transition: opacity 0.3s;
+  opacity: 0; pointer-events: none; transition: opacity 0.3s;
 }
 #cmd-bar.show { opacity: 1; pointer-events: auto; }
+@media (orientation: landscape) {
+  #cmd-bar { bottom: auto; top: 50%; left: auto; right: 14px; transform: translateY(-50%); flex-direction: column; }
+}
 .cmd-pill {
   font-family: 'Courier New', monospace;
-  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
-  color: rgba(0,0,0,0.45);
-  background: rgba(255,255,255,0.5);
-  border: 1.5px solid rgba(0,0,0,0.1);
-  border-radius: 16px;
-  padding: 6px 14px;
-  cursor: pointer;
-  transition: all 0.15s;
-  user-select: none; -webkit-user-select: none;
+  font-size: 11px; font-weight: 700;
+  color: rgba(0,0,0,0.4); background: rgba(255,255,255,0.45);
+  border: 1.5px solid rgba(0,0,0,0.08); border-radius: 14px;
+  padding: 6px 14px; cursor: pointer;
+  transition: all 0.12s; user-select: none; -webkit-user-select: none;
 }
-.cmd-pill:active {
-  background: rgba(255,255,255,0.85);
-  transform: scale(0.94);
-}
+.cmd-pill:active { background: rgba(255,255,255,0.8); transform: scale(0.92); }
 
-/* ── FACE WRAP ── */
-#face-wrap {
-  width: min(78vw, 64vh);
-  height: min(78vw, 64vh);
-  position: relative;
-  cursor: pointer; user-select: none; -webkit-user-select: none;
-  flex-shrink: 0;
-}
-.face-svg {
-  position: absolute; inset: 0; width: 100%; height: 100%;
-  transition: opacity 0.3s;
-}
-.face-svg.hidden { opacity: 0; pointer-events: none; }
-
-#flash-ring {
-  position: absolute; inset: -4px; border-radius: 50%;
-  border: 4px solid rgba(255,255,255,0);
-  pointer-events: none; transition: border-color 0.15s; z-index: 5;
-}
-#flash-ring.flash { border-color: rgba(255,255,255,0.8); }
-
-/* Robot face LED scan animation */
-@keyframes scan-l {
-  0%,100% { transform: translateX(0); }
-  50%      { transform: translateX(6px); }
-}
-@keyframes scan-r {
-  0%,100% { transform: translateX(0); }
-  50%      { transform: translateX(-6px); }
-}
-.r-scan-l { animation: scan-l 2.4s ease-in-out infinite; }
-.r-scan-r { animation: scan-r 2.4s ease-in-out infinite; }
+/* ── ANIMATIONS ── */
+@keyframes float  { 0%,100%{transform:translateY(0)}   50%{transform:translateY(-5px)} }
+@keyframes scan   { 0%,100%{transform:translateX(-4px)} 50%{transform:translateX(4px)} }
+@keyframes glow-p { 0%,100%{opacity:0.7}               50%{opacity:1} }
+@keyframes squish { 0%,100%{transform:scaleY(1) scaleX(1)} 50%{transform:scaleY(0.96) scaleX(1.03)} }
+.anim-float  { animation: float  3.2s ease-in-out infinite; }
+.anim-scan   { animation: scan   2.6s ease-in-out infinite; }
+.anim-glow   { animation: glow-p 2.0s ease-in-out infinite; }
+.anim-squish { animation: squish 4.0s ease-in-out infinite; }
 </style>
 </head>
 <body>
 
-<a id="back-link" href="index.html">← unit-01</a>
-
-<!-- BLE status badge — tap to connect/disconnect -->
-<button id="ble-status" onclick="toggleBLE()">
-  <div id="ble-dot"></div>
-  <span id="ble-label">connect</span>
-</button>
-
+<div id="top-bar">
+  <a id="back-link" href="index.html">← unit-01</a>
+  <button id="ble-btn" onclick="toggleBLE()">
+    <div id="ble-dot"></div>
+    <span id="ble-label">connect</span>
+  </button>
+</div>
+<div id="face-hint">boxcat</div>
 <div id="speech-bubble"></div>
 
 <div id="face-wrap">
-  <div id="flash-ring"></div>
+  <div id="flash-overlay"></div>
 
-  <!-- ══════════════════════════════════════════
-       FACE A — HELLO KITTY
-       ══════════════════════════════════════════ -->
-  <svg class="face-svg" id="face-kitty" viewBox="0 0 200 210" xmlns="http://www.w3.org/2000/svg">
-    <polygon id="k-ear-l" points="30,72 48,30 68,72" fill="#FFFFFF"/>
-    <polygon id="k-ear-r" points="132,72 152,30 170,72" fill="#FFFFFF"/>
-    <g id="k-bow">
-      <ellipse cx="47" cy="26" rx="11" ry="7" fill="#FF9AAC" transform="rotate(-20,47,26)"/>
-      <ellipse cx="67" cy="20" rx="11" ry="7" fill="#FF9AAC" transform="rotate(15,67,20)"/>
-      <circle  cx="57" cy="24" r="5" fill="#FF6B8A"/>
-    </g>
-    <g id="k-angry-brows" opacity="0">
-      <rect x="52" y="108" width="34" height="6" rx="3" fill="#2C2C2A" transform="rotate(18,69,111)"/>
-      <rect x="114" y="108" width="34" height="6" rx="3" fill="#2C2C2A" transform="rotate(-18,131,111)"/>
-    </g>
-    <rect id="k-head" x="18" y="60" width="164" height="138" rx="36" fill="#FFFFFF"/>
-    <ellipse id="k-cheek-l" cx="38"  cy="148" rx="16" ry="11" fill="#FFB3C6" opacity="0"/>
-    <ellipse id="k-cheek-r" cx="162" cy="148" rx="16" ry="11" fill="#FFB3C6" opacity="0"/>
-    <g id="k-eye-l">
-      <ellipse id="k-eyeball-l" cx="76"  cy="130" rx="16" ry="18" fill="#2C2C2A"/>
-      <circle  id="k-shine-l"   cx="82"  cy="123" r="5"   fill="white"/>
-      <rect    id="k-lid-l"     x="60"   y="112"  width="32" height="2" rx="3" fill="#FFD166"/>
-    </g>
-    <g id="k-eye-r">
-      <ellipse id="k-eyeball-r" cx="124" cy="130" rx="16" ry="18" fill="#2C2C2A"/>
-      <circle  id="k-shine-r"   cx="130" cy="123" r="5"   fill="white"/>
-      <rect    id="k-lid-r"     x="108"  y="112"  width="32" height="2" rx="3" fill="#FFD166"/>
-    </g>
-    <ellipse id="k-nose" cx="100" cy="152" rx="6" ry="4.5" fill="#F5A623"/>
-    <g id="k-sparkle-l" opacity="0">
-      <line x1="26" y1="100" x2="26" y2="112" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="20" y1="106" x2="32" y2="106" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="21" y1="101" x2="31" y2="111" stroke="#FF9AAC" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="31" y1="101" x2="21" y2="111" stroke="#FF9AAC" stroke-width="1.5" stroke-linecap="round"/>
-    </g>
-    <g id="k-sparkle-r" opacity="0">
-      <line x1="174" y1="100" x2="174" y2="112" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="168" y1="106" x2="180" y2="106" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
-      <line x1="169" y1="101" x2="179" y2="111" stroke="#FF9AAC" stroke-width="1.5" stroke-linecap="round"/>
-      <line x1="179" y1="101" x2="169" y2="111" stroke="#FF9AAC" stroke-width="1.5" stroke-linecap="round"/>
-    </g>
-    <g id="k-zzz" opacity="0">
-      <text x="158" y="108" font-family="Arial" font-size="13" fill="#9090C0" opacity="0.7">z</text>
-      <text x="166" y="94"  font-family="Arial" font-size="16" fill="#9090C0" opacity="0.5">z</text>
-      <text x="176" y="78"  font-family="Arial" font-size="20" fill="#9090C0" opacity="0.35">z</text>
-    </g>
-    <g id="k-sweat" opacity="0">
-      <ellipse cx="168" cy="95" rx="5" ry="7" fill="#A8D8FF"/>
-      <polygon points="163,95 173,95 168,85" fill="#A8D8FF"/>
+  <!-- FACE 1: BOXCAT -->
+  <svg class="face-svg" id="face-boxcat" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="100" cy="185" rx="50" ry="7" fill="rgba(0,0,0,0.08)"/>
+    <g class="anim-float">
+      <rect id="bc-body" x="40" y="55" width="120" height="105" rx="6" fill="#D4A574" stroke="#B8895A" stroke-width="2"/>
+      <line x1="40" y1="75" x2="160" y2="75" stroke="#B8895A" stroke-width="1.5"/>
+      <line x1="100" y1="55" x2="100" y2="75" stroke="#B8895A" stroke-width="1.5"/>
+      <rect x="88" y="50" width="24" height="30" rx="2" fill="#C4956A" opacity="0.45"/>
+      <polygon points="50,55 65,26 80,55" fill="#D4A574" stroke="#B8895A" stroke-width="2" stroke-linejoin="round"/>
+      <polygon points="120,55 135,26 150,55" fill="#D4A574" stroke="#B8895A" stroke-width="2" stroke-linejoin="round"/>
+      <polygon points="57,53 65,33 73,53" fill="#E8C9A8"/>
+      <polygon points="127,53 135,33 143,53" fill="#E8C9A8"/>
+      <ellipse id="bc-eye-l" cx="78" cy="110" rx="10" ry="14" fill="#2C2C2A"/>
+      <ellipse id="bc-eye-r" cx="122" cy="110" rx="10" ry="14" fill="#2C2C2A"/>
+      <circle id="bc-shine-l" cx="83" cy="104" r="4" fill="white" opacity="0.9"/>
+      <circle id="bc-shine-r" cx="127" cy="104" r="4" fill="white" opacity="0.9"/>
+      <rect id="bc-lid-l" x="66" y="95" width="24" height="0" fill="#D4A574"/>
+      <rect id="bc-lid-r" x="110" y="95" width="24" height="0" fill="#D4A574"/>
+      <path id="bc-mouth" d="M90,132 Q95,139 100,132 Q105,139 110,132" fill="none" stroke="#2C2C2A" stroke-width="2" stroke-linecap="round"/>
+      <ellipse id="bc-blush-l" cx="60" cy="122" rx="10" ry="6" fill="#F5A0A0" opacity="0"/>
+      <ellipse id="bc-blush-r" cx="140" cy="122" rx="10" ry="6" fill="#F5A0A0" opacity="0"/>
+      <g id="bc-zzz" opacity="0">
+        <text x="155" y="50" font-family="Arial" font-size="12" fill="#9090C0" opacity="0.7">z</text>
+        <text x="163" y="38" font-family="Arial" font-size="15" fill="#9090C0" opacity="0.5">z</text>
+        <text x="173" y="24" font-family="Arial" font-size="18" fill="#9090C0" opacity="0.35">z</text>
+      </g>
+      <g id="bc-sweat" opacity="0"><ellipse cx="156" cy="82" rx="4" ry="6" fill="#A8D8FF"/><polygon points="152,82 160,82 156,74" fill="#A8D8FF"/></g>
+      <g id="bc-sparkle-l" opacity="0">
+        <line x1="32" y1="92" x2="32" y2="102" stroke="#FF9AAC" stroke-width="2" stroke-linecap="round"/>
+        <line x1="27" y1="97" x2="37" y2="97" stroke="#FF9AAC" stroke-width="2" stroke-linecap="round"/>
+      </g>
+      <g id="bc-sparkle-r" opacity="0">
+        <line x1="168" y1="92" x2="168" y2="102" stroke="#FF9AAC" stroke-width="2" stroke-linecap="round"/>
+        <line x1="163" y1="97" x2="173" y2="97" stroke="#FF9AAC" stroke-width="2" stroke-linecap="round"/>
+      </g>
+      <rect x="55" y="140" width="30" height="10" rx="2" fill="#E8C9A8" opacity="0.7"/>
+      <line x1="59" y1="143" x2="80" y2="143" stroke="#B8895A" stroke-width="0.8" opacity="0.4"/>
+      <line x1="59" y1="147" x2="74" y2="147" stroke="#B8895A" stroke-width="0.8" opacity="0.4"/>
     </g>
   </svg>
 
-  <!-- ══════════════════════════════════════════
-       FACE B — ROBOT
-       ══════════════════════════════════════════ -->
-  <svg class="face-svg hidden" id="face-robot" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
-    <!-- Antenna -->
-    <line x1="100" y1="28" x2="100" y2="48" stroke="#555" stroke-width="3" stroke-linecap="round"/>
-    <circle id="r-antenna-dot" cx="100" cy="24" r="6" fill="#06d6a0"/>
-    <!-- Head -->
-    <rect id="r-head" x="22" y="48" width="156" height="136" rx="22" fill="#2C2C2A"/>
-    <rect x="32" y="54" width="136" height="8" rx="4" fill="#3a3a38" opacity="0.8"/>
-    <!-- Ear bolts -->
-    <circle cx="22" cy="98"  r="7" fill="#3a3a38" stroke="#555" stroke-width="1.5"/>
-    <circle cx="178" cy="98" r="7" fill="#3a3a38" stroke="#555" stroke-width="1.5"/>
-    <!-- Left eye -->
-    <g id="r-eye-l">
-      <rect x="36" y="76" width="54" height="44" rx="8" fill="#111"/>
-      <rect id="r-eye-l-glow" x="40" y="80" width="46" height="36" rx="5" fill="#06d6a0" opacity="0.15"/>
-      <rect id="r-scan-l" x="42" y="82" width="20" height="32" rx="4" fill="#06d6a0" opacity="0.7" class="r-scan-l"/>
-      <rect id="r-lid-l" x="36" y="76" width="54" height="2" rx="3" fill="#2C2C2A"/>
-    </g>
-    <!-- Right eye -->
-    <g id="r-eye-r">
-      <rect x="110" y="76" width="54" height="44" rx="8" fill="#111"/>
-      <rect id="r-eye-r-glow" x="114" y="80" width="46" height="36" rx="5" fill="#06d6a0" opacity="0.15"/>
-      <rect id="r-scan-r" x="128" y="82" width="20" height="32" rx="4" fill="#06d6a0" opacity="0.7" class="r-scan-r"/>
-      <rect id="r-lid-r" x="110" y="76" width="54" height="2" rx="3" fill="#2C2C2A"/>
-    </g>
-    <!-- Nose -->
-    <circle id="r-nose" cx="100" cy="132" r="4" fill="#06d6a0" opacity="0.6"/>
-    <!-- Mouth segments -->
-    <rect x="44" y="146" width="112" height="26" rx="6" fill="#111"/>
-    <rect id="r-seg-0" x="50"  y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
-    <rect id="r-seg-1" x="66"  y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
-    <rect id="r-seg-2" x="82"  y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
-    <rect id="r-seg-3" x="98"  y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
-    <rect id="r-seg-4" x="114" y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
-    <rect id="r-seg-5" x="130" y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
-    <rect id="r-seg-6" x="146" y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
-    <!-- ZZZ -->
-    <g id="r-zzz" opacity="0">
-      <text x="156" y="68" font-family="Arial" font-size="13" fill="#9090C0" opacity="0.7">z</text>
-      <text x="165" y="52" font-family="Arial" font-size="16" fill="#9090C0" opacity="0.5">z</text>
-      <text x="176" y="34" font-family="Arial" font-size="20" fill="#9090C0" opacity="0.35">z</text>
+  <!-- FACE 2: COZMO EYES -->
+  <svg class="face-svg hidden" id="face-cozmo" viewBox="0 0 200 100" xmlns="http://www.w3.org/2000/svg">
+    <rect x="6" y="4" width="88" height="92" rx="16" fill="#111" opacity="0.7"/>
+    <rect id="cz-eye-l" x="10" y="8" width="80" height="84" rx="13" fill="#00FFC8"/>
+    <g class="anim-scan"><rect id="cz-pupil-l" x="34" y="18" width="24" height="60" rx="9" fill="#042E22" opacity="0.65"/></g>
+    <rect id="cz-lid-l" x="6" y="4" width="88" height="0" rx="16" fill="#0e1018"/>
+    <rect x="106" y="4" width="88" height="92" rx="16" fill="#111" opacity="0.7"/>
+    <rect id="cz-eye-r" x="110" y="8" width="80" height="84" rx="13" fill="#00FFC8"/>
+    <g class="anim-scan" style="animation-delay:-0.4s"><rect id="cz-pupil-r" x="134" y="18" width="24" height="60" rx="9" fill="#042E22" opacity="0.65"/></g>
+    <rect id="cz-lid-r" x="106" y="4" width="88" height="0" rx="16" fill="#0e1018"/>
+    <rect x="10" y="8" width="80" height="84" rx="13" fill="none" stroke="#00FFC8" stroke-width="2" opacity="0.25" class="anim-glow"/>
+    <rect x="110" y="8" width="80" height="84" rx="13" fill="none" stroke="#00FFC8" stroke-width="2" opacity="0.25" class="anim-glow" style="animation-delay:-1s"/>
+  </svg>
+
+  <!-- FACE 3: BLOB -->
+  <svg class="face-svg hidden" id="face-blob" viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+    <ellipse cx="100" cy="184" rx="45" ry="8" fill="rgba(0,0,0,0.06)"/>
+    <g class="anim-squish">
+      <ellipse id="bl-body" cx="100" cy="110" rx="65" ry="60" fill="#8B7EC8"/>
+      <ellipse id="bl-highlight" cx="82" cy="88" rx="30" ry="20" fill="#A08ED8" opacity="0.5" transform="rotate(-15,82,88)"/>
+      <ellipse id="bl-arm-l" cx="40" cy="120" rx="11" ry="7" fill="#7D70B8" transform="rotate(20,40,120)"/>
+      <ellipse id="bl-arm-r" cx="160" cy="120" rx="11" ry="7" fill="#7D70B8" transform="rotate(-20,160,120)"/>
+      <circle cx="78" cy="100" r="16" fill="white"/>
+      <circle cx="122" cy="100" r="16" fill="white"/>
+      <circle id="bl-pupil-l" cx="82" cy="102" r="9" fill="#2C2040"/>
+      <circle id="bl-pupil-r" cx="126" cy="102" r="9" fill="#2C2040"/>
+      <circle cx="86" cy="97" r="4" fill="white" opacity="0.9"/>
+      <circle cx="130" cy="97" r="4" fill="white" opacity="0.9"/>
+      <circle id="bl-lid-l" cx="78" cy="100" r="17" fill="#8B7EC8" opacity="0"/>
+      <circle id="bl-lid-r" cx="122" cy="100" r="17" fill="#8B7EC8" opacity="0"/>
+      <path id="bl-mouth" d="M90,128 Q100,138 110,128" fill="none" stroke="#5A4E80" stroke-width="2.5" stroke-linecap="round"/>
+      <circle id="bl-cheek-l" cx="56" cy="115" r="9" fill="#C8A0D8" opacity="0"/>
+      <circle id="bl-cheek-r" cx="144" cy="115" r="9" fill="#C8A0D8" opacity="0"/>
+      <g id="bl-zzz" opacity="0">
+        <text x="150" y="72" font-family="Arial" font-size="12" fill="#9090C0" opacity="0.7">z</text>
+        <text x="158" y="58" font-family="Arial" font-size="15" fill="#9090C0" opacity="0.5">z</text>
+        <text x="168" y="42" font-family="Arial" font-size="18" fill="#9090C0" opacity="0.35">z</text>
+      </g>
+      <g id="bl-sparkle-l" opacity="0">
+        <line x1="28" y1="80" x2="28" y2="92" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="22" y1="86" x2="34" y2="86" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <g id="bl-sparkle-r" opacity="0">
+        <line x1="172" y1="80" x2="172" y2="92" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
+        <line x1="166" y1="86" x2="178" y2="86" stroke="#FF9AAC" stroke-width="2.5" stroke-linecap="round"/>
+      </g>
+      <g id="bl-sweat" opacity="0"><ellipse cx="155" cy="78" rx="4" ry="6" fill="#A8D8FF"/><polygon points="151,78 159,78 155,70" fill="#A8D8FF"/></g>
     </g>
   </svg>
 </div>
 
 <div id="mood-name">happy</div>
-
-<!-- Quick command pills — visible when BLE connected -->
 <div id="cmd-bar">
   <div class="cmd-pill" data-cmd="F">▲</div>
   <div class="cmd-pill" data-cmd="L">◀</div>
@@ -309,716 +315,357 @@ body {
   <div class="cmd-pill" data-cmd="R">▶</div>
   <div class="cmd-pill" data-cmd="B">▼</div>
 </div>
-
-<!-- Mic button -->
 <div id="mic-btn" onclick="toggleMic()">
-  <svg id="mic-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="9" y="2" width="6" height="12" rx="3" fill="rgba(0,0,0,0.5)"/>
-    <path d="M5 11a7 7 0 0 0 14 0" stroke="rgba(0,0,0,0.5)" stroke-width="2" stroke-linecap="round" fill="none"/>
-    <line x1="12" y1="18" x2="12" y2="22" stroke="rgba(0,0,0,0.5)" stroke-width="2" stroke-linecap="round"/>
-    <line x1="8"  y1="22" x2="16" y2="22" stroke="rgba(0,0,0,0.5)" stroke-width="2" stroke-linecap="round"/>
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+    <rect x="9" y="2" width="6" height="12" rx="3" fill="rgba(0,0,0,0.45)"/>
+    <path d="M5 11a7 7 0 0 0 14 0" stroke="rgba(0,0,0,0.45)" stroke-width="2" stroke-linecap="round" fill="none"/>
+    <line x1="12" y1="18" x2="12" y2="22" stroke="rgba(0,0,0,0.45)" stroke-width="2" stroke-linecap="round"/>
+    <line x1="8" y1="22" x2="16" y2="22" stroke="rgba(0,0,0,0.45)" stroke-width="2" stroke-linecap="round"/>
   </svg>
 </div>
 
 <script>
 // ══════════════════════════════════════════════════════════════
-//  BLE — BUDDY'S OWN CONNECTION
-//  Same UART protocol as index.html. Buddy can connect
-//  independently so it works as a standalone desk robot.
-//  When NOT connected, buddy is just a face (no car control).
+//  BLE — real <button> onclick for Web Bluetooth gesture trust
 // ══════════════════════════════════════════════════════════════
-const UART_SVC = '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
-const UART_TX  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'
-const UART_RX  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'
-let bleTx = null, bleRx = null, bleDevice = null, bleConnected = false
+const UART_SVC='6e400001-b5a3-f393-e0a9-e50e24dcca9e'
+const UART_TX='6e400003-b5a3-f393-e0a9-e50e24dcca9e'
+const UART_RX='6e400002-b5a3-f393-e0a9-e50e24dcca9e'
+let bleTx=null,bleRx=null,bleDevice=null,bleConnected=false
 
-async function toggleBLE() {
-  if (bleConnected) {
-    // Disconnect
-    if (bleDevice && bleDevice.gatt.connected) bleDevice.gatt.disconnect()
-    onBLEDisconnect()
-  } else {
-    // Connect
-    try {
-      setBLEStatus('scanning...')
-      bleDevice = await navigator.bluetooth.requestDevice({
-        filters: [{ namePrefix: 'BBC micro:bit' }],
-        optionalServices: [UART_SVC]
-      })
-      bleDevice.addEventListener('gattserverdisconnected', onBLEDisconnect)
-      const server  = await bleDevice.gatt.connect()
-      const service = await server.getPrimaryService(UART_SVC)
-      bleTx = await service.getCharacteristic(UART_TX)
-      bleRx = await service.getCharacteristic(UART_RX)
-      await bleRx.startNotifications()
-      bleRx.addEventListener('characteristicvaluechanged', onSensorData)
-      bleConnected = true
-      setBLEStatus(bleDevice.name || 'connected', true)
-      showBubble('linked up!')
-      applyMood('excited')
-      setTimeout(() => applyMood('happy'), 1500)
-      // Show command bar
-      document.getElementById('cmd-bar').classList.add('show')
-      // Also broadcast connection status so index.html knows
-      cmdChannel.postMessage({ type: 'buddy-ble', status: 'connected' })
-    } catch (e) {
-      setBLEStatus('tap to connect')
-      onBLEDisconnect()
-    }
+async function toggleBLE(){
+  if(bleConnected){
+    if(bleDevice&&bleDevice.gatt.connected)bleDevice.gatt.disconnect()
+    onBLEOff(); return
   }
+  try{
+    setBLE('scanning...')
+    bleDevice=await navigator.bluetooth.requestDevice({filters:[{namePrefix:'BBC micro:bit'}],optionalServices:[UART_SVC]})
+    bleDevice.addEventListener('gattserverdisconnected',onBLEOff)
+    const srv=await bleDevice.gatt.connect()
+    const svc=await srv.getPrimaryService(UART_SVC)
+    bleTx=await svc.getCharacteristic(UART_TX)
+    bleRx=await svc.getCharacteristic(UART_RX)
+    await bleRx.startNotifications()
+    bleRx.addEventListener('characteristicvaluechanged',onSensor)
+    bleConnected=true
+    setBLE(bleDevice.name||'connected',true)
+    showBubble('linked up!')
+    applyMood('excited')
+    setTimeout(()=>applyMood('happy'),1800)
+    document.getElementById('cmd-bar').classList.add('show')
+    cmdCh.postMessage({type:'buddy-ble',status:'connected'})
+  }catch(e){setBLE('connect');onBLEOff()}
 }
-
-function onBLEDisconnect() {
-  bleTx = null; bleRx = null; bleConnected = false
-  setBLEStatus('connect')
+function onBLEOff(){
+  bleTx=null;bleRx=null;bleConnected=false;setBLE('connect')
   document.getElementById('cmd-bar').classList.remove('show')
-  cmdChannel.postMessage({ type: 'buddy-ble', status: 'disconnected' })
+  cmdCh.postMessage({type:'buddy-ble',status:'disconnected'})
 }
-
-function setBLEStatus(label, live) {
-  document.getElementById('ble-label').textContent = label
-  document.getElementById('ble-dot').classList.toggle('live', !!live)
-  document.getElementById('ble-status').classList.toggle('live', !!live)
-  // Move swap-hint below BLE badge when it shows
-  document.getElementById('swap-hint').style.top = '44px'
+function setBLE(label,live){
+  document.getElementById('ble-label').textContent=label
+  document.getElementById('ble-dot').classList.toggle('live',!!live)
+  document.getElementById('ble-btn').classList.toggle('live',!!live)
 }
-
-function sendBLE(cmd) {
-  if (!bleTx) return false
-  bleTx.writeValue(new TextEncoder().encode(cmd + '#')).catch(() => {})
+function sendBLE(cmd){
+  if(!bleTx)return false
+  bleTx.writeValue(new TextEncoder().encode(cmd+'#')).catch(()=>{})
   return true
 }
-
-// ── SENSOR DATA from micro:bit ──────────────────────────────
-function onSensorData(e) {
-  const raw = new TextDecoder().decode(e.target.value).replace('#', '')
-  const parts = raw.split('|')
-  if (parts[0] !== 'SENSOR') return
-  const dist = parseInt(parts[1]) || 0
-  // React to obstacles — surprised face when close
-  if (dist > 0 && dist <= 8 && currentMood === 'moving') {
-    sendBLE('S')
-    applyMood('surprised')
-    showBubble('woah! too close!')
-    setTimeout(() => applyMood('happy'), 2500)
+function onSensor(e){
+  const raw=new TextDecoder().decode(e.target.value).replace('#','')
+  const p=raw.split('|')
+  if(p[0]!=='SENSOR')return
+  const d=parseInt(p[1])||0
+  if(d>0&&d<=8&&currentMood==='moving'){
+    sendBLE('S');applyMood('surprised');showBubble('woah! too close!')
+    setTimeout(()=>applyMood('happy'),2500)
   }
 }
 
-// ══════════════════════════════════════════════════════════════
-//  COMMAND DISPATCH — sends via BLE if connected, or
-//  falls back to BroadcastChannel for index.html relay.
-//  Returns true if command was sent somewhere.
-// ══════════════════════════════════════════════════════════════
-function sendCommand(cmd) {
-  // Try direct BLE first
-  if (sendBLE(cmd)) return true
-  // Fallback: relay to index.html via BroadcastChannel
-  cmdChannel.postMessage({ type: 'drive', cmd })
-  return true
+// ── COMMAND DISPATCH ─────────────────────────────────────────
+function sendCmd(cmd){if(sendBLE(cmd))return true;cmdCh.postMessage({type:'drive',cmd});return true}
+let moveTimer=null
+function timedMove(cmd,ms){
+  clearTimeout(moveTimer);sendCmd(cmd);applyMood('moving');showBubble(heardPhrase(cmd))
+  moveTimer=setTimeout(()=>{sendCmd('S');applyMood('happy')},ms||800)
 }
 
-// Timed movement: send command, auto-stop after duration
-let moveTimer = null
-function timedMove(cmd, ms) {
-  clearTimeout(moveTimer)
-  sendCommand(cmd)
-  applyMood('moving')
-  showBubble(heardPhrase(cmd))
-  moveTimer = setTimeout(() => {
-    sendCommand('S')
-    applyMood('happy')
-  }, ms || 800)
-}
-
-// ══════════════════════════════════════════════════════════════
-//  BROADCAST CHANNEL — still used for:
-//  1) Fallback relay to index.html when buddy has no BLE
-//  2) Cross-page coordination
-// ══════════════════════════════════════════════════════════════
-const cmdChannel = new BroadcastChannel('robot-commands')
-
-// Listen for commands FROM index.html (e.g. if it drives,
-// buddy can react with face expressions)
-cmdChannel.onmessage = e => {
-  if (e.data.type === 'drive-ack') {
-    // index.html confirming it executed a drive command
-    const cmd = e.data.cmd
-    if (cmd !== 'S') {
-      applyMood('moving')
-      showBubble(heardPhrase(cmd))
-      setTimeout(() => { if (currentMood === 'moving') applyMood('happy') }, 1500)
-    }
+// ── BROADCAST CHANNEL ────────────────────────────────────────
+const cmdCh=new BroadcastChannel('robot-commands')
+cmdCh.onmessage=e=>{
+  if(e.data.type==='drive-ack'){
+    const c=e.data.cmd
+    if(c!=='S'){applyMood('moving');showBubble(heardPhrase(c));setTimeout(()=>{if(currentMood==='moving')applyMood('happy')},1500)}
   }
 }
 
-// ══════════════════════════════════════════════════════════════
-//  QUICK COMMAND PILLS — tap arrows to move
-// ══════════════════════════════════════════════════════════════
-document.querySelectorAll('.cmd-pill').forEach(pill => {
-  const cmd = pill.dataset.cmd
-  let holdTimer = null
-
-  function startCmd(e) {
-    e.preventDefault()
-    pill.style.transform = 'scale(0.9)'
-    if (cmd === 'S') {
-      sendCommand('S')
-      clearTimeout(moveTimer)
-      applyMood('happy')
-      showBubble('stopping!')
-    } else {
-      sendCommand(cmd)
-      applyMood('moving')
-      showBubble(heardPhrase(cmd))
-      // Auto-repeat while held
-      holdTimer = setInterval(() => sendCommand(cmd), 150)
-    }
+// ── COMMAND PILLS ────────────────────────────────────────────
+document.querySelectorAll('.cmd-pill').forEach(pill=>{
+  const cmd=pill.dataset.cmd;let ht=null
+  function go(e){e.preventDefault();pill.style.transform='scale(0.9)'
+    if(cmd==='S'){sendCmd('S');clearTimeout(moveTimer);applyMood('happy');showBubble('stopping!')}
+    else{sendCmd(cmd);applyMood('moving');showBubble(heardPhrase(cmd));ht=setInterval(()=>sendCmd(cmd),150)}
   }
-
-  function stopCmd(e) {
-    e.preventDefault()
-    pill.style.transform = ''
-    clearInterval(holdTimer)
-    if (cmd !== 'S') {
-      sendCommand('S')
-      setTimeout(() => { if (currentMood === 'moving') applyMood('happy') }, 300)
-    }
+  function stop(e){e.preventDefault();pill.style.transform='';clearInterval(ht)
+    if(cmd!=='S'){sendCmd('S');setTimeout(()=>{if(currentMood==='moving')applyMood('happy')},300)}
   }
-
-  pill.addEventListener('pointerdown', startCmd)
-  pill.addEventListener('pointerup', stopCmd)
-  pill.addEventListener('pointerleave', stopCmd)
-  pill.addEventListener('pointercancel', stopCmd)
+  pill.addEventListener('pointerdown',go)
+  pill.addEventListener('pointerup',stop)
+  pill.addEventListener('pointerleave',stop)
+  pill.addEventListener('pointercancel',stop)
 })
 
 // ══════════════════════════════════════════════════════════════
-//  MOOD DEFINITIONS
+//  MOOD SYSTEM
 // ══════════════════════════════════════════════════════════════
-const MOODS = {
-  happy: {
-    bg:'#FFD166', bowFill:'#FF9AAC', bowKnot:'#FF6B8A',
-    eyeLry:18, eyeRry:18, lidH:2, cheekOp:0,
-    browRotL:0, browRotR:0,
-    sparkOp:0, zzzOp:0, sweatOp:0,
-    rEyeColour:'#06d6a0', rSegs:[1,1,1,1,1,1,1], rAntenna:'#06d6a0',
-    label:'happy',
-  },
-  excited: {
-    bg:'#FFD166', bowFill:'#FF6B8A', bowKnot:'#E8445A',
-    eyeLry:22, eyeRry:22, lidH:2, cheekOp:0.7,
-    browRotL:0, browRotR:0,
-    sparkOp:0, zzzOp:0, sweatOp:0,
-    rEyeColour:'#FFD166', rSegs:[1,0,1,0,1,0,1], rAntenna:'#FFD166',
-    label:'excited!',
-  },
-  thinking: {
-    bg:'#C7EFCF', bowFill:'#A8D8B0', bowKnot:'#6DBF7E',
-    eyeLry:14, eyeRry:16, lidH:8, cheekOp:0,
-    browRotL:-4, browRotR:4,
-    sparkOp:0, zzzOp:0, sweatOp:0,
-    rEyeColour:'#A8D8B0', rSegs:[0,1,0,1,0,1,0], rAntenna:'#A8D8B0',
-    label:'thinking...',
-  },
-  sleepy: {
-    bg:'#B8C0FF', bowFill:'#C0C8FF', bowKnot:'#9098E8',
-    eyeLry:7, eyeRry:7, lidH:20, cheekOp:0,
-    browRotL:0, browRotR:0,
-    sparkOp:0, zzzOp:1, sweatOp:0,
-    rEyeColour:'#9098E8', rSegs:[1,0,0,0,0,0,1], rAntenna:'#9098E8',
-    label:'sleepy zzz',
-  },
-  surprised: {
-    bg:'#FFBE7B', bowFill:'#FFB347', bowKnot:'#E8922A',
-    eyeLry:24, eyeRry:24, lidH:2, cheekOp:0.5,
-    browRotL:6, browRotR:-6,
-    sparkOp:0, zzzOp:0, sweatOp:1,
-    rEyeColour:'#FFBE7B', rSegs:[1,1,0,0,1,1,0], rAntenna:'#FFBE7B',
-    label:'woah!',
-  },
-  love: {
-    bg:'#FFB3C6', bowFill:'#FF6B8A', bowKnot:'#E8445A',
-    eyeLry:18, eyeRry:18, lidH:2, cheekOp:0.85,
-    browRotL:0, browRotR:0,
-    sparkOp:1, zzzOp:0, sweatOp:0,
-    rEyeColour:'#FF6B8A', rSegs:[1,1,1,1,1,1,1], rAntenna:'#FF6B8A',
-    label:'hehe',
-  },
-  moving: {
-    bg:'#A8E6CF', bowFill:'#6DBF9E', bowKnot:'#3DAA7E',
-    eyeLry:16, eyeRry:16, lidH:5, cheekOp:0.4,
-    browRotL:-2, browRotR:2,
-    sparkOp:0, zzzOp:0, sweatOp:0,
-    rEyeColour:'#3DAA7E', rSegs:[1,1,1,0,1,1,1], rAntenna:'#3DAA7E',
-    label:'vroom!',
-  },
-  sad: {
-    bg:'#CFD8E8', bowFill:'#A0AEC0', bowKnot:'#718096',
-    eyeLry:13, eyeRry:13, lidH:12, cheekOp:0,
-    browRotL:5, browRotR:-5,
-    sparkOp:0, zzzOp:0, sweatOp:0,
-    rEyeColour:'#718096', rSegs:[1,0,0,0,0,0,1], rAntenna:'#718096',
-    label:'aww...',
-  },
-  angry: {
-    bg:'#FF6B6B', bowFill:'#CC2244', bowKnot:'#991133',
-    eyeLry:12, eyeRry:12, lidH:14, cheekOp:0,
-    browRotL:20, browRotR:-20,
-    sparkOp:0, zzzOp:0, sweatOp:0,
-    rEyeColour:'#ef4444', rSegs:[1,1,0,0,0,1,1], rAntenna:'#ef4444',
-    label:'GRRRR!!',
-  },
+const MOODS={
+  happy:    {bg:'#F5E6D0',eyeRy:14,lidH:0,blush:0.3,mouth:'w',spark:0,zzz:0,sweat:0,czBg:'#0e1018',czCol:'#00FFC8',czLid:0,czH:84,blCol:'#8B7EC8',blPup:9,blCh:0.3,label:'happy'},
+  excited:  {bg:'#FFE4B8',eyeRy:18,lidH:0,blush:0.7,mouth:'W',spark:0,zzz:0,sweat:0,czBg:'#0e1018',czCol:'#FFE066',czLid:0,czH:90,blCol:'#9B8ED8',blPup:11,blCh:0.7,label:'excited!'},
+  thinking: {bg:'#D5E8D0',eyeRy:10,lidH:8,blush:0,  mouth:'-',spark:0,zzz:0,sweat:0,czBg:'#0e1018',czCol:'#80E8B0',czLid:16,czH:68,blCol:'#7DAA98',blPup:7,blCh:0,label:'thinking...'},
+  sleepy:   {bg:'#D0D0F0',eyeRy:4, lidH:20,blush:0,  mouth:'o',spark:0,zzz:1,sweat:0,czBg:'#08080e',czCol:'#6070C8',czLid:50,czH:44,blCol:'#9090C8',blPup:5,blCh:0,label:'sleepy zzz'},
+  surprised:{bg:'#FFDFB0',eyeRy:18,lidH:0,blush:0.4,mouth:'O',spark:0,zzz:0,sweat:1,czBg:'#0e1018',czCol:'#FFD080',czLid:0,czH:90,blCol:'#C8A878',blPup:12,blCh:0.4,label:'woah!'},
+  love:     {bg:'#FFD0DD',eyeRy:14,lidH:0,blush:0.8,mouth:'u',spark:1,zzz:0,sweat:0,czBg:'#10080e',czCol:'#FF80AA',czLid:0,czH:84,blCol:'#C87EAA',blPup:10,blCh:0.8,label:'hehe'},
+  moving:   {bg:'#C0E8D0',eyeRy:12,lidH:4,blush:0.3,mouth:'w',spark:0,zzz:0,sweat:0,czBg:'#0e1018',czCol:'#40E8A0',czLid:6,czH:76,blCol:'#6DB898',blPup:8,blCh:0.3,label:'vroom!'},
+  sad:      {bg:'#D8D8E8',eyeRy:9, lidH:10,blush:0,  mouth:'n',spark:0,zzz:0,sweat:0,czBg:'#0a0a10',czCol:'#5868A0',czLid:28,czH:56,blCol:'#8888A8',blPup:6,blCh:0,label:'aww...'},
+  angry:    {bg:'#F0A8A8',eyeRy:8, lidH:16,blush:0,  mouth:'v',spark:0,zzz:0,sweat:0,czBg:'#140808',czCol:'#FF4444',czLid:26,czH:50,blCol:'#C86868',blPup:6,blCh:0,label:'GRRRR!!'},
 }
 
-// ══════════════════════════════════════════════════════════════
-//  SPEECH BUBBLES — personality-driven
-// ══════════════════════════════════════════════════════════════
-
-// Fallback phrases if personality.json hasn't loaded yet
-const PHRASES = {
-  happy:    ['beep boop!', 'hello human!', 'i like you :)', 'brrr zap!', 'fun fun fun!', 'yay!'],
-  excited:  ['WOOOOO!', 'let\'s gooo!', 'zoom zoom!', '!!!', 'so fast!'],
-  thinking: ['hmmmm...', 'calculating...', 'one moment...', '...', 'processing!'],
-  sleepy:   ['zzz...', 'so tired...', '*yawn*', 'need recharge', 'battery low'],
-  surprised:['oh!', 'woah!!', 'what?!', '*bzzzt*', 'did not expect'],
-  love:     ['<3 <3 <3', 'best human!', 'hehe~', 'you\'re great!', 'beep beep <3'],
-  moving:   ['vroom!', 'wheee!', 'going fast!', 'zoom!', 'clear the way!'],
-  sad:      ['...', 'oh no', 'low energy', ':\'(', 'need a hug?'],
-  angry:    ['BZZZT!!', 'DOES NOT COMPUTE', 'ERROR!', 'grrrr!!', '>:('],
+function bcMouth(t){
+  const m={w:'M90,132 Q95,139 100,132 Q105,139 110,132',W:'M86,130 Q91,141 96,130 Q101,141 106,130 Q111,141 114,130',
+    '-':'M88,134 L112,134',o:'M96,132 Q100,137 104,132',O:'M92,130 Q100,142 108,130',
+    u:'M92,132 Q100,140 108,132',n:'M90,136 Q100,130 110,136',v:'M90,130 L100,138 L110,130'}
+  return m[t]||m.w
+}
+function blMouth(t){
+  const m={w:'M90,128 Q100,138 110,128',W:'M85,126 Q100,142 115,126','-':'M88,130 L112,130',
+    o:'M96,128 Q100,133 104,128',O:'M90,126 Q100,142 110,126',u:'M88,128 Q100,140 112,128',
+    n:'M90,133 Q100,126 110,133',v:'M90,126 L100,135 L110,126'}
+  return m[t]||m.w
 }
 
-// ── PERSONALITY ENGINE ──────────────────────────────────────
-let personality = null       // loaded from JSON
-let recentPhrases = []       // last N phrases shown — avoid repeats
-const RECENT_MAX = 12        // remember this many to prevent repetition
-let lastBreakTime = 0        // track last break reminder (ms)
-const BREAK_COOLDOWN = 30 * 60 * 1000  // min 30 mins between break reminders
+let currentMood='happy',currentFace='boxcat',priorMood='happy',isAngry=false
+let blinkTimer,idleTimer,angryTimer
+const FACES=['boxcat','cozmo','blob']
+const FACE_LABELS={boxcat:'boxcat',cozmo:'cozmo eyes',blob:'blob friend'}
 
-// Helper: get a random phrase for a mood (uses JSON mood_phrases if loaded)
-function moodPhrase(mood) {
-  const pool = (personality && personality.mood_phrases && personality.mood_phrases[mood])
-    ? personality.mood_phrases[mood]
-    : (PHRASES[mood] || PHRASES.happy)
-  return pool[Math.floor(Math.random() * pool.length)]
+function applyMood(mood){
+  const m=MOODS[mood];if(!m)return;currentMood=mood
+  const bg=(currentFace==='cozmo'&&m.czBg)?m.czBg:m.bg
+  document.body.style.background=bg
+  document.body.classList.toggle('dark',currentFace==='cozmo')
+  document.getElementById('mood-name').textContent=m.label
+  document.querySelector('meta[name="theme-color"]').setAttribute('content',bg)
+  if(currentFace==='boxcat')applyBC(m)
+  else if(currentFace==='cozmo')applyCZ(m)
+  else if(currentFace==='blob')applyBL(m)
 }
 
-// Load personality data
-fetch('personality.json')
-  .then(r => r.json())
-  .then(data => {
-    personality = data
-    console.log('StEEvE personality loaded:', data.meta.name, data.meta.version)
-  })
-  .catch(e => console.warn('Personality JSON not found, using fallback phrases'))
-
-// Which time period is it right now?
-function getTimePeriod() {
-  if (!personality) return 'work_am'
-  const hour = new Date().getHours()
-  const periods = personality.time_periods
-  for (const [key, p] of Object.entries(periods)) {
-    if (p.start < p.end) {
-      // Normal range (e.g. 6-10)
-      if (hour >= p.start && hour < p.end) return key
-    } else {
-      // Wraps midnight (e.g. 21-6)
-      if (hour >= p.start || hour < p.end) return key
-    }
-  }
-  return 'work_am'  // fallback
+function applyBC(m){
+  sa('bc-eye-l','ry',m.eyeRy);sa('bc-eye-r','ry',m.eyeRy)
+  sa('bc-shine-l','cy',110-m.eyeRy*0.4);sa('bc-shine-r','cy',110-m.eyeRy*0.4)
+  sa('bc-lid-l','height',m.lidH);sa('bc-lid-r','height',m.lidH)
+  const lidCol=m.bg==='#F0A8A8'?'#C89080':'#D4A574'
+  sa('bc-lid-l','fill',lidCol);sa('bc-lid-r','fill',lidCol)
+  sa('bc-blush-l','opacity',m.blush);sa('bc-blush-r','opacity',m.blush)
+  sa('bc-zzz','opacity',m.zzz);sa('bc-sweat','opacity',m.sweat)
+  sa('bc-sparkle-l','opacity',m.spark);sa('bc-sparkle-r','opacity',m.spark)
+  const me=document.getElementById('bc-mouth');if(me)me.setAttribute('d',bcMouth(m.mouth))
 }
 
-// Pick a category using weighted random selection
-function pickCategory(period) {
-  const weights = personality.category_weights[period]
-  if (!weights) return 'idle'
-
-  // Enforce break cooldown — if too soon, zero out break weight
-  const adjustedWeights = { ...weights }
-  if (Date.now() - lastBreakTime < BREAK_COOLDOWN) {
-    adjustedWeights.break = 0
-  }
-
-  const total = Object.values(adjustedWeights).reduce((s, w) => s + w, 0)
-  if (total === 0) return 'idle'
-
-  let roll = Math.random() * total
-  for (const [cat, w] of Object.entries(adjustedWeights)) {
-    roll -= w
-    if (roll <= 0) return cat
-  }
-  return 'idle'
+function applyCZ(m){
+  sa('cz-eye-l','fill',m.czCol);sa('cz-eye-r','fill',m.czCol)
+  sa('cz-eye-l','height',m.czH);sa('cz-eye-r','height',m.czH)
+  sa('cz-lid-l','height',m.czLid);sa('cz-lid-r','height',m.czLid)
+  sa('cz-lid-l','fill',m.czBg||'#0e1018');sa('cz-lid-r','fill',m.czBg||'#0e1018')
 }
 
-// Get a phrase from a category, avoiding recent repeats
-function pickPhrase(category, period) {
-  const cats = personality.categories[category]
-  if (!cats) return null
-
-  // Try time-specific pool first, then _default
-  let pool = cats[period] || cats['_default'] || []
-  if (pool.length === 0) pool = cats['_default'] || []
-  if (pool.length === 0) return null
-
-  // Filter out recently shown phrases
-  let available = pool.filter(p => !recentPhrases.includes(p))
-  // If everything's been shown, reset history for this category
-  if (available.length === 0) {
-    recentPhrases = recentPhrases.filter(p => !pool.includes(p))
-    available = pool
-  }
-
-  const phrase = available[Math.floor(Math.random() * available.length)]
-
-  // Track it
-  recentPhrases.push(phrase)
-  if (recentPhrases.length > RECENT_MAX) recentPhrases.shift()
-
-  return phrase
+function applyBL(m){
+  sa('bl-body','fill',m.blCol)
+  const hl=document.getElementById('bl-highlight');if(hl)hl.setAttribute('fill',lHex(m.blCol,30))
+  sa('bl-arm-l','fill',dHex(m.blCol,15));sa('bl-arm-r','fill',dHex(m.blCol,15))
+  sa('bl-lid-l','fill',m.blCol);sa('bl-lid-r','fill',m.blCol)
+  sa('bl-pupil-l','r',m.blPup);sa('bl-pupil-r','r',m.blPup)
+  sa('bl-cheek-l','opacity',m.blCh);sa('bl-cheek-r','opacity',m.blCh)
+  sa('bl-zzz','opacity',m.zzz);sa('bl-sweat','opacity',m.sweat)
+  sa('bl-sparkle-l','opacity',m.spark);sa('bl-sparkle-r','opacity',m.spark)
+  const me=document.getElementById('bl-mouth');if(me)me.setAttribute('d',blMouth(m.mouth))
 }
 
-// Get the mood that matches a category
-function categoryMood(category) {
-  if (!personality) return null
-  return personality.category_moods[category] || 'happy'
-}
+function lHex(h,a){const n=parseInt(h.slice(1),16);return '#'+((1<<24)+(Math.min(255,(n>>16)+a)<<16)+(Math.min(255,((n>>8)&0xFF)+a)<<8)+Math.min(255,(n&0xFF)+a)).toString(16).slice(1)}
+function dHex(h,a){return lHex(h,-a)}
+function sa(id,attr,val){const el=document.getElementById(id);if(el)el.setAttribute(attr,val)}
 
-// Master function: pick a personality-driven bubble
-function getPersonalityBubble() {
-  if (!personality) return null
-
-  const period = getTimePeriod()
-  const category = pickCategory(period)
-  const phrase = pickPhrase(category, period)
-
-  if (!phrase) return null
-
-  // Track break timing
-  if (category === 'break') lastBreakTime = Date.now()
-
-  return { phrase, mood: categoryMood(category), category }
-}
-
-// ── BUBBLE DISPLAY ──────────────────────────────────────────
-let bubbleTimer = null
-let bubbleVisible = false
-
-function showBubble(text, duration) {
-  const el = document.getElementById('speech-bubble')
-  el.textContent = text
-  el.classList.add('show')
-  bubbleVisible = true
-  clearTimeout(bubbleTimer)
-  // Longer messages get more reading time
-  const displayMs = duration || Math.max(3200, Math.min(text.length * 80, 7000))
-  bubbleTimer = setTimeout(() => {
-    el.classList.remove('show')
-    bubbleVisible = false
-    scheduleBubble()
-  }, displayMs)
-}
-
-function scheduleBubble() {
-  clearTimeout(bubbleTimer)
-  // Vary the interval: 12-25 seconds
-  const interval = 12000 + Math.random() * 13000
-  bubbleTimer = setTimeout(() => {
-    if (isAngry) { scheduleBubble(); return }
-
-    // Try personality-driven bubble first
-    const pb = getPersonalityBubble()
-    if (pb) {
-      // Briefly shift mood to match the category, then return
-      const prevMood = currentMood
-      applyMood(pb.mood)
-      showBubble(pb.phrase)
-      // Return to previous mood after the bubble fades
-      // (unless it was already that mood, or user interacted)
-      setTimeout(() => {
-        if (currentMood === pb.mood && !isAngry) applyMood(prevMood)
-      }, Math.max(3200, pb.phrase.length * 80) + 500)
-    } else {
-      // Fallback to hardcoded mood phrases
-      showBubble(moodPhrase(currentMood))
-    }
-  }, interval)
-}
-
-// ══════════════════════════════════════════════════════════════
-//  APPLY MOOD
-// ══════════════════════════════════════════════════════════════
-let currentMood = 'happy'
-let currentFace = 'kitty'
-let priorMood   = 'happy'
-let isAngry     = false
-let blinkTimer, idleTimer, angryTimer
-
-function applyMood(mood) {
-  const m = MOODS[mood]
-  if (!m) return
-  currentMood = mood
-  document.body.style.background = m.bg
-  document.getElementById('mood-name').textContent = m.label
-  document.querySelector('meta[name="theme-color"]').setAttribute('content', m.bg)
-  if (currentFace === 'kitty') applyKitty(m)
-  else                         applyRobot(m)
-}
-
-function applyKitty(m) {
-  const bg = m.bg
-  sa('k-lid-l','fill',bg); sa('k-lid-r','fill',bg)
-  sa('k-lid-l','height',m.lidH); sa('k-lid-r','height',m.lidH)
-  sa('k-eyeball-l','ry',m.eyeLry); sa('k-eyeball-r','ry',m.eyeRry)
-  sa('k-shine-l','cy', 130 - m.eyeLry * 0.4)
-  sa('k-shine-r','cy', 130 - m.eyeRry * 0.4)
-  sa('k-cheek-l','opacity',m.cheekOp); sa('k-cheek-r','opacity',m.cheekOp)
-  document.querySelectorAll('#k-bow ellipse').forEach(el => el.setAttribute('fill', m.bowFill))
-  document.querySelector('#k-bow circle').setAttribute('fill', m.bowKnot)
-  document.querySelectorAll('#k-sparkle-l line,#k-sparkle-r line').forEach(l => l.setAttribute('stroke', m.bowFill))
-  sa('k-sparkle-l','opacity',m.sparkOp); sa('k-sparkle-r','opacity',m.sparkOp)
-  sa('k-zzz','opacity',m.zzzOp); sa('k-sweat','opacity',m.sweatOp)
-  sa('k-angry-brows','opacity', Math.abs(m.browRotL) >= 20 ? 1 : 0)
-}
-
-function applyRobot(m) {
-  const c = m.rEyeColour
-  sa('r-eye-l-glow','fill',c); sa('r-eye-r-glow','fill',c)
-  sa('r-scan-l','fill',c); sa('r-scan-r','fill',c)
-  sa('r-nose','fill',c)
-  sa('r-antenna-dot','fill',c)
-  sa('r-lid-l','fill','#2C2C2A'); sa('r-lid-r','fill','#2C2C2A')
-  sa('r-lid-l','height',m.lidH); sa('r-lid-r','height',m.lidH)
-  m.rSegs.forEach((on, i) => sa(`r-seg-${i}`, 'opacity', on ? 0.9 : 0.08))
-  for (let i=0;i<7;i++) sa(`r-seg-${i}`,'fill',c)
-  sa('r-zzz','opacity',m.zzzOp)
-}
-
-function sa(id, attr, val) {
-  const el = document.getElementById(id)
-  if (el) el.setAttribute(attr, val)
-}
-
-// ══════════════════════════════════════════════════════════════
-//  FACE SWAP
-// ══════════════════════════════════════════════════════════════
-function swapFace() {
-  currentFace = currentFace === 'kitty' ? 'robot' : 'kitty'
-  document.getElementById('face-kitty').classList.toggle('hidden', currentFace !== 'kitty')
-  document.getElementById('face-robot').classList.toggle('hidden', currentFace !== 'robot')
-  const ring = document.getElementById('flash-ring')
-  ring.classList.add('flash')
-  setTimeout(() => ring.classList.remove('flash'), 300)
-  const hint = document.getElementById('swap-hint')
-  hint.textContent = currentFace === 'kitty' ? 'kitty mode' : 'robot mode'
-  hint.classList.add('show')
-  setTimeout(() => hint.classList.remove('show'), 1800)
+// ── FACE SWAP ────────────────────────────────────────────────
+function swapFace(){
+  currentFace=FACES[(FACES.indexOf(currentFace)+1)%FACES.length]
+  FACES.forEach(f=>{const e=document.getElementById('face-'+f);if(e)e.classList.toggle('hidden',f!==currentFace)})
+  const fl=document.getElementById('flash-overlay');fl.classList.add('flash');setTimeout(()=>fl.classList.remove('flash'),250)
+  const h=document.getElementById('face-hint');h.textContent=FACE_LABELS[currentFace];h.classList.add('show');setTimeout(()=>h.classList.remove('show'),2000)
   applyMood(currentMood)
 }
 
-// ══════════════════════════════════════════════════════════════
-//  ANGRY
-// ══════════════════════════════════════════════════════════════
-function triggerAngry() {
-  if (isAngry) return
-  isAngry = true; priorMood = currentMood
-  clearTimeout(idleTimer); clearTimeout(blinkTimer)
-  applyMood('angry')
-  showBubble(moodPhrase('angry'))
-  // Angry wiggle — if connected, do a little physical tantrum
-  if (bleConnected) {
-    sendBLE('SCRIPT:WIGGLE')
+// ── BLINK ────────────────────────────────────────────────────
+function blink(){
+  if(currentMood==='sleepy'||isAngry)return
+  if(currentFace==='boxcat'){
+    const fr=[0,8,20,28,20,8,0];let i=0
+    const t=setInterval(()=>{sa('bc-lid-l','height',fr[i]);sa('bc-lid-r','height',fr[i]);i++;if(i>=fr.length){clearInterval(t);sa('bc-lid-l','height',MOODS[currentMood].lidH);sa('bc-lid-r','height',MOODS[currentMood].lidH)}},30)
+  }else if(currentFace==='cozmo'){
+    const fr=[0,22,55,92,55,22,0];let i=0
+    const t=setInterval(()=>{sa('cz-lid-l','height',fr[i]);sa('cz-lid-r','height',fr[i]);i++;if(i>=fr.length){clearInterval(t);sa('cz-lid-l','height',MOODS[currentMood].czLid);sa('cz-lid-r','height',MOODS[currentMood].czLid)}},30)
+  }else if(currentFace==='blob'){
+    sa('bl-lid-l','opacity',1);sa('bl-lid-r','opacity',1)
+    setTimeout(()=>{sa('bl-lid-l','opacity',0);sa('bl-lid-r','opacity',0)},180)
   }
-  angryTimer = setTimeout(() => {
-    isAngry = false
-    applyMood(priorMood)
-    scheduleBlink(); scheduleIdle()
-  }, 5000)
+}
+function scheduleBlink(){clearTimeout(blinkTimer);blinkTimer=setTimeout(()=>{blink();scheduleBlink()},2500+Math.random()*3500)}
+
+// ── ANGRY ────────────────────────────────────────────────────
+function triggerAngry(){
+  if(isAngry)return;isAngry=true;priorMood=currentMood
+  clearTimeout(idleTimer);clearTimeout(blinkTimer)
+  applyMood('angry');showBubble(moodPhrase('angry'))
+  if(bleConnected)sendBLE('SCRIPT:WIGGLE')
+  angryTimer=setTimeout(()=>{isAngry=false;applyMood(priorMood);scheduleBlink();scheduleIdle()},5000)
 }
 
-// ══════════════════════════════════════════════════════════════
-//  BLINK
-// ══════════════════════════════════════════════════════════════
-function blink() {
-  if (currentMood === 'sleepy' || isAngry) return
-  const m     = MOODS[currentMood]
-  const isRobot = currentFace === 'robot'
-  const maxClose = isRobot ? 44 : Math.max(m.eyeLry * 1.1, 18)
-  const frames   = isRobot
-    ? [2, 10, 24, 44, 24, 10, 2]
-    : [2, 6, 14, maxClose, 14, 6, 2]
-  const prefix   = isRobot ? 'r' : 'k'
-  let i = 0
-  const t = setInterval(() => {
-    sa(`${prefix}-lid-l`, 'height', frames[i])
-    sa(`${prefix}-lid-r`, 'height', frames[i])
-    i++
-    if (i >= frames.length) {
-      clearInterval(t)
-      sa(`${prefix}-lid-l`, 'height', m.lidH)
-      sa(`${prefix}-lid-r`, 'height', m.lidH)
-    }
-  }, 32)
-}
-
-function scheduleBlink() {
-  clearTimeout(blinkTimer)
-  blinkTimer = setTimeout(() => { blink(); scheduleBlink() }, 2500 + Math.random() * 3000)
-}
-
-// ══════════════════════════════════════════════════════════════
-//  IDLE DRIFT
-// ══════════════════════════════════════════════════════════════
-function scheduleIdle() {
+// ── IDLE DRIFT ───────────────────────────────────────────────
+function scheduleIdle(){
   clearTimeout(idleTimer)
-  idleTimer = setTimeout(() => {
-    if (!isAngry && currentMood === 'happy') {
-      const pick = Math.random() < 0.5 ? 'thinking' : 'sleepy'
-      applyMood(pick)
-      setTimeout(() => { applyMood('happy'); scheduleIdle() }, 4000)
-    } else { scheduleIdle() }
-  }, 10000 + Math.random() * 8000)
+  idleTimer=setTimeout(()=>{
+    if(!isAngry&&currentMood==='happy'){
+      const p=Math.random()<0.5?'thinking':'sleepy';applyMood(p)
+      setTimeout(()=>{applyMood('happy');scheduleIdle()},4000)
+    }else scheduleIdle()
+  },10000+Math.random()*8000)
 }
 
-// ══════════════════════════════════════════════════════════════
-//  GESTURES — single tap, double tap, long press
-// ══════════════════════════════════════════════════════════════
-const TAP_MOODS = ['excited', 'surprised', 'love']
-let tapCount=0, tapTimer=null, tapLock=false
-let pressTimer=null, pressStarted=false
-const LONG_MS=600, DBL_MS=300
-const wrap = document.getElementById('face-wrap')
-
-wrap.addEventListener('pointerdown', e => {
-  e.preventDefault(); pressStarted = true
-  pressTimer = setTimeout(() => {
-    pressStarted=false; tapCount=0; clearTimeout(tapTimer); swapFace()
-  }, LONG_MS)
-})
-wrap.addEventListener('pointerup', e => {
-  e.preventDefault()
-  if (!pressStarted) return
-  clearTimeout(pressTimer); pressStarted=false
-  tapCount++; clearTimeout(tapTimer)
-  tapTimer = setTimeout(() => {
-    const c=tapCount; tapCount=0
-    if (c>=2) { triggerAngry() }
-    else {
-      if (tapLock||isAngry) return
-      tapLock=true; clearTimeout(idleTimer)
+// ── GESTURES ─────────────────────────────────────────────────
+const TAP_MOODS=['excited','surprised','love']
+let tapCount=0,tapTimer=null,tapLock=false,pressTimer=null,pressStarted=false
+const LONG_MS=600,DBL_MS=300
+const wrap=document.getElementById('face-wrap')
+wrap.addEventListener('pointerdown',e=>{e.preventDefault();pressStarted=true;pressTimer=setTimeout(()=>{pressStarted=false;tapCount=0;clearTimeout(tapTimer);swapFace()},LONG_MS)})
+wrap.addEventListener('pointerup',e=>{
+  e.preventDefault();if(!pressStarted)return;clearTimeout(pressTimer);pressStarted=false
+  tapCount++;clearTimeout(tapTimer)
+  tapTimer=setTimeout(()=>{
+    const c=tapCount;tapCount=0
+    if(c>=2){triggerAngry()}
+    else{
+      if(tapLock||isAngry)return;tapLock=true;clearTimeout(idleTimer)
       const r=TAP_MOODS[Math.floor(Math.random()*TAP_MOODS.length)]
-      applyMood(r)
-      showBubble(moodPhrase(r))
-      // If connected and got excited, do a little happy wiggle
-      if (r === 'excited' && bleConnected) {
-        sendBLE('H')  // horn beep on tap
-      }
-      setTimeout(()=>{ applyMood('happy'); scheduleIdle(); tapLock=false }, 2000)
+      applyMood(r);showBubble(moodPhrase(r))
+      if(r==='excited'&&bleConnected)sendBLE('H')
+      setTimeout(()=>{applyMood('happy');scheduleIdle();tapLock=false},2500)
     }
-  }, DBL_MS)
+  },DBL_MS)
 })
-wrap.addEventListener('pointercancel',()=>{ clearTimeout(pressTimer); pressStarted=false })
+wrap.addEventListener('pointercancel',()=>{clearTimeout(pressTimer);pressStarted=false})
 
 // ══════════════════════════════════════════════════════════════
-//  VOICE COMMANDS — Web Speech API
-//  When buddy has BLE: sends directly to car.
-//  When buddy has no BLE: relays via BroadcastChannel.
-//  Either way, the face reacts.
+//  PERSONALITY ENGINE + BUBBLES
 // ══════════════════════════════════════════════════════════════
-const VOICE_MAP = {
-  'forward':  'F', 'forwards': 'F', 'go':       'F',
-  'back':     'B', 'backward': 'B', 'backwards':'B', 'reverse':'B',
-  'left':     'L', 'turn left':'L',
-  'right':    'R', 'turn right':'R',
-  'stop':     'S', 'halt':     'S', 'freeze':   'S',
-  'horn':     'H', 'beep':     'H', 'honk':     'H',
-  'wiggle':   'SCRIPT:WIGGLE', 'dance': 'SCRIPT:WIGGLE',
-  'spin':     'SCRIPT:SPIN',
-  'square':   'SCRIPT:SQUARE',
+const PHRASES={
+  happy:['beep boop!','hello human!','i like you :)','fun fun fun!','yay!'],
+  excited:['WOOOOO!','let\'s gooo!','zoom zoom!','!!!','so fast!','YESSS!'],
+  thinking:['hmmmm...','calculating...','one moment...','...','processing!'],
+  sleepy:['zzz...','so tired...','*yawn*','need recharge','battery low'],
+  surprised:['oh!','woah!!','what?!','*bzzzt*','did not expect!'],
+  love:['<3 <3 <3','best human!','hehe~','you\'re great!','beep beep <3'],
+  moving:['vroom!','wheee!','going fast!','zoom!','clear the way!'],
+  sad:['...','oh no','low energy',':\'(','need a hug?'],
+  angry:['BZZZT!!','DOES NOT COMPUTE','ERROR!','grrrr!!','>:('],
 }
 
-let recognition = null
-let micActive   = false
+let personality=null,recentPhrases=[],lastBreakTime=0
+const RECENT_MAX=12,BREAK_CD=30*60*1000
 
-function setupSpeech() {
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition
-  if (!SR) {
-    document.getElementById('mic-btn').style.opacity = '0.3'
-    document.getElementById('mic-btn').title = 'Speech not supported'
-    return
-  }
-  recognition = new SR()
-  recognition.continuous      = false
-  recognition.interimResults  = false
-  recognition.lang            = 'en-US'
-  recognition.maxAlternatives = 3
+function moodPhrase(mood){
+  const pool=(personality&&personality.mood_phrases&&personality.mood_phrases[mood])?personality.mood_phrases[mood]:(PHRASES[mood]||PHRASES.happy)
+  return pool[Math.floor(Math.random()*pool.length)]
+}
 
-  recognition.onresult = e => {
-    for (let a=0; a < e.results[0].length; a++) {
-      const heard = e.results[0][a].transcript.toLowerCase().trim()
-      const cmd = VOICE_MAP[heard] || VOICE_MAP[heard.split(' ')[0]]
-      if (cmd) {
-        // Scripts go as-is, drive commands get timed move
-        if (cmd.startsWith('SCRIPT:')) {
-          sendCommand(cmd)
-          applyMood('excited')
-          showBubble('let\'s gooo!')
-          setTimeout(() => applyMood('happy'), 3000)
-        } else if (cmd === 'S') {
-          sendCommand('S')
-          clearTimeout(moveTimer)
-          applyMood('happy')
-          showBubble('stopping!')
-        } else if (cmd === 'H') {
-          sendCommand('H')
-          showBubble('beep beep!')
-        } else {
-          timedMove(cmd, 800)
-        }
+fetch('personality.json').then(r=>r.json()).then(d=>{personality=d;console.log('StEEvE personality loaded')}).catch(()=>{})
+
+function getTimePeriod(){
+  if(!personality)return 'work_am';const h=new Date().getHours()
+  for(const[k,p]of Object.entries(personality.time_periods)){
+    if(p.start<p.end){if(h>=p.start&&h<p.end)return k}else{if(h>=p.start||h<p.end)return k}
+  }return 'work_am'
+}
+function pickCat(per){
+  const w=personality.category_weights[per];if(!w)return 'idle'
+  const a={...w};if(Date.now()-lastBreakTime<BREAK_CD)a.break=0
+  const t=Object.values(a).reduce((s,v)=>s+v,0);if(t===0)return 'idle'
+  let r=Math.random()*t;for(const[c,v]of Object.entries(a)){r-=v;if(r<=0)return c}return 'idle'
+}
+function pickPhrase(cat,per){
+  const cs=personality.categories[cat];if(!cs)return null
+  let pool=cs[per]||cs['_default']||[];if(!pool.length)pool=cs['_default']||[];if(!pool.length)return null
+  let avail=pool.filter(p=>!recentPhrases.includes(p))
+  if(!avail.length){recentPhrases=recentPhrases.filter(p=>!pool.includes(p));avail=pool}
+  const ph=avail[Math.floor(Math.random()*avail.length)]
+  recentPhrases.push(ph);if(recentPhrases.length>RECENT_MAX)recentPhrases.shift()
+  return ph
+}
+function getPB(){
+  if(!personality)return null;const per=getTimePeriod(),cat=pickCat(per),ph=pickPhrase(cat,per)
+  if(!ph)return null;if(cat==='break')lastBreakTime=Date.now()
+  return{phrase:ph,mood:(personality.category_moods&&personality.category_moods[cat])||'happy',category:cat}
+}
+
+let bubbleTimer=null
+function showBubble(text,dur){
+  const el=document.getElementById('speech-bubble');el.textContent=text;el.classList.add('show')
+  clearTimeout(bubbleTimer)
+  const ms=dur||Math.max(4000,Math.min(text.length*100,9000))
+  bubbleTimer=setTimeout(()=>{el.classList.remove('show');scheduleBubble()},ms)
+}
+function scheduleBubble(){
+  clearTimeout(bubbleTimer)
+  bubbleTimer=setTimeout(()=>{
+    if(isAngry){scheduleBubble();return}
+    const pb=getPB()
+    if(pb){
+      const prev=currentMood;applyMood(pb.mood);showBubble(pb.phrase)
+      setTimeout(()=>{if(currentMood===pb.mood&&!isAngry)applyMood(prev)},Math.max(4000,pb.phrase.length*100)+600)
+    }else showBubble(moodPhrase(currentMood))
+  },10000+Math.random()*15000)
+}
+
+// ── VOICE ────────────────────────────────────────────────────
+const VMAP={'forward':'F','forwards':'F','go':'F','back':'B','backward':'B','backwards':'B','reverse':'B',
+  'left':'L','turn left':'L','right':'R','turn right':'R','stop':'S','halt':'S','freeze':'S',
+  'horn':'H','beep':'H','honk':'H','wiggle':'SCRIPT:WIGGLE','dance':'SCRIPT:WIGGLE','spin':'SCRIPT:SPIN','square':'SCRIPT:SQUARE'}
+let recog=null,micOn=false
+function setupSpeech(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition
+  if(!SR){document.getElementById('mic-btn').style.opacity='0.3';return}
+  recog=new SR();recog.continuous=false;recog.interimResults=false;recog.lang='en-US';recog.maxAlternatives=3
+  recog.onresult=e=>{
+    for(let a=0;a<e.results[0].length;a++){
+      const h=e.results[0][a].transcript.toLowerCase().trim(),cmd=VMAP[h]||VMAP[h.split(' ')[0]]
+      if(cmd){
+        if(cmd.startsWith('SCRIPT:')){sendCmd(cmd);applyMood('excited');showBubble('let\'s gooo!');setTimeout(()=>applyMood('happy'),3000)}
+        else if(cmd==='S'){sendCmd('S');clearTimeout(moveTimer);applyMood('happy');showBubble('stopping!')}
+        else if(cmd==='H'){sendCmd('H');showBubble('beep beep!')}
+        else timedMove(cmd,800)
         break
       }
     }
     stopMic()
   }
-
-  recognition.onerror = () => stopMic()
-  recognition.onend   = () => stopMic()
+  recog.onerror=()=>stopMic();recog.onend=()=>stopMic()
 }
+function heardPhrase(c){return{F:'going forward!',B:'reversing!',L:'turning left!',R:'turning right!',S:'stopping!',H:'beep beep!'}[c]||'ok!'}
+function toggleMic(){micOn?stopMic():startMic()}
+function startMic(){if(!recog)return;micOn=true;document.getElementById('mic-btn').classList.add('listening');showBubble('listening...');try{recog.start()}catch(e){stopMic()}}
+function stopMic(){micOn=false;document.getElementById('mic-btn').classList.remove('listening');try{recog.stop()}catch(e){}}
 
-function heardPhrase(cmd) {
-  const map = {
-    F:'going forward!', B:'reversing!',
-    L:'turning left!',  R:'turning right!',
-    S:'stopping!',      H:'beep beep!'
-  }
-  return map[cmd] || 'ok!'
-}
-
-function toggleMic() {
-  if (micActive) stopMic()
-  else           startMic()
-}
-
-function startMic() {
-  if (!recognition) return
-  micActive = true
-  document.getElementById('mic-btn').classList.add('listening')
-  showBubble('listening...')
-  try { recognition.start() } catch(e) { stopMic() }
-}
-
-function stopMic() {
-  micActive = false
-  document.getElementById('mic-btn').classList.remove('listening')
-  try { recognition.stop() } catch(e) {}
-}
-
-// ══════════════════════════════════════════════════════════════
-//  INIT
-// ══════════════════════════════════════════════════════════════
-setupSpeech()
-applyMood('happy')
-scheduleBlink()
-scheduleIdle()
-scheduleBubble()
+// ── INIT ─────────────────────────────────────────────────────
+setupSpeech();applyMood('happy');scheduleBlink();scheduleIdle();scheduleBubble()
 </script>
 </body>
 </html>
