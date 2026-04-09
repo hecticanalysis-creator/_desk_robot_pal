@@ -92,7 +92,7 @@ body.dark #mic-btn { background: rgba(255,255,255,0.08); border-color: rgba(255,
   border-radius: 18px;
   padding: 12px 22px;
   font-family: 'Courier New', monospace;
-  font-size: 15px; font-weight: 700; line-height: 1.5;
+  font-size: 20px; font-weight: 700; line-height: 1.4;
   color: #333;
   white-space: normal; word-wrap: break-word;
   z-index: 25; pointer-events: none;
@@ -111,7 +111,7 @@ body.dark #mic-btn { background: rgba(255,255,255,0.08); border-color: rgba(255,
 }
 #speech-bubble.show { opacity: 1; }
 @media (orientation: landscape) {
-  #speech-bubble { top: auto; bottom: 15%; max-width: 50vw; font-size: 14px; }
+  #speech-bubble { top: auto; bottom: 15%; max-width: 50vw; font-size: 18px; }
 }
 
 /* ── MOOD LABEL ── */
@@ -130,6 +130,7 @@ body.dark #mic-btn { background: rgba(255,255,255,0.08); border-color: rgba(255,
   position: relative;
   cursor: pointer; user-select: none; -webkit-user-select: none;
   flex-shrink: 0;
+  transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 @media (orientation: landscape) {
   #face-wrap { width: min(70vh, 55vw); height: min(70vh, 55vw); }
@@ -420,15 +421,15 @@ document.querySelectorAll('.cmd-pill').forEach(pill=>{
 //  MOOD SYSTEM
 // ══════════════════════════════════════════════════════════════
 const MOODS={
-  happy:    {bg:'#F5E6D0',eyeRy:14,lidH:0,blush:0.3,mouth:'w',spark:0,zzz:0,sweat:0,czBg:'#0e1018',czCol:'#00FFC8',czLid:0,czH:84,blCol:'#8B7EC8',blPup:9,blCh:0.3,label:'happy'},
-  excited:  {bg:'#FFE4B8',eyeRy:18,lidH:0,blush:0.7,mouth:'W',spark:0,zzz:0,sweat:0,czBg:'#0e1018',czCol:'#FFE066',czLid:0,czH:90,blCol:'#9B8ED8',blPup:11,blCh:0.7,label:'excited!'},
-  thinking: {bg:'#D5E8D0',eyeRy:10,lidH:8,blush:0,  mouth:'-',spark:0,zzz:0,sweat:0,czBg:'#0e1018',czCol:'#80E8B0',czLid:16,czH:68,blCol:'#7DAA98',blPup:7,blCh:0,label:'thinking...'},
-  sleepy:   {bg:'#D0D0F0',eyeRy:4, lidH:20,blush:0,  mouth:'o',spark:0,zzz:1,sweat:0,czBg:'#08080e',czCol:'#6070C8',czLid:50,czH:44,blCol:'#9090C8',blPup:5,blCh:0,label:'sleepy zzz'},
-  surprised:{bg:'#FFDFB0',eyeRy:18,lidH:0,blush:0.4,mouth:'O',spark:0,zzz:0,sweat:1,czBg:'#0e1018',czCol:'#FFD080',czLid:0,czH:90,blCol:'#C8A878',blPup:12,blCh:0.4,label:'woah!'},
-  love:     {bg:'#FFD0DD',eyeRy:14,lidH:0,blush:0.8,mouth:'u',spark:1,zzz:0,sweat:0,czBg:'#10080e',czCol:'#FF80AA',czLid:0,czH:84,blCol:'#C87EAA',blPup:10,blCh:0.8,label:'hehe'},
-  moving:   {bg:'#C0E8D0',eyeRy:12,lidH:4,blush:0.3,mouth:'w',spark:0,zzz:0,sweat:0,czBg:'#0e1018',czCol:'#40E8A0',czLid:6,czH:76,blCol:'#6DB898',blPup:8,blCh:0.3,label:'vroom!'},
-  sad:      {bg:'#D8D8E8',eyeRy:9, lidH:10,blush:0,  mouth:'n',spark:0,zzz:0,sweat:0,czBg:'#0a0a10',czCol:'#5868A0',czLid:28,czH:56,blCol:'#8888A8',blPup:6,blCh:0,label:'aww...'},
-  angry:    {bg:'#F0A8A8',eyeRy:8, lidH:16,blush:0,  mouth:'v',spark:0,zzz:0,sweat:0,czBg:'#140808',czCol:'#FF4444',czLid:26,czH:50,blCol:'#C86868',blPup:6,blCh:0,label:'GRRRR!!'},
+  happy:    {bg:'#F5E6D0',eyeRy:14,lidH:0,blush:0.3,mouth:'w',spark:0,zzz:0,sweat:0,czBg:'#0e1018',czCol:'#00FFC8',czLid:0,czH:84,blCol:'#8B7EC8',blPup:9,blCh:0.3,label:'happy',pos:'translate(0,0)'},
+  excited:  {bg:'#FFE4B8',eyeRy:18,lidH:0,blush:0.7,mouth:'W',spark:0,zzz:0,sweat:0,czBg:'#0e1018',czCol:'#FFE066',czLid:0,czH:90,blCol:'#9B8ED8',blPup:11,blCh:0.7,label:'excited!',pos:'translate(0,-12px) scale(1.04)'},
+  thinking: {bg:'#D5E8D0',eyeRy:10,lidH:8,blush:0,  mouth:'-',spark:0,zzz:0,sweat:0,czBg:'#0e1018',czCol:'#80E8B0',czLid:16,czH:68,blCol:'#7DAA98',blPup:7,blCh:0,label:'thinking...',pos:'translate(15px,-5px) rotate(3deg)'},
+  sleepy:   {bg:'#D0D0F0',eyeRy:4, lidH:20,blush:0,  mouth:'o',spark:0,zzz:1,sweat:0,czBg:'#08080e',czCol:'#6070C8',czLid:50,czH:44,blCol:'#9090C8',blPup:5,blCh:0,label:'sleepy zzz',pos:'translate(0,18px) rotate(-2deg) scale(0.97)'},
+  surprised:{bg:'#FFDFB0',eyeRy:18,lidH:0,blush:0.4,mouth:'O',spark:0,zzz:0,sweat:1,czBg:'#0e1018',czCol:'#FFD080',czLid:0,czH:90,blCol:'#C8A878',blPup:12,blCh:0.4,label:'woah!',pos:'translate(0,-8px) scale(1.06)'},
+  love:     {bg:'#FFD0DD',eyeRy:14,lidH:0,blush:0.8,mouth:'u',spark:1,zzz:0,sweat:0,czBg:'#10080e',czCol:'#FF80AA',czLid:0,czH:84,blCol:'#C87EAA',blPup:10,blCh:0.8,label:'hehe',pos:'translate(0,-4px) rotate(4deg) scale(1.02)'},
+  moving:   {bg:'#C0E8D0',eyeRy:12,lidH:4,blush:0.3,mouth:'w',spark:0,zzz:0,sweat:0,czBg:'#0e1018',czCol:'#40E8A0',czLid:6,czH:76,blCol:'#6DB898',blPup:8,blCh:0.3,label:'vroom!',pos:'translate(-10px,-6px) rotate(-3deg)'},
+  sad:      {bg:'#D8D8E8',eyeRy:9, lidH:10,blush:0,  mouth:'n',spark:0,zzz:0,sweat:0,czBg:'#0a0a10',czCol:'#5868A0',czLid:28,czH:56,blCol:'#8888A8',blPup:6,blCh:0,label:'aww...',pos:'translate(0,14px) scale(0.96)'},
+  angry:    {bg:'#F0A8A8',eyeRy:8, lidH:16,blush:0,  mouth:'v',spark:0,zzz:0,sweat:0,czBg:'#140808',czCol:'#FF4444',czLid:26,czH:50,blCol:'#C86868',blPup:6,blCh:0,label:'GRRRR!!',pos:'translate(0,-6px) scale(1.05)'},
 }
 
 function bcMouth(t){
@@ -459,6 +460,10 @@ function applyMood(mood){
   if(currentFace==='boxcat')applyBC(m)
   else if(currentFace==='cozmo')applyCZ(m)
   else if(currentFace==='blob')applyBL(m)
+  // Move face to mood position
+  const fw=document.getElementById('face-wrap')
+  fw.style.transition='transform 0.8s cubic-bezier(0.34,1.56,0.64,1)'
+  fw.style.transform=m.pos||'translate(0,0)'
 }
 
 function applyBC(m){
@@ -542,7 +547,18 @@ function scheduleIdle(){
 }
 
 // ── GESTURES ─────────────────────────────────────────────────
-const TAP_MOODS=['excited','surprised','love']
+// Single tap = physical reaction (nudge/bounce/wiggle)
+// Double tap = angry
+// Long press = swap face
+const TAP_REACTIONS=[
+  {transform:'translate(0,-20px) scale(1.08)',dur:300},      // bounce up
+  {transform:'translate(15px,0) rotate(8deg)',dur:250},       // nudge right
+  {transform:'translate(-15px,0) rotate(-8deg)',dur:250},     // nudge left
+  {transform:'translate(0,-10px) rotate(6deg) scale(1.05)',dur:300},  // happy hop
+  {transform:'translate(0,-15px) rotate(-5deg)',dur:280},     // startled jump
+  {transform:'scale(1.12)',dur:250},                          // puff up
+  {transform:'translate(5px,-8px) rotate(10deg)',dur:200},    // quick tilt
+]
 let tapCount=0,tapTimer=null,tapLock=false,pressTimer=null,pressStarted=false
 const LONG_MS=600,DBL_MS=300
 const wrap=document.getElementById('face-wrap')
@@ -554,11 +570,20 @@ wrap.addEventListener('pointerup',e=>{
     const c=tapCount;tapCount=0
     if(c>=2){triggerAngry()}
     else{
-      if(tapLock||isAngry)return;tapLock=true;clearTimeout(idleTimer)
-      const r=TAP_MOODS[Math.floor(Math.random()*TAP_MOODS.length)]
-      applyMood(r);showBubble(moodPhrase(r))
-      if(r==='excited'&&bleConnected)sendBLE('H')
-      setTimeout(()=>{applyMood('happy');scheduleIdle();tapLock=false},2500)
+      if(tapLock||isAngry)return;tapLock=true
+      // Pick a random physical reaction
+      const r=TAP_REACTIONS[Math.floor(Math.random()*TAP_REACTIONS.length)]
+      // Override transition for snappy feel
+      wrap.style.transition='transform 0.15s cubic-bezier(0.34,1.56,0.64,1)'
+      wrap.style.transform=r.transform
+      // Bounce back to mood position
+      setTimeout(()=>{
+        wrap.style.transition='transform 0.5s cubic-bezier(0.34,1.56,0.64,1)'
+        wrap.style.transform=MOODS[currentMood].pos||'translate(0,0)'
+        tapLock=false
+      },r.dur)
+      // Horn beep if connected
+      if(bleConnected)sendBLE('H')
     }
   },DBL_MS)
 })
