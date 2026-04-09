@@ -525,6 +525,8 @@ function onDisconnect() {
 function send(cmd) {
   if(!tx) return
   tx.writeValue(new TextEncoder().encode(cmd+'#')).catch(()=>{})
+  // Let buddy.html know we moved so it can react with face
+  voiceChannel.postMessage({ type:'drive-ack', cmd })
 }
 
 // ── SENSOR DATA ───────────────────────────────────────────────
