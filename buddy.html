@@ -50,6 +50,32 @@ body {
   color: rgba(0,0,0,0.18); z-index: 10; pointer-events: none; white-space: nowrap;
 }
 
+/* ── BLE STATUS — minimal, top-right corner ── */
+#ble-status {
+  position: fixed; top: 18px; right: 20px;
+  display: flex; align-items: center; gap: 6px;
+  z-index: 20; cursor: pointer;
+  font-family: 'Courier New', monospace;
+  font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase;
+  color: rgba(0,0,0,0.25);
+  padding: 4px 10px;
+  border-radius: 12px;
+  background: rgba(0,0,0,0.06);
+  transition: all 0.3s;
+}
+#ble-status:active { background: rgba(0,0,0,0.12); }
+#ble-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: rgba(0,0,0,0.15);
+  transition: all 0.3s;
+}
+#ble-dot.live {
+  background: #06d6a0;
+  box-shadow: 0 0 6px rgba(6,214,160,0.6);
+}
+#ble-label { transition: color 0.3s; }
+#ble-status.live #ble-label { color: rgba(0,0,0,0.4); }
+
 /* ── SPEECH BUBBLE ── */
 #speech-bubble {
   position: fixed;
@@ -97,6 +123,32 @@ body {
 @keyframes mic-pulse { 0%,100%{transform:translateX(-50%) scale(1)} 50%{transform:translateX(-50%) scale(1.08)} }
 #mic-icon { width: 20px; height: 20px; }
 
+/* ── QUICK COMMAND BAR ── */
+#cmd-bar {
+  position: fixed; bottom: 76px;
+  left: 50%; transform: translateX(-50%);
+  display: flex; gap: 8px; z-index: 20;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.3s;
+}
+#cmd-bar.show { opacity: 1; pointer-events: auto; }
+.cmd-pill {
+  font-family: 'Courier New', monospace;
+  font-size: 11px; font-weight: 700; letter-spacing: 0.08em;
+  color: rgba(0,0,0,0.45);
+  background: rgba(255,255,255,0.5);
+  border: 1.5px solid rgba(0,0,0,0.1);
+  border-radius: 16px;
+  padding: 6px 14px;
+  cursor: pointer;
+  transition: all 0.15s;
+  user-select: none; -webkit-user-select: none;
+}
+.cmd-pill:active {
+  background: rgba(255,255,255,0.85);
+  transform: scale(0.94);
+}
+
 /* ── FACE WRAP ── */
 #face-wrap {
   width: min(78vw, 64vh);
@@ -134,7 +186,13 @@ body {
 <body>
 
 <a id="back-link" href="index.html">← unit-01</a>
-<div id="swap-hint">kitty mode</div>
+
+<!-- BLE status badge — tap to connect/disconnect -->
+<div id="ble-status" onclick="toggleBLE()">
+  <div id="ble-dot"></div>
+  <span id="ble-label">connect</span>
+</div>
+
 <div id="speech-bubble"></div>
 
 <div id="face-wrap">
@@ -194,54 +252,35 @@ body {
 
   <!-- ══════════════════════════════════════════
        FACE B — ROBOT
-       Cute rounded square head. Rectangular LED
-       eyes that glow and scan. Segmented mouth
-       display. Antenna on top. All colours adapt
-       to the current mood background.
        ══════════════════════════════════════════ -->
   <svg class="face-svg hidden" id="face-robot" viewBox="0 0 200 220" xmlns="http://www.w3.org/2000/svg">
-
     <!-- Antenna -->
     <line x1="100" y1="28" x2="100" y2="48" stroke="#555" stroke-width="3" stroke-linecap="round"/>
     <circle id="r-antenna-dot" cx="100" cy="24" r="6" fill="#06d6a0"/>
-
-    <!-- Head — rounded square, dark panel -->
+    <!-- Head -->
     <rect id="r-head" x="22" y="48" width="156" height="136" rx="22" fill="#2C2C2A"/>
-
-    <!-- Head highlight strip at top -->
     <rect x="32" y="54" width="136" height="8" rx="4" fill="#3a3a38" opacity="0.8"/>
-
     <!-- Ear bolts -->
     <circle cx="22" cy="98"  r="7" fill="#3a3a38" stroke="#555" stroke-width="1.5"/>
     <circle cx="178" cy="98" r="7" fill="#3a3a38" stroke="#555" stroke-width="1.5"/>
-
-    <!-- ── LEFT EYE — rectangular LED display ── -->
+    <!-- Left eye -->
     <g id="r-eye-l">
-      <!-- eye housing -->
       <rect x="36" y="76" width="54" height="44" rx="8" fill="#111"/>
-      <!-- eye glow panel — colour changes with mood -->
       <rect id="r-eye-l-glow" x="40" y="80" width="46" height="36" rx="5" fill="#06d6a0" opacity="0.15"/>
-      <!-- scanning bar — the moving highlight inside eye -->
       <rect id="r-scan-l" x="42" y="82" width="20" height="32" rx="4" fill="#06d6a0" opacity="0.7" class="r-scan-l"/>
-      <!-- lid — same colour as head, sweeps down -->
       <rect id="r-lid-l" x="36" y="76" width="54" height="2" rx="3" fill="#2C2C2A"/>
     </g>
-
-    <!-- ── RIGHT EYE ── -->
+    <!-- Right eye -->
     <g id="r-eye-r">
       <rect x="110" y="76" width="54" height="44" rx="8" fill="#111"/>
       <rect id="r-eye-r-glow" x="114" y="80" width="46" height="36" rx="5" fill="#06d6a0" opacity="0.15"/>
       <rect id="r-scan-r" x="128" y="82" width="20" height="32" rx="4" fill="#06d6a0" opacity="0.7" class="r-scan-r"/>
       <rect id="r-lid-r" x="110" y="76" width="54" height="2" rx="3" fill="#2C2C2A"/>
     </g>
-
-    <!-- ── NOSE — tiny LED dot ── -->
+    <!-- Nose -->
     <circle id="r-nose" cx="100" cy="132" r="4" fill="#06d6a0" opacity="0.6"/>
-
-    <!-- ── MOUTH — segmented display row ── -->
-    <!-- mouth housing -->
+    <!-- Mouth segments -->
     <rect x="44" y="146" width="112" height="26" rx="6" fill="#111"/>
-    <!-- 7 segment blocks — toggled on/off per mood -->
     <rect id="r-seg-0" x="50"  y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
     <rect id="r-seg-1" x="66"  y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
     <rect id="r-seg-2" x="82"  y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
@@ -249,18 +288,25 @@ body {
     <rect id="r-seg-4" x="114" y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
     <rect id="r-seg-5" x="130" y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
     <rect id="r-seg-6" x="146" y="151" width="12" height="16" rx="3" fill="#06d6a0" opacity="0.8"/>
-
     <!-- ZZZ -->
     <g id="r-zzz" opacity="0">
       <text x="156" y="68" font-family="Arial" font-size="13" fill="#9090C0" opacity="0.7">z</text>
       <text x="165" y="52" font-family="Arial" font-size="16" fill="#9090C0" opacity="0.5">z</text>
       <text x="176" y="34" font-family="Arial" font-size="20" fill="#9090C0" opacity="0.35">z</text>
     </g>
-
   </svg>
 </div>
 
 <div id="mood-name">happy</div>
+
+<!-- Quick command pills — visible when BLE connected -->
+<div id="cmd-bar">
+  <div class="cmd-pill" data-cmd="F">▲</div>
+  <div class="cmd-pill" data-cmd="L">◀</div>
+  <div class="cmd-pill" data-cmd="S">■</div>
+  <div class="cmd-pill" data-cmd="R">▶</div>
+  <div class="cmd-pill" data-cmd="B">▼</div>
+</div>
 
 <!-- Mic button -->
 <div id="mic-btn" onclick="toggleMic()">
@@ -274,10 +320,174 @@ body {
 
 <script>
 // ══════════════════════════════════════════════════════════════
-//  BROADCAST CHANNEL — sends voice commands to index.html
-//  index.html listens on the same channel name and calls send()
+//  BLE — BUDDY'S OWN CONNECTION
+//  Same UART protocol as index.html. Buddy can connect
+//  independently so it works as a standalone desk robot.
+//  When NOT connected, buddy is just a face (no car control).
+// ══════════════════════════════════════════════════════════════
+const UART_SVC = '6e400001-b5a3-f393-e0a9-e50e24dcca9e'
+const UART_TX  = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'
+const UART_RX  = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'
+let bleTx = null, bleRx = null, bleDevice = null, bleConnected = false
+
+async function toggleBLE() {
+  if (bleConnected) {
+    // Disconnect
+    if (bleDevice && bleDevice.gatt.connected) bleDevice.gatt.disconnect()
+    onBLEDisconnect()
+  } else {
+    // Connect
+    try {
+      setBLEStatus('scanning...')
+      bleDevice = await navigator.bluetooth.requestDevice({
+        filters: [{ namePrefix: 'BBC micro:bit' }],
+        optionalServices: [UART_SVC]
+      })
+      bleDevice.addEventListener('gattserverdisconnected', onBLEDisconnect)
+      const server  = await bleDevice.gatt.connect()
+      const service = await server.getPrimaryService(UART_SVC)
+      bleTx = await service.getCharacteristic(UART_TX)
+      bleRx = await service.getCharacteristic(UART_RX)
+      await bleRx.startNotifications()
+      bleRx.addEventListener('characteristicvaluechanged', onSensorData)
+      bleConnected = true
+      setBLEStatus(bleDevice.name || 'connected', true)
+      showBubble('linked up!')
+      applyMood('excited')
+      setTimeout(() => applyMood('happy'), 1500)
+      // Show command bar
+      document.getElementById('cmd-bar').classList.add('show')
+      // Also broadcast connection status so index.html knows
+      cmdChannel.postMessage({ type: 'buddy-ble', status: 'connected' })
+    } catch (e) {
+      setBLEStatus('tap to connect')
+      onBLEDisconnect()
+    }
+  }
+}
+
+function onBLEDisconnect() {
+  bleTx = null; bleRx = null; bleConnected = false
+  setBLEStatus('connect')
+  document.getElementById('cmd-bar').classList.remove('show')
+  cmdChannel.postMessage({ type: 'buddy-ble', status: 'disconnected' })
+}
+
+function setBLEStatus(label, live) {
+  document.getElementById('ble-label').textContent = label
+  document.getElementById('ble-dot').classList.toggle('live', !!live)
+  document.getElementById('ble-status').classList.toggle('live', !!live)
+  // Move swap-hint below BLE badge when it shows
+  document.getElementById('swap-hint').style.top = '44px'
+}
+
+function sendBLE(cmd) {
+  if (!bleTx) return false
+  bleTx.writeValue(new TextEncoder().encode(cmd + '#')).catch(() => {})
+  return true
+}
+
+// ── SENSOR DATA from micro:bit ──────────────────────────────
+function onSensorData(e) {
+  const raw = new TextDecoder().decode(e.target.value).replace('#', '')
+  const parts = raw.split('|')
+  if (parts[0] !== 'SENSOR') return
+  const dist = parseInt(parts[1]) || 0
+  // React to obstacles — surprised face when close
+  if (dist > 0 && dist <= 8 && currentMood === 'moving') {
+    sendBLE('S')
+    applyMood('surprised')
+    showBubble('woah! too close!')
+    setTimeout(() => applyMood('happy'), 2500)
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  COMMAND DISPATCH — sends via BLE if connected, or
+//  falls back to BroadcastChannel for index.html relay.
+//  Returns true if command was sent somewhere.
+// ══════════════════════════════════════════════════════════════
+function sendCommand(cmd) {
+  // Try direct BLE first
+  if (sendBLE(cmd)) return true
+  // Fallback: relay to index.html via BroadcastChannel
+  cmdChannel.postMessage({ type: 'drive', cmd })
+  return true
+}
+
+// Timed movement: send command, auto-stop after duration
+let moveTimer = null
+function timedMove(cmd, ms) {
+  clearTimeout(moveTimer)
+  sendCommand(cmd)
+  applyMood('moving')
+  showBubble(heardPhrase(cmd))
+  moveTimer = setTimeout(() => {
+    sendCommand('S')
+    applyMood('happy')
+  }, ms || 800)
+}
+
+// ══════════════════════════════════════════════════════════════
+//  BROADCAST CHANNEL — still used for:
+//  1) Fallback relay to index.html when buddy has no BLE
+//  2) Cross-page coordination
 // ══════════════════════════════════════════════════════════════
 const cmdChannel = new BroadcastChannel('robot-commands')
+
+// Listen for commands FROM index.html (e.g. if it drives,
+// buddy can react with face expressions)
+cmdChannel.onmessage = e => {
+  if (e.data.type === 'drive-ack') {
+    // index.html confirming it executed a drive command
+    const cmd = e.data.cmd
+    if (cmd !== 'S') {
+      applyMood('moving')
+      showBubble(heardPhrase(cmd))
+      setTimeout(() => { if (currentMood === 'moving') applyMood('happy') }, 1500)
+    }
+  }
+}
+
+// ══════════════════════════════════════════════════════════════
+//  QUICK COMMAND PILLS — tap arrows to move
+// ══════════════════════════════════════════════════════════════
+document.querySelectorAll('.cmd-pill').forEach(pill => {
+  const cmd = pill.dataset.cmd
+  let holdTimer = null
+
+  function startCmd(e) {
+    e.preventDefault()
+    pill.style.transform = 'scale(0.9)'
+    if (cmd === 'S') {
+      sendCommand('S')
+      clearTimeout(moveTimer)
+      applyMood('happy')
+      showBubble('stopping!')
+    } else {
+      sendCommand(cmd)
+      applyMood('moving')
+      showBubble(heardPhrase(cmd))
+      // Auto-repeat while held
+      holdTimer = setInterval(() => sendCommand(cmd), 150)
+    }
+  }
+
+  function stopCmd(e) {
+    e.preventDefault()
+    pill.style.transform = ''
+    clearInterval(holdTimer)
+    if (cmd !== 'S') {
+      sendCommand('S')
+      setTimeout(() => { if (currentMood === 'moving') applyMood('happy') }, 300)
+    }
+  }
+
+  pill.addEventListener('pointerdown', startCmd)
+  pill.addEventListener('pointerup', stopCmd)
+  pill.addEventListener('pointerleave', stopCmd)
+  pill.addEventListener('pointercancel', stopCmd)
+})
 
 // ══════════════════════════════════════════════════════════════
 //  MOOD DEFINITIONS
@@ -358,7 +568,7 @@ const MOODS = {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  SPEECH BUBBLES — random phrases per mood
+//  SPEECH BUBBLES
 // ══════════════════════════════════════════════════════════════
 const PHRASES = {
   happy:    ['beep boop!', 'hello human!', 'i like you :)', 'brrr zap!', 'fun fun fun!', 'yay!'],
@@ -421,7 +631,6 @@ function applyMood(mood) {
   else                         applyRobot(m)
 }
 
-// ── KITTY RENDERER ────────────────────────────────────────────
 function applyKitty(m) {
   const bg = m.bg
   sa('k-lid-l','fill',bg); sa('k-lid-r','fill',bg)
@@ -438,22 +647,16 @@ function applyKitty(m) {
   sa('k-angry-brows','opacity', Math.abs(m.browRotL) >= 20 ? 1 : 0)
 }
 
-// ── ROBOT RENDERER ────────────────────────────────────────────
 function applyRobot(m) {
   const c = m.rEyeColour
-  // Eye glow colour
   sa('r-eye-l-glow','fill',c); sa('r-eye-r-glow','fill',c)
   sa('r-scan-l','fill',c); sa('r-scan-r','fill',c)
   sa('r-nose','fill',c)
   sa('r-antenna-dot','fill',c)
-  // Lid — matches head colour (#2C2C2A) always, creates blink
   sa('r-lid-l','fill','#2C2C2A'); sa('r-lid-r','fill','#2C2C2A')
   sa('r-lid-l','height',m.lidH); sa('r-lid-r','height',m.lidH)
-  // Segments — each either bright or dim
   m.rSegs.forEach((on, i) => sa(`r-seg-${i}`, 'opacity', on ? 0.9 : 0.08))
-  // Segment colour matches eye
   for (let i=0;i<7;i++) sa(`r-seg-${i}`,'fill',c)
-  // Extras
   sa('r-zzz','opacity',m.zzzOp)
 }
 
@@ -488,6 +691,10 @@ function triggerAngry() {
   clearTimeout(idleTimer); clearTimeout(blinkTimer)
   applyMood('angry')
   showBubble(PHRASES.angry[Math.floor(Math.random()*PHRASES.angry.length)])
+  // Angry wiggle — if connected, do a little physical tantrum
+  if (bleConnected) {
+    sendBLE('SCRIPT:WIGGLE')
+  }
   angryTimer = setTimeout(() => {
     isAngry = false
     applyMood(priorMood)
@@ -502,7 +709,6 @@ function blink() {
   if (currentMood === 'sleepy' || isAngry) return
   const m     = MOODS[currentMood]
   const isRobot = currentFace === 'robot'
-  // Robot eyes are 44px tall (y:76 to y:120), kitty eyes up to ~24ry
   const maxClose = isRobot ? 44 : Math.max(m.eyeLry * 1.1, 18)
   const frames   = isRobot
     ? [2, 10, 24, 44, 24, 10, 2]
@@ -570,6 +776,10 @@ wrap.addEventListener('pointerup', e => {
       applyMood(r)
       const p=PHRASES[r]
       showBubble(p[Math.floor(Math.random()*p.length)])
+      // If connected and got excited, do a little happy wiggle
+      if (r === 'excited' && bleConnected) {
+        sendBLE('H')  // horn beep on tap
+      }
       setTimeout(()=>{ applyMood('happy'); scheduleIdle(); tapLock=false }, 2000)
     }
   }, DBL_MS)
@@ -578,9 +788,9 @@ wrap.addEventListener('pointercancel',()=>{ clearTimeout(pressTimer); pressStart
 
 // ══════════════════════════════════════════════════════════════
 //  VOICE COMMANDS — Web Speech API
-//  Recognised: forward, back, backward, left, right, stop, horn
-//  Commands broadcast to index.html via BroadcastChannel.
-//  index.html just needs to listen and call send().
+//  When buddy has BLE: sends directly to car.
+//  When buddy has no BLE: relays via BroadcastChannel.
+//  Either way, the face reacts.
 // ══════════════════════════════════════════════════════════════
 const VOICE_MAP = {
   'forward':  'F', 'forwards': 'F', 'go':       'F',
@@ -589,6 +799,9 @@ const VOICE_MAP = {
   'right':    'R', 'turn right':'R',
   'stop':     'S', 'halt':     'S', 'freeze':   'S',
   'horn':     'H', 'beep':     'H', 'honk':     'H',
+  'wiggle':   'SCRIPT:WIGGLE', 'dance': 'SCRIPT:WIGGLE',
+  'spin':     'SCRIPT:SPIN',
+  'square':   'SCRIPT:SQUARE',
 }
 
 let recognition = null
@@ -598,7 +811,7 @@ function setupSpeech() {
   const SR = window.SpeechRecognition || window.webkitSpeechRecognition
   if (!SR) {
     document.getElementById('mic-btn').style.opacity = '0.3'
-    document.getElementById('mic-btn').title = 'Speech not supported in this browser'
+    document.getElementById('mic-btn').title = 'Speech not supported'
     return
   }
   recognition = new SR()
@@ -608,16 +821,27 @@ function setupSpeech() {
   recognition.maxAlternatives = 3
 
   recognition.onresult = e => {
-    // Try each alternative until we find a match
     for (let a=0; a < e.results[0].length; a++) {
       const heard = e.results[0][a].transcript.toLowerCase().trim()
-      // Check full phrase first, then first word
       const cmd = VOICE_MAP[heard] || VOICE_MAP[heard.split(' ')[0]]
       if (cmd) {
-        cmdChannel.postMessage({ type:'drive', cmd })
-        showBubble(heardPhrase(cmd))
-        applyMood(cmd==='S' ? 'happy' : 'moving')
-        if (cmd!=='S') setTimeout(()=>{ applyMood('happy') }, 2000)
+        // Scripts go as-is, drive commands get timed move
+        if (cmd.startsWith('SCRIPT:')) {
+          sendCommand(cmd)
+          applyMood('excited')
+          showBubble('let\'s gooo!')
+          setTimeout(() => applyMood('happy'), 3000)
+        } else if (cmd === 'S') {
+          sendCommand('S')
+          clearTimeout(moveTimer)
+          applyMood('happy')
+          showBubble('stopping!')
+        } else if (cmd === 'H') {
+          sendCommand('H')
+          showBubble('beep beep!')
+        } else {
+          timedMove(cmd, 800)
+        }
         break
       }
     }
@@ -629,7 +853,11 @@ function setupSpeech() {
 }
 
 function heardPhrase(cmd) {
-  const map={F:'going forward!',B:'reversing!',L:'turning left!',R:'turning right!',S:'stopping!',H:'beep beep!'}
+  const map = {
+    F:'going forward!', B:'reversing!',
+    L:'turning left!',  R:'turning right!',
+    S:'stopping!',      H:'beep beep!'
+  }
   return map[cmd] || 'ok!'
 }
 
