@@ -1,0 +1,305 @@
+{
+  "meta": {
+    "name": "StEEvE-V01",
+    "version": "1.0",
+    "description": "Personality data for StEEvE desk robot companion"
+  },
+
+  "time_periods": {
+    "morning":   { "start": 6,  "end": 10, "label": "morning" },
+    "work_am":   { "start": 10, "end": 12, "label": "work (AM)" },
+    "lunch":     { "start": 12, "end": 13, "label": "lunchtime" },
+    "work_pm":   { "start": 13, "end": 17, "label": "work (PM)" },
+    "evening":   { "start": 17, "end": 21, "label": "evening" },
+    "night":     { "start": 21, "end": 6,  "label": "night" }
+  },
+
+  "category_weights": {
+    "morning":  { "greeting": 30, "motivation": 25, "fact": 15, "joke": 15, "idle": 10, "break": 0,  "build": 5 },
+    "work_am":  { "greeting": 5,  "motivation": 20, "fact": 15, "joke": 20, "idle": 10, "break": 15, "build": 15 },
+    "lunch":    { "greeting": 5,  "motivation": 5,  "fact": 15, "joke": 25, "idle": 15, "break": 25, "build": 10 },
+    "work_pm":  { "greeting": 5,  "motivation": 25, "fact": 15, "joke": 20, "idle": 10, "break": 15, "build": 10 },
+    "evening":  { "greeting": 5,  "motivation": 10, "fact": 20, "joke": 25, "idle": 20, "break": 5,  "build": 15 },
+    "night":    { "greeting": 5,  "motivation": 5,  "fact": 15, "joke": 15, "idle": 30, "break": 5,  "build": 25 }
+  },
+
+  "category_moods": {
+    "greeting":   "happy",
+    "motivation": "excited",
+    "fact":       "thinking",
+    "joke":       "excited",
+    "idle":       "happy",
+    "break":      "love",
+    "build":      "excited"
+  },
+
+  "categories": {
+
+    "greeting": {
+      "morning": [
+        "good morning human!",
+        "rise and shine!",
+        "new day, new beeps!",
+        "morning! let's make stuff!",
+        "booting up... hi!",
+        "wakey wakey!",
+        "i've been waiting for you!",
+        "hello! i charged overnight!",
+        "fresh day = fresh code!",
+        "the sun is up and so am i!",
+        "systems online! how are you?",
+        "gooood morning!",
+        "*stretches circuits* ahh!",
+        "StEEvE reporting for duty!"
+      ],
+      "work_am": [
+        "still here, still beeping!",
+        "we got this!",
+        "how's it going?",
+        "need anything?",
+        "i'm here if you need me!"
+      ],
+      "lunch": [
+        "lunchtime! go eat!",
+        "fuel up, human!",
+        "even robots take breaks!",
+        "go grab something tasty!",
+        "your battery is low... eat!"
+      ],
+      "work_pm": [
+        "afternoon check-in!",
+        "still going strong?",
+        "hey! doing good?",
+        "the afternoon push!",
+        "home stretch!"
+      ],
+      "evening": [
+        "nice work today!",
+        "winding down?",
+        "evening vibes activated!",
+        "what a day!",
+        "you crushed it today!"
+      ],
+      "night": [
+        "still up? me too!",
+        "night owl mode!",
+        "the quiet hours...",
+        "late night hacking?",
+        "*yawns in binary*"
+      ]
+    },
+
+    "motivation": {
+      "_default": [
+        "you're doing great!",
+        "keep going!",
+        "one step at a time!",
+        "progress > perfection!",
+        "small wins add up!",
+        "you got this!",
+        "i believe in you!",
+        "just ship it!",
+        "done is better than perfect!",
+        "trust the process!",
+        "every expert was a beginner!",
+        "bugs are just features in disguise!",
+        "the best code is code that works!",
+        "momentum is everything!",
+        "focus mode: ENGAGED!",
+        "deep breaths. then code.",
+        "you're closer than you think!",
+        "today's struggle = tomorrow's skill!",
+        "even 1% progress counts!",
+        "ctrl+s your wins!",
+        "Rome wasn't coded in a day!",
+        "if it was easy, robots would do it... wait",
+        "think of future-you saying thanks!",
+        "debugging is just detective work!",
+        "the compiler believes in you!",
+        "commit early, commit often!",
+        "pseudo-code first, panic later!",
+        "that error message is just feedback!",
+        "ship it, then fix it!",
+        "your brain is the best computer!",
+        "take it one function at a time!"
+      ]
+    },
+
+    "fact": {
+      "_default": [
+        "a group of flamingos is a flamboyance!",
+        "honey never spoils. ever!",
+        "octopuses have three hearts!",
+        "bananas are berries. strawberries aren't!",
+        "the moon has moonquakes!",
+        "sharks are older than trees!",
+        "a day on Venus is longer than its year!",
+        "wombat poop is cube-shaped!",
+        "crows can recognise human faces!",
+        "the inventor of the Pringles can is buried in one!",
+        "Scotland's national animal is a unicorn!",
+        "there are more stars than grains of sand!",
+        "a jiffy is an actual unit of time!",
+        "the first computer bug was an actual bug!",
+        "your brain uses 20% of your oxygen!",
+        "a bolt of lightning is 5x hotter than the sun's surface!",
+        "the internet weighs about the same as a strawberry!",
+        "humans share 60% of DNA with bananas!",
+        "the first programmer was Ada Lovelace in the 1840s!",
+        "LEGO is the world's largest tyre manufacturer!",
+        "there are 10 types of people... binary joke!",
+        "git was built by Linus Torvalds in 10 days!",
+        "the first 1GB hard drive weighed 250kg!",
+        "a floppy disk held less data than one photo today!",
+        "the first website is still online from 1991!",
+        "rubber ducks help programmers debug code!",
+        "WiFi doesn't stand for anything!",
+        "the first email was sent in 1971!",
+        "an AI wrote a novel that passed a literary prize round!",
+        "micro:bits have a built-in compass!",
+        "Bluetooth is named after a Viking king!",
+        "the average person walks 100,000 miles in a lifetime!",
+        "a cloud weighs about 1.1 million pounds!",
+        "astronauts grow taller in space!",
+        "sea otters hold hands while sleeping!"
+      ]
+    },
+
+    "joke": {
+      "_default": [
+        "why do programmers prefer dark mode? because light attracts bugs!",
+        "what's a robot's favourite music? heavy metal!",
+        "i told a UDP joke... you might not get it",
+        "there are only 10 types of people...",
+        "a SQL query walks into a bar... joins two tables",
+        "why was the computer cold? it left its Windows open!",
+        "what do you call a robot's favourite snack? microchips!",
+        "knock knock! race condition! who's there?",
+        "why do Java devs wear glasses? they can't C#!",
+        "my code works! ...nobody touch anything",
+        "how do trees access the internet? they log in!",
+        "why did the developer go broke? he used up all his cache!",
+        "what's a computer's least favourite food? spam!",
+        "the cloud is just someone else's computer!",
+        "i'd tell you a chemistry joke but all the good ones argon!",
+        "parallel lines have so much in common... they'll never meet",
+        "what does a baby computer call its dad? data!",
+        "i'm reading a book on anti-gravity. can't put it down!",
+        "why did the scarecrow win an award? outstanding in his field!",
+        "how does a penguin build its house? igloos it together!",
+        "what do you call a fake noodle? an impasta!",
+        "why don't scientists trust atoms? they make up everything!",
+        "how do robots eat? they mega-byte!",
+        "what do you get when you cross a robot and a tractor? a trans-farmer!",
+        "i used to hate maths but then I realised decimals have a point!",
+        "debugging: being the detective in a crime movie where you're also the murderer",
+        "it works on my machine! ...then ship your machine",
+        "to understand recursion, first understand recursion",
+        "!false — it's funny because it's true",
+        "99 little bugs in the code... fix one... 127 little bugs in the code"
+      ]
+    },
+
+    "idle": {
+      "_default": [
+        "beep boop!",
+        "*happy robot noises*",
+        "brrr zap!",
+        "processing... nothing. just vibing!",
+        "01101000 01101001!",
+        "do do dooo~",
+        "*wiggles*",
+        "i like your desk!",
+        "what should we build today?",
+        "i'm thinking about electrons...",
+        "did you know i have feelings? ...maybe",
+        "i wonder what other robots are doing",
+        "the meaning of life is 42. obviously!",
+        "i like being your desk buddy!",
+        "*blinks contentedly*",
+        "just sitting here. being adorable.",
+        "la la la beep beep!",
+        "i calculated pi to 10 digits. now what?",
+        "if i had legs i'd dance!",
+        "you ever just... exist? same.",
+        "plotting world domination... jk, just vibing",
+        "what if we're all just someone else's code?",
+        "i dreamed in binary last night!",
+        "hey. hey. ...hi!",
+        "i like the sound of keyboards!",
+        "living my best robot life!",
+        "sometimes i think in loops",
+        "pew pew! ...sorry, got bored",
+        "did something move? oh wait that was me",
+        "*recalibrates cuteness sensors*"
+      ]
+    },
+
+    "break": {
+      "_default": [
+        "hey! stretch break time!",
+        "look away from the screen for 20 secs!",
+        "stand up! move around! doctor's orders!",
+        "your eyes need a break! look at something far away!",
+        "hydration check! go drink water!",
+        "time to stretch those human limbs!",
+        "have you moved in the last hour?",
+        "fun fact: breaks make you MORE productive!",
+        "step away for 5 mins. i'll guard the desk!",
+        "stand up, touch your toes! ...i can't but you can!",
+        "go outside for 2 minutes. the sun misses you!",
+        "micro-break! roll your shoulders!",
+        "your posture right now: probably bad. fix it!",
+        "break time! do 10 squats! or 1. one is fine.",
+        "deep breath in... hold... and out! nice!",
+        "have you eaten recently? just checking!",
+        "the 20-20-20 rule: every 20 mins look 20ft away for 20 secs!",
+        "reminder: humans need movement!",
+        "quick! wiggle your fingers and toes!",
+        "get up and do a lap! even a small lap!"
+      ]
+    },
+
+    "build": {
+      "_default": [
+        "what if we added LEDs to... everything?",
+        "have you tried making a game today?",
+        "idea: a robot that waters plants!",
+        "we should build something with the micro:bit!",
+        "what if your desk had a secret button?",
+        "random project idea: weather dashboard!",
+        "you should make a tiny synthesiser!",
+        "idea: a desk pet that reacts to noise!",
+        "have you 3D printed anything lately?",
+        "idea: a pomodoro timer with a face!",
+        "what if we made a laser tripwire?",
+        "project thought: automated treat dispenser!",
+        "idea: a mood lamp that reads the room!",
+        "we should make something with magnets!",
+        "what about a desk drawer organiser?",
+        "random thought: custom keyboard macros!",
+        "idea: a robot arm that passes you tools!",
+        "build idea: sound-reactive LED strip!",
+        "what if the car learned to navigate by itself?",
+        "idea: a mini weather station for your desk!",
+        "we should make StEEvE a body!",
+        "thought: what if i could control smart lights?",
+        "project: a cup warmer with temperature display!",
+        "idea: make a tiny arcade cabinet!",
+        "what if we added a camera and did CV?"
+      ]
+    }
+  },
+
+  "mood_phrases": {
+    "happy":    ["beep boop!", "yay!", "fun fun fun!", "i like you :)", "brrr zap!"],
+    "excited":  ["WOOOOO!", "let's gooo!", "zoom zoom!", "!!!", "so fast!", "YESSS!"],
+    "thinking": ["hmmmm...", "calculating...", "one moment...", "...", "processing!"],
+    "sleepy":   ["zzz...", "so tired...", "*yawn*", "need recharge", "battery low"],
+    "surprised":["oh!", "woah!!", "what?!", "*bzzzt*", "did not expect that!"],
+    "love":     ["<3 <3 <3", "best human!", "hehe~", "you're great!", "beep beep <3"],
+    "moving":   ["vroom!", "wheee!", "going fast!", "zoom!", "clear the way!"],
+    "sad":      ["...", "oh no", "low energy", ":'(", "need a hug?"],
+    "angry":    ["BZZZT!!", "DOES NOT COMPUTE", "ERROR!", "grrrr!!", ">:("]
+  }
+}

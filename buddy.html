@@ -570,8 +570,10 @@ const MOODS = {
 }
 
 // ══════════════════════════════════════════════════════════════
-//  SPEECH BUBBLES
+//  SPEECH BUBBLES — personality-driven
 // ══════════════════════════════════════════════════════════════
+
+// Fallback phrases if personality.json hasn't loaded yet
 const PHRASES = {
   happy:    ['beep boop!', 'hello human!', 'i like you :)', 'brrr zap!', 'fun fun fun!', 'yay!'],
   excited:  ['WOOOOO!', 'let\'s gooo!', 'zoom zoom!', '!!!', 'so fast!'],
@@ -584,33 +586,161 @@ const PHRASES = {
   angry:    ['BZZZT!!', 'DOES NOT COMPUTE', 'ERROR!', 'grrrr!!', '>:('],
 }
 
+// ── PERSONALITY ENGINE ──────────────────────────────────────
+let personality = null       // loaded from JSON
+let recentPhrases = []       // last N phrases shown — avoid repeats
+const RECENT_MAX = 12        // remember this many to prevent repetition
+let lastBreakTime = 0        // track last break reminder (ms)
+const BREAK_COOLDOWN = 30 * 60 * 1000  // min 30 mins between break reminders
+
+// Helper: get a random phrase for a mood (uses JSON mood_phrases if loaded)
+function moodPhrase(mood) {
+  const pool = (personality && personality.mood_phrases && personality.mood_phrases[mood])
+    ? personality.mood_phrases[mood]
+    : (PHRASES[mood] || PHRASES.happy)
+  return pool[Math.floor(Math.random() * pool.length)]
+}
+
+// Load personality data
+fetch('personality.json')
+  .then(r => r.json())
+  .then(data => {
+    personality = data
+    console.log('StEEvE personality loaded:', data.meta.name, data.meta.version)
+  })
+  .catch(e => console.warn('Personality JSON not found, using fallback phrases'))
+
+// Which time period is it right now?
+function getTimePeriod() {
+  if (!personality) return 'work_am'
+  const hour = new Date().getHours()
+  const periods = personality.time_periods
+  for (const [key, p] of Object.entries(periods)) {
+    if (p.start < p.end) {
+      // Normal range (e.g. 6-10)
+      if (hour >= p.start && hour < p.end) return key
+    } else {
+      // Wraps midnight (e.g. 21-6)
+      if (hour >= p.start || hour < p.end) return key
+    }
+  }
+  return 'work_am'  // fallback
+}
+
+// Pick a category using weighted random selection
+function pickCategory(period) {
+  const weights = personality.category_weights[period]
+  if (!weights) return 'idle'
+
+  // Enforce break cooldown — if too soon, zero out break weight
+  const adjustedWeights = { ...weights }
+  if (Date.now() - lastBreakTime < BREAK_COOLDOWN) {
+    adjustedWeights.break = 0
+  }
+
+  const total = Object.values(adjustedWeights).reduce((s, w) => s + w, 0)
+  if (total === 0) return 'idle'
+
+  let roll = Math.random() * total
+  for (const [cat, w] of Object.entries(adjustedWeights)) {
+    roll -= w
+    if (roll <= 0) return cat
+  }
+  return 'idle'
+}
+
+// Get a phrase from a category, avoiding recent repeats
+function pickPhrase(category, period) {
+  const cats = personality.categories[category]
+  if (!cats) return null
+
+  // Try time-specific pool first, then _default
+  let pool = cats[period] || cats['_default'] || []
+  if (pool.length === 0) pool = cats['_default'] || []
+  if (pool.length === 0) return null
+
+  // Filter out recently shown phrases
+  let available = pool.filter(p => !recentPhrases.includes(p))
+  // If everything's been shown, reset history for this category
+  if (available.length === 0) {
+    recentPhrases = recentPhrases.filter(p => !pool.includes(p))
+    available = pool
+  }
+
+  const phrase = available[Math.floor(Math.random() * available.length)]
+
+  // Track it
+  recentPhrases.push(phrase)
+  if (recentPhrases.length > RECENT_MAX) recentPhrases.shift()
+
+  return phrase
+}
+
+// Get the mood that matches a category
+function categoryMood(category) {
+  if (!personality) return null
+  return personality.category_moods[category] || 'happy'
+}
+
+// Master function: pick a personality-driven bubble
+function getPersonalityBubble() {
+  if (!personality) return null
+
+  const period = getTimePeriod()
+  const category = pickCategory(period)
+  const phrase = pickPhrase(category, period)
+
+  if (!phrase) return null
+
+  // Track break timing
+  if (category === 'break') lastBreakTime = Date.now()
+
+  return { phrase, mood: categoryMood(category), category }
+}
+
+// ── BUBBLE DISPLAY ──────────────────────────────────────────
 let bubbleTimer = null
 let bubbleVisible = false
 
-function showBubble(text) {
+function showBubble(text, duration) {
   const el = document.getElementById('speech-bubble')
   el.textContent = text
   el.classList.add('show')
   bubbleVisible = true
   clearTimeout(bubbleTimer)
+  // Longer messages get more reading time
+  const displayMs = duration || Math.max(3200, Math.min(text.length * 80, 7000))
   bubbleTimer = setTimeout(() => {
     el.classList.remove('show')
     bubbleVisible = false
     scheduleBubble()
-  }, 3200)
+  }, displayMs)
 }
 
 function scheduleBubble() {
   clearTimeout(bubbleTimer)
+  // Vary the interval: 12-25 seconds
+  const interval = 12000 + Math.random() * 13000
   bubbleTimer = setTimeout(() => {
-    if (!isAngry) {
-      const pool = PHRASES[currentMood] || PHRASES.happy
-      const phrase = pool[Math.floor(Math.random() * pool.length)]
-      showBubble(phrase)
+    if (isAngry) { scheduleBubble(); return }
+
+    // Try personality-driven bubble first
+    const pb = getPersonalityBubble()
+    if (pb) {
+      // Briefly shift mood to match the category, then return
+      const prevMood = currentMood
+      applyMood(pb.mood)
+      showBubble(pb.phrase)
+      // Return to previous mood after the bubble fades
+      // (unless it was already that mood, or user interacted)
+      setTimeout(() => {
+        if (currentMood === pb.mood && !isAngry) applyMood(prevMood)
+      }, Math.max(3200, pb.phrase.length * 80) + 500)
     } else {
-      scheduleBubble()
+      // Fallback to hardcoded mood phrases
+      showBubble(moodPhrase(currentMood))
     }
-  }, 15000 + Math.random() * 15000)
+  }, interval)
 }
 
 // ══════════════════════════════════════════════════════════════
@@ -692,7 +822,7 @@ function triggerAngry() {
   isAngry = true; priorMood = currentMood
   clearTimeout(idleTimer); clearTimeout(blinkTimer)
   applyMood('angry')
-  showBubble(PHRASES.angry[Math.floor(Math.random()*PHRASES.angry.length)])
+  showBubble(moodPhrase('angry'))
   // Angry wiggle — if connected, do a little physical tantrum
   if (bleConnected) {
     sendBLE('SCRIPT:WIGGLE')
@@ -776,8 +906,7 @@ wrap.addEventListener('pointerup', e => {
       tapLock=true; clearTimeout(idleTimer)
       const r=TAP_MOODS[Math.floor(Math.random()*TAP_MOODS.length)]
       applyMood(r)
-      const p=PHRASES[r]
-      showBubble(p[Math.floor(Math.random()*p.length)])
+      showBubble(moodPhrase(r))
       // If connected and got excited, do a little happy wiggle
       if (r === 'excited' && bleConnected) {
         sendBLE('H')  // horn beep on tap
